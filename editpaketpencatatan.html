@@ -80,7 +80,7 @@
       <tr>
         <td class="form-label">Metode Pemilihan</td>
         <td class="form-field">
-          <select id="inputMetodePemilihan" class="select-control" style="max-width:160px;">
+          <select id="inputMetodePemilihan" class="select-control" style="max-width:180px;">
             <option value="Pengecualian">Pengecualian</option>
             <option value="Pengadaan Langsung">Pengadaan Langsung</option>
             <option value="Penunjukan Langsung">Penunjukan Langsung</option>
@@ -204,7 +204,6 @@
   bindLogout();
 
   let currentPackage = null;
-  let realisasiRows = [];
   const packageId = getQueryParam('id');
 
   function parseNumberId(value){
@@ -218,79 +217,22 @@
     return Number(value || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  async function initPage(){
-    if(!packageId){
-      location.href = 'pencatatannontender.html';
-      return;
-    }
-
-    await loadPackageRows();
-    currentPackage = findLoadedPackageById(packageId);
-
-    if(!currentPackage){
-      location.href = 'pencatatannontender.html';
-      return;
-    }
-
-    if(typeof loadRealisasiRows === 'function'){
-      try {
-        realisasiRows = await loadRealisasiRows(packageId);
-      } catch(e){
-        realisasiRows = [];
-      }
-    }
-
-    renderPage();
-  }
-
   function renderPage(){
-    document.title = 'Edit Pencatatan Non Tender';
     document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
     document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
     document.getElementById('inputJenisPengadaan').value = currentPackage.jenis_pengadaan || 'Jasa Lainnya';
     document.getElementById('inputMetodePemilihan').value = currentPackage.metode_pemilihan || 'Pengecualian';
     document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
-    document.getElementById('inputPdn').value = currentPackage.nilai_pdn || '0,00';
-    document.getElementById('inputUmk').value = currentPackage.nilai_umk || '0,00';
+    document.getElementById('inputPdn').value = currentPackage.pdn_realisasi || currentPackage.nilai_pdn || '0,00';
+    document.getElementById('inputUmk').value = currentPackage.umk_realisasi || currentPackage.nilai_umk || '0,00';
     document.getElementById('inputTanggalSelesai').value = currentPackage.tanggal_paket_selesai || '';
     document.getElementById('viewStatusPaket').textContent = currentPackage.status_paket || 'Draft';
-    renderRealisasiTable();
   }
 
   function renderRealisasiTable(){
     const tbody = document.getElementById('realisasiTableBody');
-
-    if(!realisasiRows.length){
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>';
-      document.getElementById('viewTotalRealisasi').textContent = 'Rp. 0,00';
-      return;
-    }
-
-    let total = 0;
-    tbody.innerHTML = realisasiRows.map((row, index) => {
-      const nilai = Number(row.nilai_realisasi || 0);
-      total += nilai;
-      const providerBadge = row.penyedia_nama ? ' <span style="display:inline-block;background:#20b15a;color:#fff;font-size:11px;padding:2px 6px;border-radius:3px;font-weight:700;">Sudah Pilih Penyedia</span>' : '';
-      return `
-        <tr>
-          <td>${index + 1}</td>
-          <td>${escapeHtml(row.jenis_realisasi || '')}${providerBadge}</td>
-          <td>${escapeHtml(formatRupiahFull(nilai))}</td>
-          <td>${escapeHtml(row.tanggal_realisasi || '')}</td>
-          <td>
-            <button type="button" class="btn-red btnDeleteRealisasi" data-id="${escapeHtml(row.id_realisasi || '')}">Hapus</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(total);
-
-    document.querySelectorAll('.btnDeleteRealisasi').forEach(btn => {
-      btn.onclick = async () => {
-        alert('Hapus realisasi belum diaktifkan di tahap ini.');
-      };
-    });
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>';
+    document.getElementById('viewTotalRealisasi').textContent = 'Rp. 0,00';
   }
 
   document.getElementById('btnTambahRealisasi').onclick = () => {
@@ -344,13 +286,11 @@
         ...currentPackage,
         jenis_pengadaan: document.getElementById('inputJenisPengadaan').value,
         metode_pemilihan: document.getElementById('inputMetodePemilihan').value,
-        nilai_pdn: document.getElementById('inputPdn').value.trim(),
-        nilai_umk: document.getElementById('inputUmk').value.trim(),
+        pdn_realisasi: document.getElementById('inputPdn').value.trim(),
+        umk_realisasi: document.getElementById('inputUmk').value.trim(),
         tanggal_paket_selesai: tanggal,
         alasan_perubahan_tanggal: alasan,
         status_paket: statusPaket,
-        status_realisasi: realisasiRows.length ? 'Sudah Ada Realisasi' : 'Belum Ada Realisasi',
-        can_delete: realisasiRows.length ? 'TIDAK' : 'YA',
         isian_edit_selesai: 'SUDAH'
       };
 
@@ -362,7 +302,23 @@
     }
   };
 
-  initPage();
+  (async function init(){
+    if(!packageId){
+      location.href = 'pencatatannontender.html';
+      return;
+    }
+
+    await loadPackageRows();
+    currentPackage = findLoadedPackageById(packageId);
+
+    if(!currentPackage){
+      location.href = 'pencatatannontender.html';
+      return;
+    }
+
+    renderPage();
+    renderRealisasiTable();
+  })();
 </script>
 </body>
 </html>
