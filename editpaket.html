@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Paket</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-shell">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-icon">SPSE</div>
+        <div class="brand-text">
+          <div class="brand-main">INAPROC</div>
+          <div class="brand-sub">SPSE</div>
+        </div>
+      </div>
+      <div class="logo-kota">Kota Bogor</div>
+    </div>
+    <div class="nav">
+      <a href="home.html">BERANDA</a>
+      <a href="#" class="active">DAFTAR PAKET</a>
+      <a href="#">AMEL</a>
+      <a href="#">INBOX</a>
+      <a href="#">LOG AKSES</a>
+      <a href="#">GANTI PASSWORD</a>
+      <div class="nav-right">
+        <button class="btn-logout" id="btnLogout">⏻ LOGOUT</button>
+      </div>
+    </div>
+    <div class="system-bar">
+      <div class="left-mini">
+        <span style="font-weight:700;">⇵</span>
+        <span class="mini-link">▣ Petunjuk Penggunaan</span>
+        <span class="mini-link">Aplikasi e-Procurement Lainnya</span>
+      </div>
+      <div class="right-mini">
+        <span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span>
+        <span>|</span>
+        <span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span>
+        <span>✉️</span>
+        <span class="notif-badge">15</span>
+        <span style="color:#21a55b;">⬢</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="edit-block" style="margin-top:22px;">
+    <div class="crumb"><span class="blue">Daftar Paket</span> » Edit Paket</div>
+
+    <table class="edit-table">
+      <tr>
+        <td class="edit-left-label">Rencana Umum Pengadaan</td>
+        <td>
+          <table class="edit-mini-table" style="margin-bottom:8px;">
+            <tr>
+              <th style="width:120px;">Kode RUP</th>
+              <th>Nama Paket</th>
+              <th style="width:160px;">Sumber Dana</th>
+            </tr>
+            <tr>
+              <td id="viewKodeRup"></td>
+              <td id="viewNamaPaket"></td>
+              <td id="viewSumberDana"></td>
+            </tr>
+          </table>
+
+          <div style="margin-bottom:8px;">
+            <button class="btn-gray" id="btnTambahRencana" type="button">◉ Tambah Rencana Pengadaan</button>
+            <button class="btn-gray" id="btnUpdateRencana" type="button">Update Rencana Pengadaan</button>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="edit-left-label">K/L/PD/Instansi Lainnya</td>
+        <td id="viewInstansi"></td>
+      </tr>
+
+      <tr>
+        <td class="edit-left-label">Satuan Kerja</td>
+        <td id="viewSatker"></td>
+      </tr>
+
+      <tr>
+        <td class="edit-left-label">Anggaran</td>
+        <td>
+          <table class="edit-mini-table">
+            <tr>
+              <th style="width:90px;">Tahun</th>
+              <th style="width:140px;">Sumber Dana</th>
+              <th>Kode Anggaran</th>
+              <th style="width:150px;">Nilai</th>
+              <th style="width:150px;">PPK</th>
+            </tr>
+            <tr>
+              <td id="viewTahun"></td>
+              <td id="viewSumberDana2"></td>
+              <td id="viewKodeAnggaran"></td>
+              <td id="viewNilai"></td>
+              <td id="viewPpk"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="edit-left-label">Nama Paket <span class="req">*</span></td>
+        <td id="viewNamaPaket2"></td>
+      </tr>
+
+      <tr>
+        <td class="edit-left-label">Nilai Pagu Paket</td>
+        <td id="viewNilaiPagu"></td>
+      </tr>
+
+      <tr>
+        <td class="edit-left-label">Lokasi Pekerjaan <span class="req">*</span></td>
+        <td>
+          <table class="edit-mini-table" style="margin-bottom:0;">
+            <tr>
+              <th style="width:140px;">Provinsi <span class="req">*</span></th>
+              <th style="width:160px;">Kabupaten/Kota <span class="req">*</span></th>
+              <th>Detail Lokasi <span class="req">*</span></th>
+            </tr>
+            <tr>
+              <td id="viewProvinsi"></td>
+              <td id="viewKabKota"></td>
+              <td id="viewDetailLokasi"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <div class="action-bottom" style="justify-content:flex-start;margin-top:12px;">
+      <button class="btn-back" id="btnBackList" type="button">◀ Kembali</button>
+    </div>
+
+    <div class="notice-yellow" style="margin-top:10px;">* Wajib diisi.</div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if(!requireLogin()) {}
+    bindLogout();
+
+    let currentPackage = null;
+    const packageId = getQueryParam('id');
+
+    async function initPackage(){
+      if(!packageId){
+        location.href = 'pencatatannontender.html';
+        return;
+      }
+      await loadPackageRows();
+      currentPackage = findLoadedPackageById(packageId);
+      if(!currentPackage){
+        location.href = 'pencatatannontender.html';
+        return;
+      }
+      renderPackage();
+    }
+
+    function renderPackage(){
+      document.title = 'EDIT-' + (currentPackage.kode_rup || '');
+      document.getElementById('viewKodeRup').textContent = currentPackage.kode_rup || '';
+      document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
+      document.getElementById('viewNamaPaket2').textContent = currentPackage.nama_paket || '';
+      document.getElementById('viewSumberDana').textContent = currentPackage.sumber_dana || 'APBD';
+      document.getElementById('viewInstansi').textContent = currentPackage.instansi || APP_CONFIG.defaultInstansi;
+      document.getElementById('viewSatker').textContent = currentPackage.satker || '';
+      document.getElementById('viewTahun').textContent = currentPackage.tahun || APP_CONFIG.defaultTahun;
+      document.getElementById('viewSumberDana2').textContent = currentPackage.sumber_dana || 'APBD';
+      document.getElementById('viewKodeAnggaran').textContent = currentPackage.kode_anggaran || '';
+      document.getElementById('viewNilai').textContent = formatRupiahFull(currentPackage.pagu || 0);
+      document.getElementById('viewPpk').textContent = currentPackage.ppk || APP_CONFIG.currentUserName;
+      document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
+      document.getElementById('viewProvinsi').textContent = currentPackage.lokasi_provinsi || 'Jawa Barat';
+      document.getElementById('viewKabKota').textContent = currentPackage.lokasi_kab_kota || 'Bogor (Kota)';
+      document.getElementById('viewDetailLokasi').textContent = currentPackage.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah';
+    }
+
+    document.getElementById('btnTambahRencana').onclick = () => {
+      location.href =
+        'rencanapencatatan.html' +
+        '?mode=tambah-rencana' +
+        '&id=' + encodeURIComponent(currentPackage.id_simulasi) +
+        '&tahun=' + encodeURIComponent(currentPackage.tahun || APP_CONFIG.defaultTahun) +
+        '&satker=' + encodeURIComponent(currentPackage.satker || '') +
+        '&metode=' + encodeURIComponent(currentPackage.metode_pemilihan || '');
+    };
+
+    document.getElementById('btnUpdateRencana').onclick = () => {
+      location.href =
+        'rencanapencatatan.html' +
+        '?mode=update-rencana' +
+        '&id=' + encodeURIComponent(currentPackage.id_simulasi) +
+        '&tahun=' + encodeURIComponent(currentPackage.tahun || APP_CONFIG.defaultTahun) +
+        '&satker=' + encodeURIComponent(currentPackage.satker || '') +
+        '&metode=' + encodeURIComponent(currentPackage.metode_pemilihan || '');
+    };
+
+    document.getElementById('btnBackList').onclick = () => {
+      location.href = 'pencatatannontender.html';
+    };
+
+    initPackage();
+  </script>
+</body>
+</html>
