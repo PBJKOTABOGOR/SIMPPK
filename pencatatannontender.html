@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulasi SPSE - Pencatatan Non Tender</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-shell">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-icon">SPSE</div>
+        <div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div>
+      </div>
+      <div class="logo-kota">Kota Bogor</div>
+    </div>
+    <div class="nav">
+      <a href="home.html">BERANDA</a>
+      <a href="#" class="active">DAFTAR PAKET</a>
+      <a href="#">AMEL</a>
+      <a href="#">INBOX</a>
+      <a href="#">LOG AKSES</a>
+      <a href="#">GANTI PASSWORD</a>
+      <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
+    </div>
+    <div class="system-bar">
+      <div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div>
+      <div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">163</span><span style="color:#21a55b;">⬢</span></div>
+    </div>
+  </div>
+
+  <div class="menu-tabs">
+    <div class="menu-tab">Tender</div>
+    <div class="menu-tab">Non Tender</div>
+    <div class="menu-tab active">Pencatatan Non Tender</div>
+    <div class="menu-tab">Pencatatan Swakelola</div>
+    <div class="menu-tab">Pencatatan Pengadaan Darurat</div>
+  </div>
+
+  <div class="content-block">
+    <div class="crumb"><span class="blue">Beranda</span> » Daftar Paket Non Tender</div>
+    <div class="notice">
+      Mohon diperhatikan amanat <strong>Peraturan Presiden Nomor 46 Tahun 2025</strong> tentang Perubahan Kedua Atas Peraturan Presiden Nomor 16 Tahun 2018 tentang Pengadaan Barang/Jasa Pemerintah sebagai berikut:<br><br>
+      <strong>Pasal 38 Ayat 8</strong><br>
+      Pelaksanaan Pengadaan Barang/Pekerjaan Konstruksi/Jasa Lainnya dengan metode pemilihan Penyedia melalui Pengadaan Langsung dengan nilai paling sedikit di atas Rp50.000.000,00 (lima puluh juta rupiah), Penunjukan Langsung, Tender cepat, dan Tender wajib menggunakan aplikasi sistem pengadaan secara elektronik dengan <strong>fitur transaksional</strong>.<br><br>
+      <strong>Pasal 41 Ayat 7</strong><br>
+      Pelaksanaan Pengadaan Jasa Konsultansi dengan metode pemilihan Penyedia melalui Pengadaan Langsung, Penunjukan Langsung, dan Seleksi wajib menggunakan aplikasi sistem pengadaan secara elektronik dengan <strong>fitur transaksional</strong>.
+    </div>
+    <div class="action-row"><button class="btn-green" id="btnShowForm">Buat Paket</button><button class="btn-green">Import Paket</button></div>
+
+    <div class="sub-row"><div style="font-size:13px;">Tampilkan <select class="select-control" style="width:56px;height:28px;padding:0 6px;"><option>25</option></select> data</div><div class="search-box"><span>Cari:</span><input type="text" id="tableSearchInput"></div></div>
+    <table class="table-simple">
+      <thead><tr><th>Nama Paket</th><th style="width:180px;">Status</th><th style="width:180px;">Tanggal Buat</th><th style="width:320px;">Satuan Kerja</th><th style="width:180px;"></th></tr></thead>
+      <tbody id="packageListBody"></tbody>
+    </table>
+    <div class="pager"><button>‹</button><button>›</button></div>
+    <div style="font-size:13px;margin-top:10px;" id="packageListInfo">Tampilan 0 sampai 0 dari 0 data</div>
+    <div class="notice-yellow" style="margin-top:18px;">Pembuatan paket Pencatatan Non Tender dimulai dengan memilih paket yang sudah diumumkan pada Aplikasi SiRUP terlebih dahulu. <strong>Paket yang belum diumumkan pada Aplikasi SiRUP akan berakibat tidak dapat membuat paket Pencatatan Non Tender.</strong></div>
+  </div>
+
+  <div id="tourOverlay" class="tour-overlay">
+    <div id="tourHighlight" class="tour-highlight"></div>
+    <div id="tourArrow" class="tour-arrow"></div>
+    <div id="tourCard" class="tour-card">
+      <h4 id="tourTitle">Petunjuk</h4>
+      <p id="tourText"></p>
+      <div class="tour-actions">
+        <button class="tour-btn ghost" id="tourNeverBtn">Jangan Munculkan</button>
+        <button class="tour-btn secondary" id="tourSkipBtn">Lewati</button>
+        <button class="tour-btn primary" id="tourNextBtn">Lanjut</button>
+      </div>
+    </div>
+  </div>
+<script src="app.js"></script>
+<script>
+  if(!requireLogin()) {}
+  bindLogout();
+
+  const sampleRows = [
+    { package_id: 'sample-1', nama_paket: 'Broadcast Whatsapp API', metode_rup: 'Pengadaan Langsung', status: 'Paket Sudah Selesai', tanggal_buat: '9 Februari 2026', satker: 'BAGIAN PENGADAAN BARANG DAN JASA', is_sample: true, has_realisasi: true }
+  ];
+
+  const tableSearchInput = document.getElementById('tableSearchInput');
+  const packageListBody = document.getElementById('packageListBody');
+  const packageListInfo = document.getElementById('packageListInfo');
+
+  function getAllRows(){
+    return sampleRows.concat(getStoredPackages());
+  }
+
+  function renderPackageRows(){
+    const keyword = tableSearchInput.value.trim().toLowerCase();
+    const rows = getAllRows().filter(item => {
+      const text = [item.nama_paket, item.metode_rup, item.status, item.tanggal_buat, item.satker].join(' ').toLowerCase();
+      return !keyword || text.includes(keyword);
+    });
+    if(!rows.length){
+      packageListBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">No data available in table</td></tr>';
+      packageListInfo.textContent = 'Tampilan 0 sampai 0 dari 0 data';
+      return;
+    }
+    packageListBody.innerHTML = rows.map(item => {
+      const canDelete = !item.has_realisasi && !item.is_sample;
+      const paketUrl = item.is_sample ? '#' : `editpaketpencatatan.html?packageId=${encodeURIComponent(item.package_id)}`;
+      return `
+        <tr>
+          <td>
+            <a href="${paketUrl}" class="row-package-link" data-package-id="${escapeHtml(item.package_id || '')}" data-sample="${item.is_sample ? '1' : '0'}" style="color:#2f5ed0;">${escapeHtml(item.nama_paket)}</a>
+            <span class="pill-method">${escapeHtml(item.metode_rup)}</span>
+            <span class="pill-spse">spse 4.5</span>
+          </td>
+          <td>${escapeHtml(item.status)}</td>
+          <td>${escapeHtml(item.tanggal_buat)}</td>
+          <td>${escapeHtml(item.satker)}</td>
+          <td>
+            <div class="row-actions">
+              <a href="${paketUrl}" class="btn-dark row-package-link" data-package-id="${escapeHtml(item.package_id || '')}" data-sample="${item.is_sample ? '1' : '0'}">📝 Paket Pencatatan</a>
+              ${canDelete ? `<button class="btn-red btn-delete-package" data-package-id="${escapeHtml(item.package_id)}">Hapus Pencatatan</button>` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    packageListInfo.textContent = `Tampilan 1 sampai ${rows.length} dari ${rows.length} data`;
+
+    document.querySelectorAll('.btn-delete-package').forEach(btn => {
+      btn.onclick = () => {
+        if(deletePackage(btn.dataset.packageId)) renderPackageRows();
+      };
+    });
+    document.querySelectorAll('.row-package-link').forEach(link => {
+      link.onclick = e => {
+        if(link.dataset.sample === '1') e.preventDefault();
+      };
+    });
+  }
+
+  tableSearchInput.addEventListener('input', renderPackageRows);
+  document.getElementById('btnShowForm').onclick = () => location.href = 'rencanapencatatan.html';
+  renderPackageRows();
+
+  setupTutorial({
+    steps: [
+      {target:'#btnShowForm',title:'Langkah 1',text:'Klik <b>Buat Paket</b> untuk masuk ke halaman baru daftar rencana paket, sama seperti alur SPSE.',place:'bottom'},
+      {target:'#packageListBody',title:'Langkah 2',text:'Setelah paket dibuat dan disimpan, paket baru akan muncul di daftar ini dengan status <b>Draft</b>.',place:'top'}
+    ]
+  });
+</script>
+</body>
+</html>

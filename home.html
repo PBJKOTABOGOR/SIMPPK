@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulasi SPSE - Home</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-shell">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-icon">SPSE</div>
+        <div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div>
+      </div>
+      <div class="logo-kota">Kota Bogor</div>
+    </div>
+    <div class="nav">
+      <a href="#" id="navBeranda" class="active">BERANDA</a>
+      <a href="#" id="navDaftarPaket">DAFTAR PAKET</a>
+      <a href="#">AMEL</a>
+      <a href="#">INBOX</a>
+      <a href="#">LOG AKSES</a>
+      <a href="#">GANTI PASSWORD</a>
+      <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
+    </div>
+    <div class="system-bar">
+      <div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div>
+      <div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">163</span><span style="color:#21a55b;">⬢</span></div>
+    </div>
+  </div>
+
+  <div class="menu-tabs">
+    <div class="menu-tab active">Tender</div>
+    <div class="menu-tab">Non Tender</div>
+    <div class="menu-tab" id="tabPencatatanNonTenderHome">Pencatatan Non Tender</div>
+    <div class="menu-tab">Pencatatan Swakelola</div>
+    <div class="menu-tab">Pencatatan Pengadaan Darurat</div>
+  </div>
+
+  <div class="content-block">
+    <div class="section-header" style="background:#d6dbe2;color:#1f3150;padding:10px 14px;font-size:15px;font-weight:700;border-radius:2px;margin-bottom:14px;">Paket Tender/Seleksi PPK</div>
+    <div class="notice">
+      Fitur e-Kontrak akan aktif jika:<br>
+      - Sudah masuk tahapan SPPBJ atau sudah melewati tahapan Upload Dokumen Penawaran untuk Tender Cepat;<br>
+      - Pokja Pemilihan sudah menetapkan dan mengumumkan pemenang;<br>
+      - Seluruh sanggah sudah dijawab oleh Pokja Pemilihan; dan/atau<br>
+      - Seluruh jawaban sanggah Salah/Ditolak.
+    </div>
+    <table class="form-table" style="margin-top:0;">
+      <tr><td class="form-label">Status</td><td class="form-field"><select class="select-control" style="width:120px;"><option>Tender Aktif</option></select></td></tr>
+    </table>
+    <div class="sub-row" style="margin-top:14px;">
+      <div style="font-size:13px;">Tampilkan <select class="select-control" style="width:56px;height:28px;padding:0 6px;"><option>25</option></select> data</div>
+      <div class="search-box"><span>Cari:</span><input type="text" placeholder="Kode Tender, Nama Tend"></div>
+    </div>
+    <table class="table-simple">
+      <thead><tr><th style="width:180px;">Kode Tender</th><th>Nama Tender</th><th style="width:220px;">Tahap</th><th style="width:170px;"></th></tr></thead>
+      <tbody>
+        <tr><td>2505163</td><td>BM Peralatan dan Mesin - Pengadaan Meja Kerja Pejabat <span class="pill-method">Lelang Sederhana</span> <span class="pill-method" style="background:#1aaa55;">spse 4</span></td><td><a href="#" style="color:#315ec9;">Tender Sudah Selesai</a></td><td><button class="btn-dark">e-Kontrak</button> <button class="btn-dark">Batal</button></td></tr>
+        <tr><td>2498163</td><td>Belanja Cetak <span class="pill-method">Lelang Sederhana</span> <span class="pill-method" style="background:#1aaa55;">spse 4</span></td><td><a href="#" style="color:#315ec9;">Tender Sudah Selesai</a></td><td><button class="btn-dark">e-Kontrak</button> <button class="btn-dark">Batal</button></td></tr>
+        <tr><td>2466163</td><td>Belanja Peralatan dan Bahan Pakai Habis Rumah Tangga <span class="pill-method">Lelang Sederhana</span> <span class="pill-method" style="background:#1aaa55;">spse 4</span></td><td><a href="#" style="color:#315ec9;">Tender Sudah Selesai</a></td><td><button class="btn-dark">e-Kontrak</button> <button class="btn-dark">Batal</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="tourOverlay" class="tour-overlay">
+    <div id="tourHighlight" class="tour-highlight"></div>
+    <div id="tourArrow" class="tour-arrow"></div>
+    <div id="tourCard" class="tour-card">
+      <h4 id="tourTitle">Petunjuk</h4>
+      <p id="tourText">Isi petunjuk</p>
+      <div class="tour-actions">
+        <button class="tour-btn ghost" id="tourNeverBtn">Jangan Munculkan</button>
+        <button class="tour-btn secondary" id="tourSkipBtn">Lewati</button>
+        <button class="tour-btn primary" id="tourNextBtn">Lanjut</button>
+      </div>
+    </div>
+  </div>
+<script src="app.js"></script>
+<script>
+  if(!requireLogin()) {}
+  bindLogout();
+  document.getElementById('navDaftarPaket').onclick = e => { e.preventDefault(); location.href = 'pencatatannontender.html'; };
+  document.getElementById('tabPencatatanNonTenderHome').onclick = () => location.href = 'pencatatannontender.html';
+
+  setupTutorial({
+    steps: [
+      {target:'#navDaftarPaket',title:'Langkah 1',text:'Setelah login, klik menu <b>Daftar Paket</b> untuk mulai simulasi pencatatan non tender.',place:'bottom'},
+      {target:'#tabPencatatanNonTenderHome',title:'Langkah 2',text:'Fokus kita ada di menu <b>Pencatatan Non Tender</b>. Klik tab ini untuk lanjut ke halaman daftar paket.',place:'bottom'}
+    ]
+  });
+</script>
+</body>
+</html>
