@@ -69,25 +69,13 @@
       <tr>
         <td class="form-label">Jenis Pengadaan</td>
         <td class="form-field">
-          <select id="inputJenisPengadaan" class="select-control" style="max-width:240px;">
-            <option value="Jasa Lainnya">Jasa Lainnya</option>
-            <option value="Barang">Barang</option>
-            <option value="Pekerjaan Konstruksi">Pekerjaan Konstruksi</option>
-            <option value="Jasa Konsultansi">Jasa Konsultansi</option>
-          </select>
+          <input type="text" id="inputJenisPengadaan" class="text-control" value="Jasa Lainnya" readonly style="max-width:220px;background:#f3f4f6;">
         </td>
       </tr>
       <tr>
         <td class="form-label">Metode Pemilihan</td>
         <td class="form-field">
-          <select id="inputMetodePemilihan" class="select-control" style="max-width:180px;">
-            <option value="Pengecualian">Pengecualian</option>
-            <option value="Pengadaan Langsung">Pengadaan Langsung</option>
-            <option value="Penunjukan Langsung">Penunjukan Langsung</option>
-            <option value="Kontes">Kontes</option>
-            <option value="Sayembara">Sayembara</option>
-            <option value="Darurat">Darurat</option>
-          </select>
+          <input type="text" id="inputMetodePemilihan" class="text-control" readonly style="max-width:220px;background:#f3f4f6;">
         </td>
       </tr>
       <tr>
@@ -144,7 +132,7 @@
         <td class="form-field">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
             <input type="date" id="inputTanggalSelesai" class="text-control" style="max-width:200px;">
-            <span style="display:inline-block;background:#f4a12d;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;">1 kali perubahan</span>
+            <span id="badgePerubahanTanggal" style="display:none;background:#f4a12d;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;">1 kali perubahan</span>
           </div>
 
           <label style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;">
@@ -168,20 +156,7 @@
       <tr>
         <td class="form-label" style="vertical-align:top;">Uraian Pekerjaan</td>
         <td class="form-field">
-          <table style="width:100%;border-collapse:collapse;">
-            <tr>
-              <td style="border:1px solid #d8dfe7;height:28px;width:40px;"></td>
-              <td style="border:1px solid #d8dfe7;height:28px;width:50px;"></td>
-              <td style="border:1px solid #d8dfe7;height:28px;width:80px;"></td>
-              <td style="border:1px solid #d8dfe7;height:28px;width:60px;"></td>
-              <td style="border:1px solid #d8dfe7;height:28px;width:80px;"></td>
-              <td style="border:1px solid #d8dfe7;height:28px;width:60px;"></td>
-              <td style="border:1px solid #d8dfe7;height:28px;"></td>
-            </tr>
-            <tr>
-              <td colspan="7" style="border:1px solid #d8dfe7;height:140px;background:#fff;"></td>
-            </tr>
-          </table>
+          <textarea id="inputUraianPekerjaan" class="textarea-control" style="height:160px;"></textarea>
         </td>
       </tr>
 
@@ -204,6 +179,7 @@
   bindLogout();
 
   let currentPackage = null;
+  let realisasiRows = [];
   const packageId = getQueryParam('id');
 
   function parseNumberId(value){
@@ -217,22 +193,66 @@
     return Number(value || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  function escapeAttr(v){
+    return String(v == null ? '' : v).replace(/"/g, '&quot;');
+  }
+
+  async function loadRealisasiLocal(packageId){
+    try {
+      const url = buildApiUrl('listRealisasi', { id_simulasi: packageId });
+      const res = await fetch(url);
+      const json = await res.json();
+      return Array.isArray(json.data) ? json.data : [];
+    } catch(e){
+      return [];
+    }
+  }
+
+  function updateBadgePerubahanTanggal(){
+    const badge = document.getElementById('badgePerubahanTanggal');
+    const pernahUbah = normalizeWhitespace(currentPackage?.alasan_perubahan_tanggal || '') !== '';
+    badge.style.display = pernahUbah ? 'inline-block' : 'none';
+  }
+
   function renderPage(){
     document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
     document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
-    document.getElementById('inputJenisPengadaan').value = currentPackage.jenis_pengadaan || 'Jasa Lainnya';
-    document.getElementById('inputMetodePemilihan').value = currentPackage.metode_pemilihan || 'Pengecualian';
+    document.getElementById('inputJenisPengadaan').value = 'Jasa Lainnya';
+    document.getElementById('inputMetodePemilihan').value = currentPackage.metode_pemilihan || '';
     document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
-    document.getElementById('inputPdn').value = currentPackage.pdn_realisasi || currentPackage.nilai_pdn || '0,00';
-    document.getElementById('inputUmk').value = currentPackage.umk_realisasi || currentPackage.nilai_umk || '0,00';
+    document.getElementById('inputPdn').value = currentPackage.pdn_realisasi || '0,00';
+    document.getElementById('inputUmk').value = currentPackage.umk_realisasi || '0,00';
     document.getElementById('inputTanggalSelesai').value = currentPackage.tanggal_paket_selesai || '';
+    document.getElementById('inputUraianPekerjaan').value = currentPackage.uraian_pekerjaan || '';
     document.getElementById('viewStatusPaket').textContent = currentPackage.status_paket || 'Draft';
+    updateBadgePerubahanTanggal();
   }
 
   function renderRealisasiTable(){
     const tbody = document.getElementById('realisasiTableBody');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>';
-    document.getElementById('viewTotalRealisasi').textContent = 'Rp. 0,00';
+
+    if(!realisasiRows.length){
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>';
+      document.getElementById('viewTotalRealisasi').textContent = 'Rp. 0,00';
+      return;
+    }
+
+    let total = 0;
+    tbody.innerHTML = realisasiRows.map((row, index) => {
+      const nilai = Number(row.nilai_realisasi || 0);
+      total += nilai;
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${escapeHtml(row.jenis_realisasi || '')}</td>
+          <td>${escapeHtml(formatRupiahFull(nilai))}</td>
+          <td>${escapeHtml(row.tanggal_realisasi || '')}</td>
+          <td></td>
+        </tr>
+      `;
+    }).join('');
+
+    document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(total);
   }
 
   document.getElementById('btnTambahRealisasi').onclick = () => {
@@ -260,6 +280,7 @@
       const tanggal = document.getElementById('inputTanggalSelesai').value;
       const ubahTanggal = document.getElementById('checkUbahTanggal').checked;
       const alasan = document.getElementById('inputAlasanPerubahanTanggal').value.trim();
+      const uraian = document.getElementById('inputUraianPekerjaan').value.trim();
 
       if(!tanggal){
         alert('Tanggal Paket Selesai wajib diisi.');
@@ -284,13 +305,16 @@
 
       const payload = {
         ...currentPackage,
-        jenis_pengadaan: document.getElementById('inputJenisPengadaan').value,
-        metode_pemilihan: document.getElementById('inputMetodePemilihan').value,
+        jenis_pengadaan: 'Jasa Lainnya',
+        metode_pemilihan: currentPackage.metode_pemilihan || '',
         pdn_realisasi: document.getElementById('inputPdn').value.trim(),
         umk_realisasi: document.getElementById('inputUmk').value.trim(),
         tanggal_paket_selesai: tanggal,
-        alasan_perubahan_tanggal: alasan,
+        alasan_perubahan_tanggal: ubahTanggal ? alasan : (currentPackage.alasan_perubahan_tanggal || ''),
+        uraian_pekerjaan: uraian,
         status_paket: statusPaket,
+        status_realisasi: realisasiRows.length ? 'Sudah Ada Realisasi' : 'Belum Ada Realisasi',
+        can_delete: realisasiRows.length ? 'TIDAK' : 'YA',
         isian_edit_selesai: 'SUDAH'
       };
 
@@ -316,6 +340,7 @@
       return;
     }
 
+    realisasiRows = await loadRealisasiLocal(packageId);
     renderPage();
     renderRealisasiTable();
   })();
