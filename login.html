@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulasi SPSE - Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <section id="homePage">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-icon">SPSE</div>
+          <div class="brand-text">
+            <div class="brand-main">INAPROC</div>
+            <div class="brand-sub">SPSE</div>
+          </div>
+        </div>
+        <div class="logo-kota">Kota Bogor</div>
+      </div>
+      <div class="nav">
+        <a href="#" class="active">BERANDA</a>
+        <a href="#">CARI PAKET</a>
+        <a href="#">KONTEN KHUSUS</a>
+        <a href="#">DAFTAR HITAM</a>
+        <a href="#">AMEL</a>
+        <a href="#">KONTAK KAMI</a>
+        <div class="nav-right">
+          <button class="btn-outline">PENDAFTARAN PENYEDIA</button>
+          <button class="btn-danger" id="btnOpenLogin">LOGIN</button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-area">
+      <div class="hero-arrow left">◀</div>
+      <div class="hero-slide">
+        <div class="hero-lkpp">LK<span class="red">PP</span></div>
+        <div class="hero-badge">Selamat Datang di</div>
+        <h1 class="hero-title"><span class="red">INA</span>PROC</h1>
+        <div class="hero-sub">SPSE</div>
+        <div class="hero-build"></div>
+        <div class="hero-dots"><span class="active"></span><span></span></div>
+      </div>
+      <div class="hero-arrow right">▶</div>
+    </div>
+    <div class="strip"></div>
+    <div class="panel">
+      <div class="panel-title">Tender <a href="#">Lihat Semua »</a></div>
+      <table>
+        <thead>
+          <tr><th style="width:70px;">No</th><th>Nama Paket</th><th style="width:220px;">HPS</th><th style="width:220px;">Akhir Pendaftaran</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4"><strong>Pengadaan Barang</strong></td></tr>
+          <tr><td colspan="4"><strong>Jasa Konsultansi Badan Usaha Non Konstruksi</strong></td></tr>
+          <tr><td colspan="4"><strong>Pekerjaan Konstruksi</strong></td></tr>
+          <tr><td>1</td><td>REVITALISASI GEDUNG PENGADILAN NEGERI KOTA BOGOR [HIBAH-BRG] <span class="tag">spse 4.5</span> <span class="tag">Tender</span></td><td>Rp. 6.114.126.306,99</td><td>28 April 2026 08:59</td></tr>
+          <tr><td colspan="4"><strong>Jasa Lainnya</strong></td></tr>
+          <tr><td colspan="4"><strong>Jasa Konsultansi Perorangan Non Konstruksi</strong></td></tr>
+          <tr><td colspan="4"><strong>Jasa Konsultansi Badan Usaha Konstruksi</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="loginChoiceModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-head"><span>PILIH JENIS USER</span><button class="modal-close" id="btnCloseLoginChoice">&times;</button></div>
+      <div class="modal-body">
+        <button class="choice-btn" id="btnPenyedia">PENYEDIA</button>
+        <button class="choice-btn" id="btnNonPenyedia">NON PENYEDIA</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="loginPage" class="login-page hidden">
+    <div class="login-wrap">
+      <div class="login-brand">
+        <div class="brand-icon">SPSE</div>
+        <div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div>
+      </div>
+      <div class="login-card">
+        <div class="login-title">LOGIN NON PENYEDIA</div>
+        <div class="field-row"><div class="field-icon">👤</div><input type="text" value="PPK" readonly></div>
+        <div class="field-row"><div class="field-icon">🔒</div><input type="password" id="loginPassword" value="ppk12345" readonly><button class="eye-btn" id="btnTogglePass" type="button">👁</button></div>
+        <div class="captcha-box" id="captchaBox">zsbmjq</div>
+        <div class="text-center" style="font-size:13px;margin:8px 0 12px 0;">Untuk menjamin keamanan, isikan Kode di atas!</div>
+        <div class="field-row"><div class="field-icon">🛡️</div><input type="text" id="captchaInput" value="zsbmjq" readonly></div>
+        <div class="small-note text-center">Jika Anda kesulitan membaca Kode di atas,<br><a href="#" id="btnRefreshCaptcha">klik di sini</a> untuk mengganti Kode baru.</div>
+        <button class="login-btn" id="btnDoLogin" type="button">Login</button>
+        <div class="text-center" style="font-size:13px;margin-bottom:18px;">Kembali ke <a href="#" id="btnBackHome" style="color:#3560d0;">Beranda</a></div>
+        <div class="text-center" style="font-size:13px;"><a href="#" style="color:#3560d0;">🔒 Lupa Password?</a></div>
+      </div>
+    </div>
+  </section>
+<script src="app.js"></script>
+<script>
+  const homePage = document.getElementById('homePage');
+  const loginPage = document.getElementById('loginPage');
+  const modal = document.getElementById('loginChoiceModal');
+  const btnOpen = document.getElementById('btnOpenLogin');
+  const btnClose = document.getElementById('btnCloseLoginChoice');
+  const btnNon = document.getElementById('btnNonPenyedia');
+  const btnPen = document.getElementById('btnPenyedia');
+  const btnBack = document.getElementById('btnBackHome');
+  const pass = document.getElementById('loginPassword');
+  const btnToggle = document.getElementById('btnTogglePass');
+  const btnRefresh = document.getElementById('btnRefreshCaptcha');
+  const captchaBox = document.getElementById('captchaBox');
+  const captchaInput = document.getElementById('captchaInput');
+  const btnLogin = document.getElementById('btnDoLogin');
+
+  function showLogin(){ homePage.classList.add('hidden'); loginPage.classList.remove('hidden'); }
+  function showHome(){ loginPage.classList.add('hidden'); homePage.classList.remove('hidden'); }
+  btnOpen.onclick = ()=> modal.classList.remove('hidden');
+  btnClose.onclick = ()=> modal.classList.add('hidden');
+  modal.addEventListener('click', e => { if(e.target===modal) modal.classList.add('hidden'); });
+  btnPen.onclick = ()=> alert('Untuk simulasi ini, user yang dipakai dulu adalah NON PENYEDIA / PPK.');
+  btnNon.onclick = ()=> { modal.classList.add('hidden'); showLogin(); };
+  btnBack.onclick = e => { e.preventDefault(); showHome(); };
+  btnToggle.onclick = ()=> pass.type = pass.type === 'password' ? 'text' : 'password';
+  btnRefresh.onclick = e => { e.preventDefault(); const t=makeCaptcha(6); captchaBox.textContent=t; captchaInput.value=t; };
+  btnLogin.onclick = ()=> { localStorage.setItem('spse_logged_in','1'); localStorage.setItem('spse_username','PPK'); location.href='home.html'; };
+  const startCaptcha = makeCaptcha(6); captchaBox.textContent = startCaptcha; captchaInput.value = startCaptcha;
+</script>
+</body>
+</html>
