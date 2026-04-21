@@ -1,17 +1,20 @@
 const APP_CONFIG = {
   spreadsheetId: '1ssQdLVKLPPj0dI6a_7iUwxm3L2IiPOZodIg1uE20BM0',
   rupMasterGid: '2083920669',
+  packageSheetGid: '401635447',
   defaultInstansi: 'Kota Bogor',
   defaultTahun: '2026',
   currentUserName: 'PPK',
-  currentUserRole: 'Pejabat Pembuat Komitmen'
+  currentUserRole: 'Pejabat Pembuat Komitmen',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbz2YdOnLyniHWIAKC_hlGwFTpFftjDAxiF1nI2eHmnggj8DFkiD51MEbSbvJHCDMaj9Jg/exec' // isi setelah deploy Apps Script Web App
 };
 
 window.SPSE_APP_STATE = window.SPSE_APP_STATE || {
   allRup: [],
   filteredRup: [],
   selectedRows: new Set(),
-  dataLoaded: false
+  dataLoaded: false,
+  packageRows: []
 };
 
 const METHOD_MAP = {
@@ -27,9 +30,8 @@ const METHOD_MAP = {
 
 const STORAGE_KEYS = {
   login: 'spse_logged_in',
-  username: 'spse_username',
   hideTutorial: 'spse_hide_tutorial',
-  packages: 'spse_created_packages'
+  draftPackage: 'spse_draft_package'
 };
 
 function makeCaptcha(len = 6){
@@ -46,6 +48,18 @@ function escapeHtml(value){
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function normalizeWhitespace(value){
+  return String(value || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function normalizeSatkerKey(value){
+  return normalizeWhitespace(value).toUpperCase();
+}
+
+function normalizeMethodText(value){
+  return normalizeWhitespace(value);
 }
 
 function formatRupiahShort(value){
@@ -65,146 +79,27 @@ function formatTanggalIndonesia(dateInput){
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function parseMaybeNumber(value){
-  if(typeof value === 'number') return value;
-  const clean = String(value || '').replace(/[^0-9,-]/g, '').replace(/\./g, '').replace(',', '.');
-  const num = Number(clean);
-  return Number.isFinite(num) ? num : 0;
-}
-
 function randomKodeAnggaran(){
-  const blocks = [];
-  const lengths = [1, 2, 2, 2, 4, 1, 2, 2, 2, 4, 1, 2, 2, 2, 4];
-  lengths.forEach(len => {
-    let str = '';
-    for(let i = 0; i < len; i++) str += Math.floor(Math.random() * 10);
-    blocks.push(str);
+  const blocks = [1,2,2,4,1,2,2,4,1,2,2,4].map(len => {
+    let out = '';
+    for(let i = 0; i < len; i++) out += Math.floor(Math.random() * 10);
+    return out;
   });
   return blocks.join('.');
 }
 
 function randomPackageId(){
-  const base = Date.now().toString();
-  return 'PKT' + base.slice(-10);
+  return 'SIMPKT' + Date.now().toString().slice(-10);
 }
 
 function getQueryParam(name){
   return new URLSearchParams(location.search).get(name);
 }
 
-function getStoredPackages(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.packages);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveStoredPackages(list){
-  localStorage.setItem(STORAGE_KEYS.packages, JSON.stringify(list));
-}
-
-function findPackageById(packageId){
-  return getStoredPackages().find(item => item.package_id === packageId) || null;
-}
-
-function updatePackage(packageId, updater){
-  const rows = getStoredPackages();
-  const index = rows.findIndex(item => item.package_id === packageId);
-  if(index === -1) return null;
-  const current = rows[index];
-  const next = typeof updater === 'function' ? updater(current) : { ...current, ...updater };
-  rows[index] = next;
-  saveStoredPackages(rows);
-  return next;
-}
-
-function deletePackage(packageId){
-  const rows = getStoredPackages();
-  const current = rows.find(item => item.package_id === packageId);
-  if(!current || current.has_realisasi) return false;
-  saveStoredPackages(rows.filter(item => item.package_id !== packageId));
-  return true;
-}
-
-function buildPackageFromRup(rupItem){
-  const now = new Date();
-  return {
-    package_id: randomPackageId(),
-    created_at: now.toISOString(),
-    tanggal_buat: formatTanggalIndonesia(now),
-    id_rup: String(rupItem.id_rup || '').trim(),
-    nama_paket: String(rupItem.nama_paket || '').trim(),
-    metode_rup: String(rupItem.metode_rup || '').trim(),
-    pagu: Number(rupItem.pagu || 0),
-    satker: String(rupItem.satker || '').trim(),
-    tahun: String(rupItem.tahun || '').trim(),
-    sumber_dana: String(rupItem.sumber_dana || 'APBD').trim() || 'APBD',
-    status: 'Draft',
-    has_realisasi: false,
-    instansi: APP_CONFIG.defaultInstansi,
-    kode_anggaran: randomKodeAnggaran(),
-    ppk: APP_CONFIG.currentUserName,
-    lokasi_provinsi: 'Jawa Barat',
-    lokasi_kabkota: 'Bogor (Kota)',
-    detail_lokasi: 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah',
-    is_saved: false
-  };
-}
-
-function createPackageFromSelectedRup(rupItem){
-  const pkg = buildPackageFromRup(rupItem);
-  const rows = getStoredPackages();
-  rows.push(pkg);
-  saveStoredPackages(rows);
-  return pkg;
-}
-
-function isTutorialDisabled(){
-  return localStorage.getItem(STORAGE_KEYS.hideTutorial) === '1';
-}
-
-function disableTutorials(){
-  localStorage.setItem(STORAGE_KEYS.hideTutorial, '1');
-}
-
-function enableTutorials(){
-  localStorage.removeItem(STORAGE_KEYS.hideTutorial);
-}
-
-async function ensureDataLoaded(){
-  if(window.SPSE_APP_STATE.dataLoaded) return;
-  const url = `https://docs.google.com/spreadsheets/d/${APP_CONFIG.spreadsheetId}/gviz/tq?gid=${APP_CONFIG.rupMasterGid}&tqx=out:json`;
-  const res = await fetch(url);
-  const text = await res.text();
-  const jsonText = text.substring(47).slice(0, -2);
-  const json = JSON.parse(jsonText);
-  const cols = json.table.cols.map(c => (c.label || '').trim());
-  const rows = json.table.rows.map(row => {
-    const obj = {};
-    cols.forEach((col, idx) => {
-      obj[col] = row.c[idx] ? row.c[idx].v : '';
-    });
-    return obj;
-  });
-  window.SPSE_APP_STATE.allRup = rows.map(item => ({
-    id_rup: String(item.id_rup || '').trim(),
-    nama_paket: String(item.nama_paket || '').trim(),
-    metode_rup: String(item.metode_rup || '').trim(),
-    pagu: Number(item.pagu || 0),
-    satker: String(item.satker || '').trim(),
-    tahun: String(item.tahun || '').trim(),
-    sumber_dana: 'APBD'
-  }));
-  window.SPSE_APP_STATE.dataLoaded = true;
-}
-
 function isMethodMatch(selectedMethod, metodeRup){
   if(!selectedMethod) return true;
   const candidates = METHOD_MAP[selectedMethod] || [selectedMethod];
-  const normalized = String(metodeRup || '').toLowerCase();
+  const normalized = normalizeMethodText(metodeRup).toLowerCase();
   return candidates.some(m => normalized.includes(String(m).toLowerCase()));
 }
 
@@ -231,6 +126,14 @@ function bindLogout(buttonId = 'btnLogout'){
   };
 }
 
+function isTutorialDisabled(){
+  return localStorage.getItem(STORAGE_KEYS.hideTutorial) === '1';
+}
+
+function disableTutorials(){
+  localStorage.setItem(STORAGE_KEYS.hideTutorial, '1');
+}
+
 function setupTutorial(options){
   if(isTutorialDisabled()) return;
   const overlay = document.getElementById(options.overlayId || 'tourOverlay');
@@ -245,14 +148,12 @@ function setupTutorial(options){
   const steps = Array.isArray(options.steps) ? options.steps : [];
   if(!overlay || !highlight || !arrow || !card || !title || !text || !nextBtn || !skipBtn || !steps.length) return;
 
-  let currentIndex = 0;
+  let idx = 0;
 
-  function closeTour(){
-    overlay.style.display = 'none';
-  }
+  function closeTour(){ overlay.style.display = 'none'; }
 
   async function showStep(){
-    const step = steps[currentIndex];
+    const step = steps[idx];
     if(!step) return closeTour();
     if(typeof step.onEnter === 'function') await step.onEnter();
     const target = document.querySelector(step.target);
@@ -266,34 +167,169 @@ function setupTutorial(options){
       highlight.style.height = (rect.height + 16) + 'px';
       title.textContent = step.title || 'Petunjuk';
       text.innerHTML = step.text || '';
-      let left = Math.max(12, Math.min(window.innerWidth - 332, rect.left));
+      let left = Math.max(12, Math.min(window.innerWidth - 352, rect.left));
       let top = step.place === 'top' ? rect.top - 190 : rect.bottom + 26;
       if(top < 12) top = rect.bottom + 26;
-      if(top + 180 > window.innerHeight) top = rect.top - 190;
+      if(top + 170 > window.innerHeight) top = rect.top - 190;
       card.style.left = left + 'px';
       card.style.top = top + 'px';
       arrow.style.left = (rect.left + Math.min(rect.width / 2, 90)) + 'px';
       arrow.style.top = (step.place === 'top' ? rect.top - 26 : rect.bottom + 6) + 'px';
       arrow.style.transform = step.place === 'top' ? 'rotate(180deg)' : 'rotate(0deg)';
-      nextBtn.textContent = currentIndex === steps.length - 1 ? 'Selesai' : 'Lanjut';
-    }, 260);
+      nextBtn.textContent = idx === steps.length - 1 ? 'Selesai' : 'Lanjut';
+    }, 280);
   }
 
-  nextBtn.onclick = () => {
-    currentIndex += 1;
-    if(currentIndex >= steps.length) return closeTour();
-    showStep();
-  };
+  nextBtn.onclick = () => { idx += 1; if(idx >= steps.length) return closeTour(); showStep(); };
   skipBtn.onclick = closeTour;
-  if(hideBtn){
-    hideBtn.onclick = () => {
-      disableTutorials();
-      closeTour();
-    };
-  }
-  window.addEventListener('resize', () => {
-    if(overlay.style.display === 'block') showStep();
-  });
+  if(hideBtn) hideBtn.onclick = () => { disableTutorials(); closeTour(); };
+  window.addEventListener('resize', () => overlay.style.display === 'block' && showStep());
   overlay.style.display = 'block';
   showStep();
+}
+
+async function fetchSheetRows(gid){
+  const url = `https://docs.google.com/spreadsheets/d/${APP_CONFIG.spreadsheetId}/gviz/tq?gid=${gid}&tqx=out:json`;
+  const res = await fetch(url, { cache: 'no-store' });
+  const text = await res.text();
+  const jsonText = text.substring(47).slice(0, -2);
+  const json = JSON.parse(jsonText);
+  const cols = json.table.cols.map(c => normalizeWhitespace(c.label || ''));
+  return json.table.rows.map(row => {
+    const obj = {};
+    cols.forEach((col, idx) => {
+      obj[col] = row.c[idx] ? row.c[idx].v : '';
+    });
+    return obj;
+  });
+}
+
+async function ensureDataLoaded(){
+  if(window.SPSE_APP_STATE.dataLoaded) return;
+  const rows = await fetchSheetRows(APP_CONFIG.rupMasterGid);
+  window.SPSE_APP_STATE.allRup = rows.map(item => ({
+    id_rup: normalizeWhitespace(item.id_rup),
+    nama_paket: normalizeWhitespace(item.nama_paket),
+    metode_rup: normalizeMethodText(item.metode_rup),
+    pagu: Number(item.pagu || 0),
+    satker: normalizeWhitespace(item.satker),
+    satker_key: normalizeSatkerKey(item.satker),
+    tahun: normalizeWhitespace(item.tahun),
+    sumber_dana: normalizeWhitespace(item.sumber_dana || 'APBD') || 'APBD'
+  }));
+  window.SPSE_APP_STATE.dataLoaded = true;
+}
+
+function getUniqueSatkersByYear(tahun){
+  const map = new Map();
+  window.SPSE_APP_STATE.allRup
+    .filter(item => String(item.tahun) === String(tahun) && item.satker)
+    .forEach(item => {
+      if(!map.has(item.satker_key)) map.set(item.satker_key, item.satker);
+    });
+  return [...map.values()].sort((a, b) => a.localeCompare(b, 'id'));
+}
+
+function filterRupRows({ tahun, satker, metode }){
+  const satkerKey = normalizeSatkerKey(satker);
+  return window.SPSE_APP_STATE.allRup.filter(item => (
+    String(item.tahun) === String(tahun) &&
+    item.satker_key === satkerKey &&
+    isMethodMatch(metode, item.metode_rup)
+  ));
+}
+
+function setDraftPackage(pkg){
+  sessionStorage.setItem(STORAGE_KEYS.draftPackage, JSON.stringify(pkg));
+}
+
+function getDraftPackage(){
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEYS.draftPackage);
+    return raw ? JSON.parse(raw) : null;
+  } catch(error){
+    return null;
+  }
+}
+
+function clearDraftPackage(){
+  sessionStorage.removeItem(STORAGE_KEYS.draftPackage);
+}
+
+function buildDraftPackageFromRup(rupItem){
+  const now = new Date();
+  return {
+    id_simulasi: randomPackageId(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+    kode_rup: normalizeWhitespace(rupItem.id_rup),
+    nama_paket: normalizeWhitespace(rupItem.nama_paket),
+    satker: normalizeWhitespace(rupItem.satker),
+    tahun: normalizeWhitespace(rupItem.tahun),
+    metode_pemilihan: normalizeMethodText(rupItem.metode_rup),
+    sumber_dana: normalizeWhitespace(rupItem.sumber_dana || 'APBD') || 'APBD',
+    pagu: Number(rupItem.pagu || 0),
+    kode_anggaran: randomKodeAnggaran(),
+    ppk: APP_CONFIG.currentUserName,
+    instansi: APP_CONFIG.defaultInstansi,
+    status_paket: 'Draft',
+    status_realisasi: 'Belum Ada Realisasi',
+    can_delete: 'YA',
+    lokasi_provinsi: 'Jawa Barat',
+    lokasi_kab_kota: 'Bogor (Kota)',
+    detail_lokasi: 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah',
+    isian_edit_selesai: 'BELUM'
+  };
+}
+
+async function loadPackageRows(){
+  try {
+    const rows = await fetchSheetRows(APP_CONFIG.packageSheetGid);
+    window.SPSE_APP_STATE.packageRows = rows.filter(row => normalizeWhitespace(row.id_simulasi));
+    return window.SPSE_APP_STATE.packageRows;
+  } catch(error) {
+    window.SPSE_APP_STATE.packageRows = [];
+    return [];
+  }
+}
+
+function findLoadedPackageById(id){
+  return (window.SPSE_APP_STATE.packageRows || []).find(item => normalizeWhitespace(item.id_simulasi) === normalizeWhitespace(id)) || null;
+}
+
+function buildApiUrl(params){
+  const url = new URL(APP_CONFIG.apiUrl);
+  Object.entries(params || {}).forEach(([key, value]) => url.searchParams.set(key, value));
+  return url.toString();
+}
+
+async function savePackageToSheet(pkg){
+  if(!APP_CONFIG.apiUrl) throw new Error('API_URL_EMPTY');
+  const payload = {
+    action: 'savePackage',
+    data: {
+      ...pkg,
+      updated_at: new Date().toISOString()
+    }
+  };
+  const res = await fetch(APP_CONFIG.apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const json = await res.json();
+  if(!json.success) throw new Error(json.message || 'Gagal menyimpan paket');
+  return json;
+}
+
+async function deletePackageFromSheet(idSimulasi){
+  if(!APP_CONFIG.apiUrl) throw new Error('API_URL_EMPTY');
+  const res = await fetch(APP_CONFIG.apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'deletePackage', id_simulasi: idSimulasi })
+  });
+  const json = await res.json();
+  if(!json.success) throw new Error(json.message || 'Gagal menghapus paket');
+  return json;
 }
