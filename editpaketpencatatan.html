@@ -1,123 +1,227 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulasi SPSE - Edit Paket</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body class="page-shell">
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand"><div class="brand-icon">SPSE</div><div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div></div>
-      <div class="logo-kota">Kota Bogor</div>
-    </div>
-    <div class="nav">
-      <a href="home.html">BERANDA</a><a href="#" class="active">DAFTAR PAKET</a><a href="#">AMEL</a><a href="#">INBOX</a><a href="#">LOG AKSES</a><a href="#">GANTI PASSWORD</a>
-      <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
-    </div>
-    <div class="system-bar"><div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div><div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div></div>
-  </div>
+!DOCTYPE html
+html lang=id
+head
+  meta charset=UTF-8
+  meta name=viewport content=width=device-width, initial-scale=1.0
+  titleSimulasi SPSE - Edit Pakettitle
+  link rel=stylesheet href=style.css
+head
+body class=page-shell
+  div class=topbar
+    div class=topbar-inner
+      div class=brand
+        div class=brand-iconSPSEdiv
+        div class=brand-textdiv class=brand-mainINAPROCdivdiv class=brand-subSPSEdivdiv
+      div
+      div class=logo-kotaKota Bogordiv
+    div
+    div class=nav
+      a href=home.htmlBERANDAa
+      a href=# class=activeDAFTAR PAKETa
+      a href=#AMELa
+      a href=#INBOXa
+      a href=#LOG AKSESa
+      a href=#GANTI PASSWORDa
+      div class=nav-rightbutton class=btn-logout id=btnLogout⏻ LOGOUTbuttondiv
+    div
+    div class=system-bar
+      div class=left-minispan style=font-weight700;⇵spanspan class=mini-link▣ Petunjuk Penggunaanspanspan class=mini-linkAplikasi e-Procurement Lainnyaspandiv
+      div class=right-minispana href=# style=color#315ec9; data-user-namePPKa - span data-user-rolePejabat Pembuat Komitmenspanspanspanspanspana href=# style=color#315ec9;🔑 Enable 2FAaspanspan✉️spanspan class=notif-badge15spanspan style=color#21a55b;⬢spandiv
+    div
+  div
 
-  <div class="edit-block" style="margin-top:22px;">
-    <div class="crumb"><span class="blue">Daftar Paket</span> » <span id="crumbEdit">Edit Paket</span></div>
-    <div id="saveNotice" class="notice-success-inline hidden"></div>
+  div class=edit-block style=margin-top22px;
+    div class=crumbspan class=blueDaftar Paketspan » Edit Pencatatan Non Tenderdiv
+    div id=saveNotice class=notice-success-inline hiddenPaket berhasil disimpandiv
+    div class=notice id=topGuidestrongPentingstrongbrPaket Pencatatan Non Tender wajib diisi dengan lengkap.div
 
-    <table class="edit-table">
-      <tr>
-        <td class="edit-left-label">Rencana Umum Pengadaan</td>
-        <td>
-          <table class="edit-mini-table" style="margin-bottom:8px;">
-            <tr><th style="width:120px;">Kode RUP</th><th>Nama Paket</th><th style="width:260px;">Sumber Dana</th></tr>
-            <tr><td id="viewKodeRup"></td><td id="viewNamaPaketTop"></td><td id="viewSumberDana"></td></tr>
-          </table>
-          <div style="margin-bottom:8px;"><button class="btn-gray" type="button">◉ Tambah Rencana Pengadaan</button> <button class="btn-gray" type="button">Update Rencana Pengadaan</button></div>
-        </td>
-      </tr>
-      <tr><td class="edit-left-label">K/L/PD/Instansi Lainnya</td><td id="viewInstansi"></td></tr>
-      <tr><td class="edit-left-label">Satuan Kerja</td><td id="viewSatker"></td></tr>
-      <tr>
-        <td class="edit-left-label">Anggaran</td>
-        <td>
-          <table class="edit-mini-table">
-            <tr><th style="width:90px;">Tahun</th><th style="width:180px;">Sumber Dana</th><th>Kode Anggaran</th><th style="width:160px;">Nilai</th><th style="width:160px;">PPK</th></tr>
-            <tr><td id="viewTahun"></td><td id="viewSumberDana2"></td><td id="viewKodeAnggaran"></td><td id="viewNilai"></td><td id="viewPpk"></td></tr>
-          </table>
-        </td>
-      </tr>
-      <tr><td class="edit-left-label">Nama Paket <span class="req">*</span></td><td><textarea id="inputNamaPaket" class="textarea-control"></textarea></td></tr>
-      <tr><td class="edit-left-label">Nilai Pagu Paket</td><td id="viewNilaiPagu"></td></tr>
-      <tr>
-        <td class="edit-left-label">Realisasi</td>
-        <td>
-          <table class="edit-mini-table" id="realisasiTable">
-            <thead><tr><th style="width:36px;">No.</th><th>Jenis Realisasi</th><th style="width:180px;">Nilai Realisasi</th><th style="width:180px;">Tanggal Realisasi</th><th style="width:70px;"></th></tr></thead>
-            <tbody id="realisasiBody"><tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr></tbody>
-          </table>
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:8px;flex-wrap:wrap;">
-            <button class="btn-gray" id="btnTambahRealisasi" type="button">＋ Tambah Realisasi</button>
-            <div style="border:1px solid #d8dfe7;padding:6px 10px;font-size:12px;background:#fafafa;">Total Nilai Realisasi:<br><strong id="totalRealisasiBox">Rp. 0,00</strong></div>
-          </div>
-        </td>
-      </tr>
-      <tr><td class="edit-left-label">Nilai Produk Dalam Negeri (PDN) (Rp.)</td><td><input id="inputPdn" class="text-control field-slim" style="max-width:250px;"></td></tr>
-      <tr><td class="edit-left-label">Nilai Usaha Mikro Kecil (UMK) (Rp.)</td><td><input id="inputUmk" class="text-control field-slim" style="max-width:250px;"></td></tr>
-      <tr><td class="edit-left-label">Tanggal Paket Selesai <span class="req">*</span></td><td><input id="inputTanggalSelesai" class="text-control field-slim" style="max-width:250px;" placeholder="dd-mm-yyyy"><div class="notice-yellow" style="margin:8px 0 0 0;">Tanggal Paket Selesai adalah Tanggal berakhirnya Kontrak.</div></td></tr>
-      <tr><td class="edit-left-label">Lokasi Pekerjaan <span class="req">*</span></td><td><table class="edit-mini-table" style="margin-bottom:8px;"><tr><th style="width:170px;">Provinsi <span class="req">*</span></th><th style="width:270px;">Kabupaten/Kota <span class="req">*</span></th><th>Detail Lokasi <span class="req">*</span></th></tr><tr><td><select id="inputProvinsi" class="select-control field-slim"><option>Jawa Barat</option></select></td><td><select id="inputKabKota" class="select-control field-slim"><option>Bogor (Kota)</option></select></td><td><input id="inputDetailLokasi" class="text-control field-slim"></td></tr></table><button class="btn-gray" type="button">◉ Tambah Lokasi</button></td></tr>
-    </table>
+    table class=edit-table
+      trtd class=edit-left-labelKode Pakettdtd id=viewKodePakettdtr
+      trtd class=edit-left-labelNama Pakettdtdspan id=viewNamaPaketTopspan span style=displayinline-block;background#697785;color#fff;font-size11px;padding2px 6px;border-radius3px;Detilspantdtr
+      trtd class=edit-left-labelJenis Pengadaantdtdselect class=select-control field-slim style=max-width230px;optionJasa Lainnyaoptionselecttdtr
+      trtd class=edit-left-labelMetode Pemilihantdtdselect id=inputMetode class=select-control field-slim style=max-width160px;optionPengecualianoptionoptionPengadaan LangsungoptionoptionPenunjukan LangsungoptionoptionDaruratoptionselecttdtr
+      trtd class=edit-left-labelNilai Pagutdtd id=viewNilaiPagutdtr
+      tr
+        td class=edit-left-labelRencana Umum Pengadaantd
+        td
+          table class=edit-mini-table style=margin-bottom8px;
+            theadtrth style=width120px;Kode RUPththNama Paketthth style=width210px;Sumber Danathtrthead
+            tbody id=rencanaTableBodytbody
+          table
+          div style=margin-bottom8px;button class=btn-gray id=btnAddRencana type=button◉ Tambah Rencana Pengadaanbutton button class=btn-gray id=btnUpdateRencana type=buttonUpdate Rencana Pengadaanbuttondiv
+        td
+      tr
+      trtd class=edit-left-labelKLPDInstansi Lainnyatdtd id=viewInstansitdtr
+      trtd class=edit-left-labelSatuan Kerjatdtd id=viewSatkertdtr
+      tr
+        td class=edit-left-labelAnggarantd
+        td
+          table class=edit-mini-table
+            trth style=width90px;Tahunthth style=width170px;Sumber DanaththKode Anggaranthth style=width150px;Nilaithth style=width150px;PPKthtr
+            trtd id=viewTahuntdtd id=viewSumberDana2tdtd id=viewKodeAnggarantdtd id=viewNilaitdtd id=viewPpktdtr
+          table
+        td
+      tr
+      tr
+        td class=edit-left-labelRealisasitd
+        td
+          table class=edit-mini-table style=margin-bottom8px;
+            trth style=width40px;No.ththJenis Realisasithth style=width220px;Nilai Realisasithth style=width220px;Tanggal Realisasithtr
+            tbody id=realisasiBodytrtd colspan=4 style=text-alignleft;Belum ada realisasi.tdtrtbody
+          table
+          div style=displayflex;justify-contentspace-between;align-itemsflex-start;gap12px;flex-wrapwrap;
+            button class=btn-gray id=btnTambahRealisasi type=button＋ Tambah Realisasibutton
+            div style=border1px solid #d8dfe7;padding6px 8px;min-width120px;strongTotal Nilai Realisasistrongbrspan id=viewTotalRealisasiRp. 0,00spandiv
+          div
+        td
+      tr
+      trtd class=edit-left-labelNilai Produk Dalam Negeri (PDN) (Rp.)tdtdinput id=inputPdn class=text-control field-slim style=max-width200px;tdtr
+      trtd class=edit-left-labelNilai Usaha Mikro Kecil (UMK) (Rp.)tdtdinput id=inputUmk class=text-control field-slim style=max-width200px;tdtr
+      tr
+        td class=edit-left-labelTanggal Paket Selesai span class=reqspantd
+        td
+          div class=inline-field style=margin-bottom6px;
+            input id=inputTanggalSelesai class=text-control field-slim style=max-width180px;
+            button class=refresh-btn id=btnTanggalSelesai type=button🗓button
+            span style=displayinline-block;background#ef9b2d;color#fff;font-size11px;padding2px 6px;border-radius3px;1 kali perubahanspan
+          div
+          label style=displayblock;margin0 0 6px 0;font-size12px;input type=checkbox id=toggleUbahTanggal Ubah Tanggal Selesailabel
+          div id=alasanTanggalWrap class=hidden style=max-width280px;
+            div style=color#d92e4c;font-size12px;font-weight700;margin-bottom4px;Alasan wajib diisi jika ada perubahan tanggal paket selesaidiv
+            textarea id=inputAlasanTanggal class=textarea-control style=height66px;textarea
+          div
+          div class=notice-yellow style=margin-top10px;Tanggal Paket Selesai adalah Tanggal berakhirnya Kontrak.div
+        td
+      tr
+      trtd class=edit-left-labelUraian Pekerjaantdtddiv style=height134px;border1px solid #d8dfe7;background#fff;divtdtr
+      trtd class=edit-left-labelStatus Pakettdtd id=viewStatusPakettdtr
+    table
 
-    <div class="action-bottom"><button class="btn-green" id="btnSavePackage" type="button">◘ Simpan dan Membuat Paket</button><button class="btn-back" id="btnBackList" type="button">◀ Kembali</button></div>
-  </div>
-<script src="app.js"></script>
-<script>
-if(!requireLogin()){}
-bindLogout();
-let currentPackage = null; let realisasiRows = [];
-const packageId = getQueryParam('id');
-async function initPackage(){
-  if(packageId){ await loadPackageRows(); currentPackage = findLoadedPackageById(packageId); }
-  else { currentPackage = getDraftPackage(); }
-  if(!currentPackage){ location.href='pencatatannontender.html'; return; }
-  document.title = 'EDIT-' + (currentPackage.kode_rup || currentPackage.id_simulasi || 'PAKET');
-  document.getElementById('crumbEdit').textContent = 'Edit(' + (currentPackage.kode_rup || currentPackage.id_simulasi || 'Paket') + ')';
-  renderPackage();
-  if(currentPackage.id_simulasi){ await loadRealisasi(); }
-}
-function renderPackage(){
-  viewKodeRup.textContent=currentPackage.kode_rup||''; viewNamaPaketTop.textContent=currentPackage.nama_paket||''; viewSumberDana.textContent=currentPackage.sumber_dana||'APBD';
-  viewInstansi.textContent=currentPackage.instansi||APP_CONFIG.defaultInstansi; viewSatker.textContent=currentPackage.satker||''; viewTahun.textContent=currentPackage.tahun||APP_CONFIG.defaultTahun; viewSumberDana2.textContent=currentPackage.sumber_dana||'APBD'; viewKodeAnggaran.textContent=currentPackage.kode_anggaran||''; viewNilai.textContent=formatRupiahFull(currentPackage.pagu||0); viewPpk.textContent=currentPackage.ppk||APP_CONFIG.currentUserName; viewNilaiPagu.textContent=formatRupiahFull(currentPackage.pagu||0);
-  inputNamaPaket.value=currentPackage.nama_paket||''; inputProvinsi.value=currentPackage.lokasi_provinsi||'Jawa Barat'; inputKabKota.value=currentPackage.lokasi_kab_kota||'Bogor (Kota)'; inputDetailLokasi.value=currentPackage.detail_lokasi||'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah';
-  inputPdn.value=formatRupiahInput(parseRupiahInput(currentPackage.pdn_realisasi||0)); inputUmk.value=formatRupiahInput(parseRupiahInput(currentPackage.umk_realisasi||0)); inputTanggalSelesai.value=currentPackage.tanggal_paket_selesai||'';
-}
-async function loadRealisasi(){ try{ realisasiRows = await getRealisasiRows(currentPackage.id_simulasi); }catch(e){ realisasiRows=[]; } renderRealisasi(); }
-async function renderRealisasi(){
-  const providersMap = {};
-  for(const row of realisasiRows){
-    try { const p = await getProviderRows(row.id_realisasi); providersMap[row.id_realisasi] = p.length; } catch(err){ providersMap[row.id_realisasi] = 0; }
+    div class=action-bottom
+      button class=btn-green id=btnSavePackage type=button◘ Simpanbutton
+      button class=btn-red id=btnCancelPackage type=buttonPaket Batalbutton
+      button class=btn-back id=btnBackList type=button◀ Kembalibutton
+    div
+  div
+
+  div id=tourOverlay class=tour-overlaydiv id=tourHighlight class=tour-highlightdivdiv id=tourArrow class=tour-arrowdivdiv id=tourCard class=tour-cardh4 id=tourTitlePetunjukh4p id=tourTextpdiv class=tour-actionsbutton class=tour-btn ghost id=tourNeverBtnJangan Munculkanbuttonbutton class=tour-btn secondary id=tourSkipBtnLewatibuttonbutton class=tour-btn primary id=tourNextBtnLanjutbuttondivdivdiv
+script src=app.jsscript
+script
+  if(!requireLogin()) {}
+  bindLogout();
+  let currentPackage = null;
+  const packageId = getQueryParam('id');
+
+  function getStatusByTanggal(tanggalIso){
+    if(!tanggalIso) return 'Draft';
+    return tanggalIso = todayIso()  'Paket Sudah Selesai'  'Paket Sedang Berjalan';
   }
-  if(!realisasiRows.length){ realisasiBody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>'; totalRealisasiBox.textContent = 'Rp. 0,00'; return; }
-  let total = 0;
-  realisasiBody.innerHTML = realisasiRows.map((row, idx) => { total += Number(row.nilai_realisasi||0); return `<tr><td>${idx+1}</td><td>${escapeHtml(row.jenis_realisasi||'')} ${providersMap[row.id_realisasi] ? '<span class="pill-method" style="background:#20b46a;">Sudah Pilih Penyedia</span>' : ''}</td><td>${escapeHtml(formatRupiahFull(row.nilai_realisasi||0))}</td><td>${escapeHtml(row.tanggal_realisasi||'')}</td><td><button class="btn-red btnDelRealisasi" data-id="${escapeHtml(row.id_realisasi)}">Hapus</button></td></tr>`; }).join('');
-  totalRealisasiBox.textContent = formatRupiahFull(total);
-  document.querySelectorAll('.btnDelRealisasi').forEach(btn => btn.onclick = async ()=>{ if(!confirm('Hapus realisasi ini?')) return; await deleteRealisasiRow(btn.dataset.id); await loadRealisasi(); await loadPackageRows(); currentPackage = findLoadedPackageById(currentPackage.id_simulasi) || currentPackage; });
-}
-btnTambahRealisasi.onclick = ()=>{
-  if(!currentPackage.id_simulasi){ alert('Simpan paket dulu sebelum menambah realisasi.'); return; }
-  location.href = 'formrealisasi.html?id=' + encodeURIComponent(currentPackage.id_simulasi);
-};
-btnSavePackage.onclick = async ()=>{
-  const inputNamaPaketVal = inputNamaPaket.value.trim();
-  const inputDetailLokasiVal = inputDetailLokasi.value.trim();
-  const tanggalSelesai = inputTanggalSelesai.value.trim();
-  if(!inputNamaPaketVal || !inputDetailLokasiVal || !tanggalSelesai){ alert('Nama Paket, Detail Lokasi, dan Tanggal Paket Selesai wajib diisi.'); return; }
-  const statusByDate = compareDateToToday(tanggalSelesai);
-  const payload = {...currentPackage, nama_paket:inputNamaPaketVal, lokasi_provinsi:inputProvinsi.value, lokasi_kab_kota:inputKabKota.value, detail_lokasi:inputDetailLokasiVal, pdn_realisasi: parseRupiahInput(inputPdn.value||0), umk_realisasi: parseRupiahInput(inputUmk.value||0), tanggal_paket_selesai: tanggalSelesai, isian_edit_selesai:'SUDAH', status_paket: statusByDate === 'selesai' ? 'Paket Sudah Selesai' : 'Paket Sedang Berjalan', status_realisasi: realisasiRows.length ? 'Sudah Ada Realisasi' : 'Belum Ada Realisasi', can_delete: realisasiRows.length ? 'TIDAK' : 'YA' };
-  try{ await savePackageToSheet(payload); clearDraftPackage(); currentPackage = payload; saveNotice.textContent='Paket berhasil di simpan'; saveNotice.classList.remove('hidden'); history.replaceState({},'', 'editpaketpencatatan.html?id='+encodeURIComponent(payload.id_simulasi)); await loadPackageRows(); }
-  catch(error){ alert(error.message === 'API_URL_EMPTY' ? 'Isi APP_CONFIG.apiUrl dulu lalu deploy Apps Script Web App.' : error.message); }
-};
-btnBackList.onclick = ()=> location.href='pencatatannontender.html';
-['inputPdn','inputUmk'].forEach(id => document.getElementById(id).addEventListener('blur', e => { e.target.value = formatRupiahInput(parseRupiahInput(e.target.value||0)); }));
-initPackage();
-</script>
-</body>
-</html>
+  function renderRencanaRows(){
+    const items = getPackageRencanaItems(currentPackage);
+    const body = document.getElementById('rencanaTableBody');
+    body.innerHTML = items.map(item = `trtd${escapeHtml(item.kode_rup)}tdtd${escapeHtml(item.nama_paket)}tdtd${escapeHtml(item.sumber_dana  'APBD')}tdtr`).join('')  'trtd colspan=3Belum ada data RUP.tdtr';
+  }
+  function renderRealisasiRows(){
+    const data = currentPackage.realisasi_rows  [];
+    const body = document.getElementById('realisasiBody');
+    if(!data.length){
+      body.innerHTML = 'trtd colspan=4 style=text-alignleft;Belum ada realisasi.tdtr';
+      document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(0);
+      return;
+    }
+    body.innerHTML = data.map((row, idx) = `trtd${idx + 1}tdtd${escapeHtml(row.jenis  '')}tdtd${escapeHtml(row.nilai  '')}tdtd${escapeHtml(row.tanggal  '')}tdtr`).join('');
+    const total = data.reduce((sum, row) = sum + Number(row.nilai_number  0), 0);
+    document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(total);
+  }
+  function syncTanggalControls(){
+    const lock = normalizeWhitespace(currentPackage.tanggal_selesai_lock  'BELUM');
+    const input = document.getElementById('inputTanggalSelesai');
+    const btn = document.getElementById('btnTanggalSelesai');
+    const toggle = document.getElementById('toggleUbahTanggal');
+    const alasanWrap = document.getElementById('alasanTanggalWrap');
+    const allowEdit = lock !== 'SUDAH'  toggle.checked;
+    input.disabled = !allowEdit;
+    btn.disabled = !allowEdit;
+    alasanWrap.classList.toggle('hidden', !toggle.checked);
+  }
+  function renderPackage(){
+    const firstKode = normalizeWhitespace(String(currentPackage.kode_rup).split('')[0]);
+    document.title = 'EDIT-' + firstKode;
+    document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi  '';
+    document.getElementById('viewNamaPaketTop').textContent = currentPackage.nama_paket  '';
+    document.getElementById('viewInstansi').textContent = currentPackage.instansi  APP_CONFIG.defaultInstansi;
+    document.getElementById('viewSatker').textContent = currentPackage.satker  '';
+    document.getElementById('viewTahun').textContent = currentPackage.tahun  APP_CONFIG.defaultTahun;
+    document.getElementById('viewSumberDana2').textContent = currentPackage.sumber_dana  'APBD';
+    document.getElementById('viewKodeAnggaran').textContent = currentPackage.kode_anggaran  '';
+    document.getElementById('viewNilai').textContent = formatRupiahFull(currentPackage.pagu  0);
+    document.getElementById('viewPpk').textContent = currentPackage.ppk  APP_CONFIG.currentUserName;
+    document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu  0);
+    document.getElementById('inputMetode').value = currentPackage.metode_pemilihan  'Pengecualian';
+    document.getElementById('inputPdn').value = currentPackage.pdn  '0,00';
+    document.getElementById('inputUmk').value = currentPackage.umk  '0,00';
+    document.getElementById('inputTanggalSelesai').value = formatDateInput(currentPackage.tanggal_paket_selesai  '');
+    document.getElementById('inputAlasanTanggal').value = currentPackage.alasan_perubahan_tanggal  '';
+    document.getElementById('viewStatusPaket').textContent = currentPackage.status_paket  'Draft';
+    renderRencanaRows();
+    renderRealisasiRows();
+    syncTanggalControls();
+  }
+
+  async function initPackage(){
+    if(packageId){
+      await loadPackageRows();
+      currentPackage = findLoadedPackageById(packageId);
+    } else {
+      currentPackage = getDraftPackage();
+    }
+    if(!currentPackage){
+      location.href = 'pencatatannontender.html';
+      return;
+    }
+    if(!currentPackage.tanggal_selesai_lock) currentPackage.tanggal_selesai_lock = currentPackage.tanggal_paket_selesai  'SUDAH'  'BELUM';
+    if(!Array.isArray(currentPackage.realisasi_rows)) currentPackage.realisasi_rows = [];
+    renderPackage();
+  }
+
+  bindDatePickerInput(document.getElementById('inputTanggalSelesai'), document.getElementById('btnTanggalSelesai'));
+  document.getElementById('toggleUbahTanggal').addEventListener('change', syncTanggalControls);
+  document.getElementById('btnAddRencana').onclick = () = location.href = 'rencanapencatatan.htmlmode=add&id=' + encodeURIComponent(currentPackage.id_simulasi);
+  document.getElementById('btnUpdateRencana').onclick = () = location.href = 'rencanapencatatan.htmlmode=update&id=' + encodeURIComponent(currentPackage.id_simulasi);
+  document.getElementById('btnTambahRealisasi').onclick = () = location.href = 'formrealisasi.htmlid=' + encodeURIComponent(currentPackage.id_simulasi);
+  document.getElementById('btnBackList').onclick = () = location.href = 'pencatatannontender.html';
+  document.getElementById('btnCancelPackage').onclick = () = location.href = 'pencatatannontender.html';
+  document.getElementById('btnSavePackage').onclick = async () = {
+    const tanggalText = document.getElementById('inputTanggalSelesai').value;
+    const tanggalIso = parseDateInput(tanggalText);
+    if(!tanggalIso) return alert('Tanggal Paket Selesai wajib dipilih.');
+    if(document.getElementById('toggleUbahTanggal').checked && !normalizeWhitespace(document.getElementById('inputAlasanTanggal').value)) return alert('Alasan perubahan tanggal wajib diisi.');
+    currentPackage.metode_pemilihan = document.getElementById('inputMetode').value;
+    currentPackage.pdn = document.getElementById('inputPdn').value.trim()  '0,00';
+    currentPackage.umk = document.getElementById('inputUmk').value.trim()  '0,00';
+    currentPackage.tanggal_paket_selesai = tanggalIso;
+    currentPackage.tanggal_selesai_lock = 'SUDAH';
+    currentPackage.alasan_perubahan_tanggal = document.getElementById('toggleUbahTanggal').checked  document.getElementById('inputAlasanTanggal').value.trim()  (currentPackage.alasan_perubahan_tanggal  '');
+    currentPackage.status_paket = getStatusByTanggal(tanggalIso);
+    currentPackage.updated_at = new Date().toISOString();
+    savePackageCache(currentPackage);
+    await savePackageToSheet(currentPackage);
+    document.getElementById('saveNotice').classList.remove('hidden');
+    document.getElementById('toggleUbahTanggal').checked = false;
+    renderPackage();
+    window.scrollTo({ top 0, behavior 'smooth' });
+  };
+
+  initPackage().then(() = {
+    setupTutorial({
+      steps [
+        { target'#btnAddRencana', title'Langkah 1', text'Tombol bTambah Rencana Pengadaanb dipakai untuk menambahkan kode RUP baru agar pagu paket ikut bertambah.', place'bottom' },
+        { target'#btnUpdateRencana', title'Langkah 2', text'Tombol bUpdate Rencana Pengadaanb dipakai untuk mengganti RUP lama dengan RUP terbaru.', place'bottom' },
+        { target'#inputTanggalSelesai', title'Langkah 3', text'bTanggal Paket Selesaib dipilih dari kalender, bukan diketik. Jika sudah terisi dan ingin mengubah, centang bUbah Tanggal Selesaib lalu isi alasan perubahan.', place'top' },
+        { target'#btnTambahRealisasi', title'Langkah 4', text'Klik bTambah Realisasib untuk masuk ke form realisasi tahap berikutnya.', place'bottom' }
+      ]
+    });
+  });
+script
+body
+html
