@@ -9,97 +9,451 @@
 <body class="page-shell">
   <div class="topbar">
     <div class="topbar-inner">
-      <div class="brand"><div class="brand-icon">SPSE</div><div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div></div>
+      <div class="brand">
+        <div class="brand-icon">SPSE</div>
+        <div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div>
+      </div>
       <div class="logo-kota">Kota Bogor</div>
     </div>
     <div class="nav">
-      <a href="home.html">BERANDA</a><a href="#" class="active">DAFTAR PAKET</a><a href="#">AMEL</a><a href="#">INBOX</a><a href="#">LOG AKSES</a><a href="#">GANTI PASSWORD</a>
+      <a href="home.html">BERANDA</a>
+      <a href="#" class="active">DAFTAR PAKET</a>
+      <a href="#">AMEL</a>
+      <a href="#">INBOX</a>
+      <a href="#">LOG AKSES</a>
+      <a href="#">GANTI PASSWORD</a>
       <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
     </div>
-    <div class="system-bar"><div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div><div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div></div>
+    <div class="system-bar">
+      <div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div>
+      <div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div>
+    </div>
   </div>
 
-  <div class="edit-block" style="margin-top:22px;">
-    <div class="crumb"><span class="blue">Beranda</span> » Edit Paket » Form Realisasi</div>
-    <div class="notice" id="guideNotice"><strong>Tata Cara:</strong><br>Isi field yang bertanda <span class="req">*</span>. Semua tanggal dipilih lewat kalender. Nilai realisasi pakai format seperti <strong>100.000,00</strong>.</div>
-    <table class="edit-table">
-      <tr><td class="edit-left-label">Kode Paket</td><td id="viewKodePaket"></td></tr>
-      <tr><td class="edit-left-label">Nama Paket</td><td id="viewNamaPaket"></td></tr>
-      <tr><td class="edit-left-label">Nilai Pagu</td><td id="viewPagu"></td></tr>
-      <tr><td class="edit-left-label">Total Nilai Realisasi</td><td id="viewTotal"></td></tr>
-      <tr><td class="edit-left-label">Status Paket</td><td id="viewStatus"></td></tr>
-      <tr><td class="edit-left-label">Bukti Pembayaran</td><td><select id="inputBukti" class="select-control field-slim" style="max-width:170px;"><option>Non SPK</option><option>SPK</option></select></td></tr>
-      <tr><td class="edit-left-label">Jenis Realisasi</td><td><select id="inputJenis" class="select-control field-slim"><option>Bukti Pembelian</option><option>Kuitansi</option><option>Surat Perjanjian</option><option>Surat Pesanan</option><option>Dokumen Lainnya</option></select></td></tr>
-      <tr><td class="edit-left-label">Nama Dokumen <span class="req">*</span></td><td><input id="inputNamaDok" class="text-control field-slim"></td></tr>
-      <tr><td class="edit-left-label">Nomor Dokumen</td><td><input id="inputNomorDok" class="text-control field-slim"></td></tr>
-      <tr><td class="edit-left-label">Nilai Realisasi (Rp) <span class="req">*</span></td><td><input id="inputNilai" class="text-control field-slim"><div class="notice-yellow" style="margin-top:8px;">Gunakan koma untuk pemisah desimal.</div></td></tr>
-      <tr><td class="edit-left-label">Tanggal Realisasi <span class="req">*</span></td><td><div class="inline-field"><input id="inputTanggal" class="text-control field-slim" style="max-width:180px;"><button class="refresh-btn" id="btnTanggal" type="button">🗓</button></div></td></tr>
-      <tr><td class="edit-left-label">Keterangan</td><td><textarea id="inputKet" class="textarea-control" style="height:56px;"></textarea></td></tr>
+  <div class="content-block" style="margin-top:22px;">
+    <div class="crumb"><span class="blue">Beranda</span> » <span class="blue">Edit Paket</span> » Form Realisasi</div>
+
+    <div class="notice" style="padding:12px 14px;">
+      <strong>Tata Cara:</strong><br>
+      Isi field yang bertanda <span class="req">*</span>. Semua tanggal dipilih lewat kalender. Nilai realisasi pakai format seperti 100.000,00.
+    </div>
+
+    <div id="successReal" class="notice" style="display:none;background:#dff0d8;border-color:#cbe7be;color:#2f6f2f;">
+      Berhasil simpan Realisasi
+    </div>
+
+    <table class="form-table">
+      <tr><td class="form-label">Kode Paket</td><td class="form-field" id="viewKodePaket"></td></tr>
+      <tr><td class="form-label">Nama Paket</td><td class="form-field" id="viewNamaPaket"></td></tr>
+      <tr><td class="form-label">Nilai Pagu</td><td class="form-field" id="viewPagu"></td></tr>
+      <tr><td class="form-label">Total Nilai Realisasi</td><td class="form-field" id="viewTotalRealisasi">Rp. 0,00</td></tr>
+      <tr><td class="form-label">Status Paket</td><td class="form-field" id="viewStatusPaket">Draft</td></tr>
+
+      <tr>
+        <td class="form-label">Bukti Pembayaran</td>
+        <td class="form-field">
+          <select id="inputBuktiPembayaran" class="select-control" style="max-width:140px;">
+            <option value="Non SPK">Non SPK</option>
+            <option value="SPK">SPK</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="form-label">Jenis Realisasi</td>
+        <td class="form-field">
+          <select id="inputJenisRealisasi" class="select-control">
+            <option value="Bukti Pembelian">Bukti Pembelian</option>
+            <option value="Kuitansi">Kuitansi</option>
+            <option value="Surat Perjanjian">Surat Perjanjian</option>
+            <option value="Surat Pesanan">Surat Pesanan</option>
+            <option value="Dokumen Lainnya">Dokumen Lainnya</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="form-label">Nama Dokumen <span class="req">*</span></td>
+        <td class="form-field"><input type="text" id="inputNamaDokumen" class="text-control"></td>
+      </tr>
+
+      <tr>
+        <td class="form-label">Nomor Dokumen</td>
+        <td class="form-field"><input type="text" id="inputNomorDokumen" class="text-control"></td>
+      </tr>
+
+      <tr>
+        <td class="form-label">Nilai Realisasi (Rp) <span class="req">*</span></td>
+        <td class="form-field">
+          <input type="text" id="inputNilaiRealisasi" class="text-control" placeholder="100.000,00">
+          <div class="notice-yellow" style="margin-top:4px;">Gunakan koma untuk pemisah desimal.</div>
+        </td>
+      </tr>
+
+      <tr>
+        <td class="form-label">Tanggal Realisasi <span class="req">*</span></td>
+        <td class="form-field">
+          <input type="date" id="inputTanggalRealisasi" class="text-control" style="max-width:200px;">
+        </td>
+      </tr>
+
+      <tr>
+        <td class="form-label">Keterangan</td>
+        <td class="form-field"><textarea id="inputKeterangan" class="textarea-control" style="height:74px;"></textarea></td>
+      </tr>
+
+      <tr id="providerRow" style="display:none;">
+        <td class="form-label" style="vertical-align:top;">Pilih Penyedia</td>
+        <td class="form-field">
+          <div style="margin-bottom:10px;">
+            <select id="selectProviderMode" class="select-control" style="max-width:180px;">
+              <option value="Data Non SIKaP">Data Non SIKaP</option>
+              <option value="Data SIKaP">Data SIKaP</option>
+            </select>
+          </div>
+
+          <div style="border:1px solid #d45a52;background:#d8564d;padding:8px 10px;color:#fff;font-weight:700;">
+            <button class="btn-dark" type="button" id="btnTambahPenyedia" style="margin-right:8px;">➕ Tambah Penyedia</button>
+          </div>
+
+          <table class="table-simple">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama Penyedia</th>
+                <th>NPWP</th>
+                <th>Email</th>
+                <th>Telp</th>
+                <th>Alamat</th>
+              </tr>
+            </thead>
+            <tbody id="providerTableBody">
+              <tr><td colspan="6" style="text-align:center;color:#666;">Belum ada penyedia</td></tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+
+      <tr id="dokumenRow" style="display:none;">
+        <td class="form-label" style="vertical-align:top;">Dokumen Realisasi</td>
+        <td class="form-field">
+          <div class="notice" style="padding:8px 10px;margin-bottom:10px;">
+            Dokumen yang dapat di upload hanya file/dokumen yang memiliki ekstensi <strong>*.pdf, *.jpg, *.jpeg, atau *.png</strong>.
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <label style="font-weight:700;font-size:13px;">Dokumen <span class="req">*</span></label><br>
+            <input type="file" id="inputDokumenUpload" accept=".pdf,.jpg,.jpeg,.png" style="margin-top:6px;">
+            <button class="btn-green" type="button" id="btnUploadDokumen" style="margin-left:8px;">Upload</button>
+          </div>
+
+          <table class="table-simple">
+            <thead>
+              <tr>
+                <th>Nama File</th>
+                <th style="width:200px;">Tanggal Upload</th>
+                <th style="width:120px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="dokumenTableBody">
+              <tr><td colspan="3" style="text-align:center;color:#666;">Belum ada dokumen</td></tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
     </table>
-    <div class="action-bottom"><button class="btn-green" id="btnSave" type="button">◘ Simpan</button><button class="btn-back" id="btnBack" type="button">◀ Kembali</button></div>
+
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-green" id="btnSave" type="button">◘ Simpan</button>
+      <button class="btn-back" id="btnBack" type="button">◀ Kembali</button>
+    </div>
   </div>
 
-  <div id="tourOverlay" class="tour-overlay"><div id="tourHighlight" class="tour-highlight"></div><div id="tourArrow" class="tour-arrow"></div><div id="tourCard" class="tour-card"><h4 id="tourTitle">Petunjuk</h4><p id="tourText"></p><div class="tour-actions"><button class="tour-btn ghost" id="tourNeverBtn">Jangan Munculkan</button><button class="tour-btn secondary" id="tourSkipBtn">Lewati</button><button class="tour-btn primary" id="tourNextBtn">Lanjut</button></div></div></div>
 <script src="app.js"></script>
 <script>
-if(!requireLogin()) {}
-bindLogout();
-const packageId = getQueryParam('id');
-let currentPackage = null;
-function parseIdrInput(value){
-  const clean = String(value || '').replace(/\./g,'').replace(',', '.');
-  const num = Number(clean);
-  return Number.isFinite(num) ? num : NaN;
-}
-function formatIdrInput(num){
-  if(!Number.isFinite(num)) return '';
-  return Number(num).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-async function init(){
-  await loadPackageRows();
-  currentPackage = findLoadedPackageById(packageId);
-  if(!currentPackage){ location.href = 'pencatatannontender.html'; return; }
-  if(!Array.isArray(currentPackage.realisasi_rows)) currentPackage.realisasi_rows = [];
-  document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
-  document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
-  document.getElementById('viewPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
-  const total = currentPackage.realisasi_rows.reduce((sum, row) => sum + Number(row.nilai_number || 0), 0);
-  document.getElementById('viewTotal').textContent = formatRupiahFull(total);
-  document.getElementById('viewStatus').textContent = currentPackage.status_paket || 'Draft';
-  bindDatePickerInput(document.getElementById('inputTanggal'), document.getElementById('btnTanggal'));
-  setupTutorial({steps:[
-    {target:'#inputBukti', title:'Langkah 1', text:'Sesuaikan <b>Bukti Pembayaran</b> dengan kondisi realisasi.', place:'bottom'},
-    {target:'#inputJenis', title:'Langkah 2', text:'Pilih <b>Jenis Realisasi</b> sesuai dokumen yang digunakan.', place:'bottom'},
-    {target:'#inputNilai', title:'Langkah 3', text:'Nilai realisasi diisi dengan format seperti <b>100.000,00</b>. Jika total melebihi pagu, sistem akan menolak.', place:'bottom'},
-    {target:'#inputTanggal', title:'Langkah 4', text:'Tanggal realisasi dipilih dari <b>kalender</b>, bukan diketik manual.', place:'top'}
-  ]});
-}
+  if(!requireLogin()) {}
+  bindLogout();
 
-document.getElementById('btnSave').onclick = async ()=>{
-  const namaDok = document.getElementById('inputNamaDok').value.trim();
-  const nilai = parseIdrInput(document.getElementById('inputNilai').value);
-  const tanggal = parseDateInput(document.getElementById('inputTanggal').value);
-  if(!namaDok || !Number.isFinite(nilai) || !tanggal) return alert('Field bertanda * wajib diisi.');
-  const totalNow = currentPackage.realisasi_rows.reduce((sum, row) => sum + Number(row.nilai_number || 0), 0);
-  if(totalNow + nilai > Number(currentPackage.pagu || 0)) return alert('Total Nilai Realisasi melebihi Pagu');
-  currentPackage.realisasi_rows.push({
-    jenis: document.getElementById('inputJenis').value,
-    nama_dokumen: namaDok,
-    nomor_dokumen: document.getElementById('inputNomorDok').value.trim(),
-    nilai: formatIdrInput(nilai),
-    nilai_number: nilai,
-    tanggal: formatDateInput(tanggal),
-    keterangan: document.getElementById('inputKet').value.trim(),
-    bukti: document.getElementById('inputBukti').value
-  });
-  currentPackage.status_realisasi = 'Sudah Ada Realisasi';
-  currentPackage.can_delete = 'TIDAK';
-  savePackageCache(currentPackage);
-  await savePackageToSheet(currentPackage);
-  location.href = 'editpaketpencatatan.html?id=' + encodeURIComponent(currentPackage.id_simulasi);
-};
-document.getElementById('btnBack').onclick = ()=> location.href = 'editpaketpencatatan.html?id=' + encodeURIComponent(packageId);
-init();
+  let currentPackage = null;
+  let currentRealisasi = null;
+  const packageId = getQueryParam('id');
+
+  function parseNumberId(value){
+    if(value === null || value === undefined) return 0;
+    const clean = String(value).replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+    const num = Number(clean);
+    return isNaN(num) ? 0 : num;
+  }
+
+  function formatNumberId(value){
+    return Number(value || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function buildApiUrl(action, params){
+    if(!APP_CONFIG.apiUrl) throw new Error('API_URL_EMPTY');
+    const url = new URL(APP_CONFIG.apiUrl);
+    url.searchParams.set('action', action);
+    Object.entries(params || {}).forEach(([k,v]) => {
+      if(v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+    });
+    return url.toString();
+  }
+
+  async function apiGet(action, params){
+    const res = await fetch(buildApiUrl(action, params));
+    const json = await res.json();
+    if(json.ok === false) throw new Error(json.message || 'Request gagal');
+    return json;
+  }
+
+  async function apiPost(action, payload){
+    const res = await fetch(buildApiUrl(action), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    const json = await res.json();
+    if(json.ok === false) throw new Error(json.message || 'Request gagal');
+    return json;
+  }
+
+  async function loadRealisasiRows(){
+    try {
+      const json = await apiGet('listRealisasi', { id_simulasi: packageId });
+      return Array.isArray(json.data) ? json.data : [];
+    } catch(e){
+      return [];
+    }
+  }
+
+  async function loadPenyediaRows(idRealisasi){
+    try {
+      const json = await apiGet('listPenyedia', { id_realisasi: idRealisasi });
+      return Array.isArray(json.data) ? json.data : [];
+    } catch(e){
+      return [];
+    }
+  }
+
+  async function loadDokumenRows(idRealisasi){
+    try {
+      const json = await apiGet('listDokumen', { id_realisasi: idRealisasi });
+      return Array.isArray(json.data) ? json.data : [];
+    } catch(e){
+      return [];
+    }
+  }
+
+  async function renderProviderTable(){
+    const tbody = document.getElementById('providerTableBody');
+    if(!currentRealisasi?.id_realisasi){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">Belum ada penyedia</td></tr>';
+      return;
+    }
+
+    const rows = await loadPenyediaRows(currentRealisasi.id_realisasi);
+    if(!rows.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">Belum ada penyedia</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map((row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${escapeHtml(row.nama_penyedia || '')}</td>
+        <td>${escapeHtml(row.npwp || '')}</td>
+        <td>${escapeHtml(row.email || '')}</td>
+        <td>${escapeHtml(row.telp || '')}</td>
+        <td>${escapeHtml(row.alamat || '')}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function renderDokumenTable(){
+    const tbody = document.getElementById('dokumenTableBody');
+    if(!currentRealisasi?.id_realisasi){
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#666;">Belum ada dokumen</td></tr>';
+      return;
+    }
+
+    const rows = await loadDokumenRows(currentRealisasi.id_realisasi);
+    if(!rows.length){
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#666;">Belum ada dokumen</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td>${escapeHtml(row.nama_file || '')}</td>
+        <td>${escapeHtml(row.created_at || '')}</td>
+        <td>-</td>
+      </tr>
+    `).join('');
+  }
+
+  async function refreshTotalRealisasi(){
+    const rows = await loadRealisasiRows();
+    const total = rows.reduce((sum, row) => sum + Number(row.nilai_realisasi || 0), 0);
+    document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(total);
+    return total;
+  }
+
+  function togglePostSaveSection(show){
+    document.getElementById('providerRow').style.display = show ? '' : 'none';
+    document.getElementById('dokumenRow').style.display = show ? '' : 'none';
+    document.getElementById('successReal').style.display = show ? 'block' : 'none';
+  }
+
+  document.getElementById('btnTambahPenyedia').onclick = () => {
+    if(!currentRealisasi?.id_realisasi){
+      alert('Simpan realisasi dulu.');
+      return;
+    }
+    location.href = `penyedianonsikap.html?id=${encodeURIComponent(packageId)}&id_realisasi=${encodeURIComponent(currentRealisasi.id_realisasi)}`;
+  };
+
+  document.getElementById('btnUploadDokumen').onclick = async () => {
+    if(!currentRealisasi?.id_realisasi){
+      alert('Simpan realisasi dulu.');
+      return;
+    }
+
+    const fileInput = document.getElementById('inputDokumenUpload');
+    if(!fileInput.files.length){
+      alert('Pilih file dokumen terlebih dahulu.');
+      return;
+    }
+
+    const file = fileInput.files[0];
+    const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
+    if(!allowed.includes(file.type)){
+      alert('File harus PDF/JPG/JPEG/PNG');
+      return;
+    }
+
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    try {
+      await apiPost('saveDokumen', {
+        id_simulasi: packageId,
+        id_realisasi: currentRealisasi.id_realisasi,
+        nama_file: file.name,
+        mime_type: file.type,
+        file_base64: base64
+      });
+      fileInput.value = '';
+      alert('Dokumen berhasil diupload');
+      await renderDokumenTable();
+    } catch(error){
+      alert(error.message || 'Gagal upload dokumen');
+    }
+  };
+
+  document.getElementById('btnSave').onclick = async () => {
+    try {
+      const namaDokumen = document.getElementById('inputNamaDokumen').value.trim();
+      const nomorDokumen = document.getElementById('inputNomorDokumen').value.trim();
+      const nilaiText = document.getElementById('inputNilaiRealisasi').value.trim();
+      const tanggalRealisasi = document.getElementById('inputTanggalRealisasi').value;
+      const keterangan = document.getElementById('inputKeterangan').value.trim();
+      const buktiPembayaran = document.getElementById('inputBuktiPembayaran').value;
+      const jenisRealisasi = document.getElementById('inputJenisRealisasi').value;
+
+      if(!namaDokumen){
+        alert('Nama Dokumen wajib diisi.');
+        return;
+      }
+
+      if(!nilaiText){
+        alert('Nilai Realisasi wajib diisi.');
+        return;
+      }
+
+      if(!tanggalRealisasi){
+        alert('Tanggal Realisasi wajib diisi.');
+        return;
+      }
+
+      const nilaiRealisasi = parseNumberId(nilaiText);
+      if(!nilaiRealisasi || nilaiRealisasi <= 0){
+        alert('Nilai Realisasi tidak valid.');
+        return;
+      }
+
+      const totalExisting = await refreshTotalRealisasi();
+      const pagu = Number(currentPackage.pagu || 0);
+
+      if(totalExisting + nilaiRealisasi > pagu){
+        alert('Total Nilai Realisasi melebihi Pagu');
+        return;
+      }
+
+      const json = await apiPost('saveRealisasi', {
+        id_simulasi: packageId,
+        bukti_pembayaran: buktiPembayaran,
+        jenis_realisasi: jenisRealisasi,
+        nama_dokumen: namaDokumen,
+        nomor_dokumen: nomorDokumen,
+        nilai_realisasi: nilaiRealisasi,
+        tanggal_realisasi: tanggalRealisasi,
+        keterangan: keterangan
+      });
+
+      currentRealisasi = json.data || null;
+
+      await savePackageToSheet({
+        ...currentPackage,
+        status_realisasi: 'Sudah Ada Realisasi',
+        can_delete: 'TIDAK',
+        updated_at: new Date().toISOString()
+      });
+
+      togglePostSaveSection(true);
+      await refreshTotalRealisasi();
+      await renderProviderTable();
+      await renderDokumenTable();
+      alert('Berhasil simpan Realisasi');
+    } catch(error){
+      alert(error.message || 'Gagal menyimpan realisasi');
+    }
+  };
+
+  document.getElementById('btnBack').onclick = () => {
+    location.href = `editpaketpencatatan.html?id=${encodeURIComponent(packageId)}`;
+  };
+
+  (async function init(){
+    if(!packageId){
+      location.href = 'pencatatannontender.html';
+      return;
+    }
+
+    await loadPackageRows();
+    currentPackage = findLoadedPackageById(packageId);
+    if(!currentPackage){
+      location.href = 'pencatatannontender.html';
+      return;
+    }
+
+    document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
+    document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
+    document.getElementById('viewPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
+    document.getElementById('viewStatusPaket').textContent = currentPackage.status_paket || 'Draft';
+    await refreshTotalRealisasi();
+
+    const idRealisasi = getQueryParam('id_realisasi');
+    if(idRealisasi){
+      currentRealisasi = { id_realisasi: idRealisasi };
+      togglePostSaveSection(true);
+      await renderProviderTable();
+      await renderDokumenTable();
+    }
+  })();
 </script>
 </body>
 </html>
