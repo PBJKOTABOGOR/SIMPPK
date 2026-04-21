@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Simulasi SPSE - Pilih Non Badan Usaha</title><link rel="stylesheet" href="style.css"></head>
+<body class="page-shell">
+<div class="topbar"><div class="topbar-inner"><div class="brand"><div class="brand-icon">SPSE</div><div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div></div><div class="logo-kota">Kota Bogor</div></div><div class="nav"><a href="home.html">BERANDA</a><a href="#" class="active">DAFTAR PAKET</a><a href="#">AMEL</a><a href="#">INBOX</a><a href="#">LOG AKSES</a><a href="#">GANTI PASSWORD</a><div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div></div><div class="system-bar"><div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div><div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div></div></div>
+<div class="edit-block" style="margin-top:22px;">
+<div class="crumb"><span class="blue">Beranda</span> » Edit Jenis Realisasi » Pilih Non Badan Usaha</div>
+<table class="edit-table">
+<tr><td class="edit-left-label">Bentuk Usaha <span class="req">*</span></td><td><select id="inputBentukUsaha" class="select-control"></select></td></tr>
+<tr><td class="edit-left-label">Nama Penyedia <span class="req">*</span></td><td><input id="inputNamaPenyedia" class="text-control"></td></tr>
+<tr><td class="edit-left-label">NPWP</td><td><input id="inputNpwp" class="text-control" style="max-width:380px;"></td></tr>
+<tr><td class="edit-left-label">Email</td><td><input id="inputEmail" class="text-control"></td></tr>
+<tr><td class="edit-left-label">No. Telepon</td><td><input id="inputTelp" class="text-control"></td></tr>
+<tr><td class="edit-left-label">Provinsi <span class="req">*</span></td><td><select id="inputProvinsiPenyedia" class="select-control"></select></td></tr>
+<tr><td class="edit-left-label">Kabupaten/Kota <span class="req">*</span></td><td><select id="inputKabKotaPenyedia" class="select-control"></select></td></tr>
+<tr><td class="edit-left-label">Alamat</td><td><textarea id="inputAlamatPenyedia" class="textarea-control" style="height:70px;"></textarea></td></tr>
+</table>
+<div class="action-bottom"><button class="btn-blue" id="btnTambahPenyedia" type="button">◘ Tambah Penyedia</button><button class="btn-back" id="btnKembali" type="button">Kembali</button></div>
+</div>
+<script src="app.js"></script>
+<script>
+if(!requireLogin()){}
+bindLogout();
+const packageId = getQueryParam('id'); const realisasiId = getQueryParam('realisasi_id');
+function fillSelect(select, items, first){ select.innerHTML = ''; if(first) select.innerHTML += `<option value="">${first}</option>`; items.forEach(item => { const op=document.createElement('option'); op.value=item; op.textContent=item; select.appendChild(op); }); }
+fillSelect(inputBentukUsaha, PROVIDER_BENTUK_USAHA, 'Pilih Bentuk Usaha'); fillSelect(inputProvinsiPenyedia, PROVINSI_LIST, 'Pilih Provinsi');
+inputProvinsiPenyedia.addEventListener('change', ()=>{ if(inputProvinsiPenyedia.value === 'Jawa Barat'){ fillSelect(inputKabKotaPenyedia, KABKOTA_JABAR, 'Pilih Kabupaten/Kota'); } else { fillSelect(inputKabKotaPenyedia, ['Bogor (Kota)'], 'Pilih Kabupaten/Kota'); } });
+inputProvinsiPenyedia.value = 'Jawa Barat'; inputProvinsiPenyedia.dispatchEvent(new Event('change')); inputKabKotaPenyedia.value = 'Bogor (Kota)';
+btnTambahPenyedia.onclick = async ()=>{
+  if(!inputBentukUsaha.value || !inputNamaPenyedia.value.trim() || !inputProvinsiPenyedia.value || !inputKabKotaPenyedia.value){ alert('Bentuk Usaha, Nama Penyedia, Provinsi, dan Kabupaten/Kota wajib diisi.'); return; }
+  await saveProviderRow({ id_penyedia: randomProviderId(), id_realisasi: realisasiId, id_simulasi: packageId, bentuk_usaha: inputBentukUsaha.value, nama_penyedia: inputNamaPenyedia.value.trim(), npwp: inputNpwp.value.trim(), email: inputEmail.value.trim(), telp: inputTelp.value.trim(), provinsi: inputProvinsiPenyedia.value, kabupaten_kota: inputKabKotaPenyedia.value, alamat: inputAlamatPenyedia.value.trim() });
+  location.href='formrealisasi.html?id='+encodeURIComponent(packageId)+'&realisasi_id='+encodeURIComponent(realisasiId);
+};
+btnKembali.onclick = ()=> location.href='formrealisasi.html?id='+encodeURIComponent(packageId)+'&realisasi_id='+encodeURIComponent(realisasiId);
+</script>
+</body>
+</html>
