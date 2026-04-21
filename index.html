@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIMULASI SPSE - PPK</title>
+  <style>
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:#efefef;
+      color:#222;
+    }
+
+    a{
+      text-decoration:none;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    /* =========================
+       TOP BAR
+    ========================= */
+    .topbar{
+      background:#ffffff;
+      border-bottom:1px solid #e5e5e5;
+      padding:18px 28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:#d92d4c;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:700;
+      font-size:12px;
+    }
+
+    .brand-text{
+      line-height:1;
+    }
+
+    .brand-text .main{
+      font-size:18px;
+      font-weight:800;
+      color:#111;
+    }
+
+    .brand-text .sub{
+      font-size:12px;
+      color:#777;
+      margin-top:4px;
+      letter-spacing:.5px;
+    }
+
+    .city-logo{
+      font-size:24px;
+      font-style:italic;
+      color:#c75a29;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    /* =========================
+       NAV
+    ========================= */
+    .nav{
+      background:#ffffff;
+      display:flex;
+      align-items:center;
+      gap:32px;
+      padding:0 48px;
+      height:62px;
+      border-bottom:1px solid #ececec;
+    }
+
+    .nav a{
+      color:#333;
+      font-size:13px;
+      text-transform:uppercase;
+      padding:20px 0 16px 0;
+      border-bottom:3px solid transparent;
+    }
+
+    .nav a.active{
+      color:#d92d4c;
+      border-bottom-color:#d92d4c;
+    }
+
+    .nav-right{
+      margin-left:auto;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .btn-outline{
+      border:1px solid #e04b67;
+      color:#d92d4c;
+      background:#fff;
+      padding:11px 18px;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn-solid{
+      border:1px solid #d92d4c;
+      background:#d92d4c;
+      color:#fff;
+      padding:11px 22px;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    /* =========================
+       HOME
+    ========================= */
+    .page{
+      min-height:calc(100vh - 120px);
+    }
+
+    .home-wrap{
+      padding:28px 0 50px 0;
+    }
+
+    .hero-area{
+      width:min(1320px, 94%);
+      margin:0 auto 28px auto;
+      position:relative;
+      height:320px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#ededed;
+    }
+
+    .hero-box{
+      width:min(840px, 78%);
+      height:315px;
+      border-radius:18px;
+      background:linear-gradient(135deg, #e9f1ff 0%, #dfe8f7 100%);
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 2px 10px rgba(0,0,0,.04);
+      padding:34px 40px;
+    }
+
+    .hero-badge{
+      display:inline-block;
+      background:#d92d4c;
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+      padding:8px 14px;
+      border-radius:8px;
+      margin-bottom:18px;
+    }
+
+    .hero-title{
+      font-size:54px;
+      font-weight:900;
+      line-height:.95;
+      letter-spacing:-1px;
+      margin:0;
+      color:#111;
+    }
+
+    .hero-title .red{
+      color:#d92d4c;
+    }
+
+    .hero-sub{
+      font-size:40px;
+      font-weight:800;
+      color:#777;
+      margin-top:4px;
+    }
+
+    .hero-building{
+      position:absolute;
+      right:34px;
+      bottom:18px;
+      width:320px;
+      height:180px;
+      border-radius:16px;
+      background:
+        linear-gradient(180deg, rgba(122,134,208,.35), rgba(92,108,192,.55)),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,.8) 0,
+          rgba(255,255,255,.8) 2px,
+          transparent 2px,
+          transparent 26px
+        ),
+        repeating-linear-gradient(
+          180deg,
+          rgba(255,255,255,.8) 0,
+          rgba(255,255,255,.8) 2px,
+          transparent 2px,
+          transparent 26px
+        );
+      transform:skew(-18deg) rotate(12deg);
+      opacity:.8;
+    }
+
+    .hero-lkpp{
+      position:absolute;
+      top:26px;
+      right:30px;
+      font-size:20px;
+      font-weight:900;
+      color:#111;
+    }
+
+    .hero-lkpp span{
+      color:#d92d4c;
+    }
+
+    .slider-dot{
+      position:absolute;
+      bottom:16px;
+      left:50%;
+      transform:translateX(-50%);
+      display:flex;
+      gap:10px;
+    }
+
+    .slider-dot span{
+      width:36px;
+      height:4px;
+      border-radius:999px;
+      background:#d8deea;
+      display:block;
+    }
+
+    .slider-dot span.active{
+      background:#ffffff;
+    }
+
+    .arrow{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      background:#f7f7f7;
+      box-shadow:0 1px 4px rgba(0,0,0,.08);
+      color:#999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+    }
+
+    .arrow.left{
+      left:16%;
+    }
+
+    .arrow.right{
+      right:16%;
+    }
+
+    .section-strip{
+      width:min(1320px, 94%);
+      height:34px;
+      margin:0 auto 12px auto;
+      background:#edf3f9;
+      border-radius:2px;
+    }
+
+    .table-card{
+      width:min(1320px, 94%);
+      margin:0 auto;
+      background:#ffffff;
+      border-radius:3px;
+      padding:32px 34px;
+    }
+
+    .table-title{
+      font-size:18px;
+      color:#26364d;
+      margin-bottom:14px;
+    }
+
+    .table-title a{
+      font-size:13px;
+      color:#3a62c7;
+      margin-left:6px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+
+    thead th{
+      text-align:left;
+      padding:8px 10px;
+      border-bottom:1px solid #dadada;
+    }
+
+    tbody td{
+      padding:8px 10px;
+      border-bottom:1px solid #ececec;
+    }
+
+    .badge-mini{
+      display:inline-block;
+      font-size:11px;
+      background:#2f3b52;
+      color:#fff;
+      border-radius:4px;
+      padding:2px 6px;
+      margin-left:4px;
+    }
+
+    /* =========================
+       MODAL PILIH USER
+    ========================= */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+      padding:20px;
+    }
+
+    .modal{
+      width:560px;
+      max-width:100%;
+      background:#fff;
+      border-radius:4px;
+      overflow:hidden;
+      box-shadow:0 10px 30px rgba(0,0,0,.2);
+    }
+
+    .modal-head{
+      padding:14px 16px;
+      border-bottom:1px solid #ddd;
+      font-size:14px;
+      color:#444;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .close-btn{
+      border:none;
+      background:none;
+      font-size:24px;
+      line-height:1;
+      cursor:pointer;
+      color:#888;
+    }
+
+    .modal-body{
+      padding:30px 24px 36px 24px;
+      display:flex;
+      justify-content:center;
+      gap:14px;
+    }
+
+    .choice-btn{
+      min-width:170px;
+      height:34px;
+      border:1px solid #d5dbe4;
+      background:#fff;
+      color:#3c4560;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    /* =========================
+       LOGIN PAGE
+    ========================= */
+    .login-page{
+      min-height:100vh;
+      background:#efefef;
+    }
+
+    .login-center{
+      max-width:360px;
+      margin:0 auto;
+      padding-top:130px;
+      padding-bottom:80px;
+      text-align:center;
+    }
+
+    .login-brand{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:28px;
+    }
+
+    .login-card{
+      background:#f9f9f9;
+      padding:20px 18px 22px 18px;
+      border-radius:2px;
+      box-shadow:0 0 0 1px rgba(0,0,0,.03);
+      text-align:left;
+    }
+
+    .login-title{
+      text-align:center;
+      font-size:18px;
+      font-weight:800;
+      color:#13233f;
+      margin-bottom:18px;
+    }
+
+    .input-group{
+      display:flex;
+      margin-bottom:14px;
+      width:100%;
+    }
+
+    .icon-box{
+      width:34px;
+      min-width:34px;
+      background:#f0f0f0;
+      border:1px solid #ccd3db;
+      border-right:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#506070;
+      font-size:14px;
+    }
+
+    .input-group input{
+      width:100%;
+      height:34px;
+      border:1px solid #ccd3db;
+      outline:none;
+      padding:0 12px;
+      font-size:14px;
+      background:#fff;
+    }
+
+    .input-group input[readonly],
+    .input-group input[disabled]{
+      background:#f7f9fb;
+      color:#2d3d55;
+      cursor:not-allowed;
+    }
+
+    .eye-btn{
+      width:38px;
+      border:1px solid #ccd3db;
+      border-left:none;
+      background:#f0f0f0;
+      cursor:pointer;
+      color:#506070;
+      font-size:15px;
+    }
+
+    .captcha-box{
+      width:205px;
+      height:58px;
+      margin:0 auto 8px auto;
+      background:
+        linear-gradient(transparent 0, transparent 100%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,.28) 0,
+          rgba(0,0,0,.28) 1px,
+          transparent 1px,
+          transparent 9px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(0,0,0,.28) 0,
+          rgba(0,0,0,.28) 1px,
+          transparent 1px,
+          transparent 9px
+        );
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:26px;
+      font-weight:900;
+      color:#111;
+      letter-spacing:1px;
+      user-select:none;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .captcha-box::before{
+      content:"";
+      position:absolute;
+      width:160%;
+      height:4px;
+      background:#000;
+      transform:rotate(-12deg);
+      top:24px;
+      left:-25%;
+      opacity:.9;
+    }
+
+    .captcha-note{
+      text-align:center;
+      font-size:13px;
+      margin:8px 0 12px 0;
+      color:#222;
+    }
+
+    .small-note{
+      text-align:center;
+      font-size:12px;
+      color:#444;
+      line-height:1.45;
+      margin:10px 0 14px 0;
+    }
+
+    .small-note a{
+      color:#2157c8;
+    }
+
+    .login-submit{
+      display:block;
+      width:170px;
+      height:30px;
+      margin:0 auto 16px auto;
+      border:1px solid #d6d6d6;
+      background:#fff;
+      cursor:pointer;
+    }
+
+    .back-home{
+      text-align:center;
+      font-size:13px;
+      margin-bottom:18px;
+    }
+
+    .back-home a{
+      color:#3560d0;
+    }
+
+    .forgot{
+      text-align:center;
+      font-size:13px;
+    }
+
+    .forgot a{
+      color:#3560d0;
+    }
+
+    /* =========================
+       PLACEHOLDER PAGE
+    ========================= */
+    .after-login{
+      min-height:100vh;
+      background:#f3f5f8;
+    }
+
+    .after-wrap{
+      width:min(1100px, 94%);
+      margin:0 auto;
+      padding:28px 0 50px 0;
+    }
+
+    .info-card{
+      background:#fff;
+      border-radius:14px;
+      padding:24px;
+      box-shadow:0 8px 24px rgba(0,0,0,.06);
+      margin-top:24px;
+    }
+
+    .info-card h2{
+      margin:0 0 10px 0;
+      font-size:24px;
+      color:#15233b;
+    }
+
+    .info-card p{
+      margin:0;
+      color:#5d6a7c;
+      line-height:1.6;
+    }
+
+    .user-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background:#eef3fb;
+      color:#183b72;
+      border:1px solid #d7e3f6;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .next-btn{
+      margin-top:18px;
+      display:inline-block;
+      background:#d92d4c;
+      color:#fff;
+      padding:12px 18px;
+      border-radius:10px;
+      font-weight:700;
+    }
+
+    @media (max-width: 900px){
+      .nav{
+        gap:18px;
+        padding:0 18px;
+        overflow:auto;
+      }
+
+      .city-logo{
+        display:none;
+      }
+
+      .hero-box{
+        width:92%;
+        height:auto;
+        min-height:300px;
+      }
+
+      .hero-title{
+        font-size:42px;
+      }
+
+      .hero-sub{
+        font-size:28px;
+      }
+
+      .hero-building{
+        width:220px;
+        height:130px;
+        right:18px;
+      }
+
+      .arrow.left{
+        left:6px;
+      }
+
+      .arrow.right{
+        right:6px;
+      }
+    }
+
+    @media (max-width: 640px){
+      .topbar{
+        padding:14px 16px;
+      }
+
+      .nav{
+        height:auto;
+        padding:10px 12px;
+      }
+
+      .hero-area{
+        height:auto;
+      }
+
+      .hero-box{
+        padding:24px 20px 70px 20px;
+      }
+
+      .hero-title{
+        font-size:34px;
+      }
+
+      .hero-sub{
+        font-size:24px;
+      }
+
+      .hero-building{
+        position:absolute;
+        width:180px;
+        height:110px;
+      }
+
+      .modal-body{
+        flex-direction:column;
+        align-items:center;
+      }
+
+      .choice-btn{
+        width:100%;
+        max-width:260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- =========================
+       HOME PAGE
+  ========================= -->
+  <section id="homePage" class="page">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-logo">SPSE</div>
+        <div class="brand-text">
+          <div class="main">INAPROC</div>
+          <div class="sub">SPSE</div>
+        </div>
+      </div>
+      <div class="city-logo">Kota Bogor</div>
+    </div>
+
+    <div class="nav">
+      <a href="#" class="active">BERANDA</a>
+      <a href="#">CARI PAKET</a>
+      <a href="#">KONTEN KHUSUS</a>
+      <a href="#">DAFTAR HITAM</a>
+      <a href="#">AMEL</a>
+      <a href="#">KONTAK KAMI</a>
+
+      <div class="nav-right">
+        <button class="btn-outline">PENDAFTARAN PENYEDIA</button>
+        <button class="btn-solid" id="openLoginBtn">LOGIN</button>
+      </div>
+    </div>
+
+    <div class="home-wrap">
+      <div class="hero-area">
+        <div class="arrow left">&#9664;</div>
+
+        <div class="hero-box">
+          <div class="hero-lkpp">LK<span>PP</span></div>
+          <div class="hero-badge">Selamat Datang di</div>
+          <h1 class="hero-title">
+            <span class="red">INA</span>PROC
+          </h1>
+          <div class="hero-sub">SPSE</div>
+          <div class="hero-building"></div>
+
+          <div class="slider-dot">
+            <span class="active"></span>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="arrow right">&#9654;</div>
+      </div>
+
+      <div class="section-strip"></div>
+
+      <div class="table-card">
+        <div class="table-title">
+          Tender <a href="#">Lihat Semua »</a>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:70px;">No</th>
+              <th>Nama Paket</th>
+              <th style="width:220px;">HPS</th>
+              <th style="width:220px;">Akhir Pendaftaran</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="4"><strong>Pengadaan Barang</strong></td>
+            </tr>
+            <tr>
+              <td colspan="4"><strong>Jasa Konsultansi Badan Usaha Non Konstruksi</strong></td>
+            </tr>
+            <tr>
+              <td colspan="4"><strong>Pekerjaan Konstruksi</strong></td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                REVITALISASI GEDUNG PENGADILAN NEGERI KOTA BOGOR [HIBAH-BRG]
+                <span class="badge-mini">spse 4.5</span>
+                <span class="badge-mini">Tender</span>
+              </td>
+              <td>Rp. 6.114.126.306,99</td>
+              <td>28 April 2026 08:59</td>
+            </tr>
+            <tr>
+              <td colspan="4"><strong>Jasa Lainnya</strong></td>
+            </tr>
+            <tr>
+              <td colspan="4"><strong>Jasa Konsultansi Perorangan Non Konstruksi</strong></td>
+            </tr>
+            <tr>
+              <td colspan="4"><strong>Jasa Konsultansi Badan Usaha Konstruksi</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================
+       LOGIN CHOICE MODAL
+  ========================= -->
+  <div id="loginModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <span>PILIH JENIS USER</span>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <button class="choice-btn" id="penyediaBtn">PENYEDIA</button>
+        <button class="choice-btn" id="nonPenyediaBtn">NON PENYEDIA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       LOGIN NON PENYEDIA
+  ========================= -->
+  <section id="loginPage" class="login-page hidden">
+    <div class="login-center">
+      <div class="login-brand">
+        <div class="brand-logo">SPSE</div>
+        <div class="brand-text">
+          <div class="main">INAPROC</div>
+          <div class="sub">SPSE</div>
+        </div>
+      </div>
+
+      <div class="login-card">
+        <div class="login-title">LOGIN NON PENYEDIA</div>
+
+        <div class="input-group">
+          <div class="icon-box">👤</div>
+          <input
+            type="text"
+            id="userIdField"
+            value="PPK"
+            readonly
+          />
+        </div>
+
+        <div class="input-group">
+          <div class="icon-box">🔒</div>
+          <input
+            type="password"
+            id="passwordField"
+            value="ppk12345"
+            readonly
+          />
+          <button class="eye-btn" id="togglePasswordBtn" type="button">👁</button>
+        </div>
+
+        <div class="captcha-box" id="captchaText">zsbmjq</div>
+        <div class="captcha-note">
+          Untuk menjamin keamanan, isikan Kode di atas!
+        </div>
+
+        <div class="input-group">
+          <div class="icon-box">🛡️</div>
+          <input
+            type="text"
+            id="captchaField"
+            value="zsbmjq"
+            readonly
+          />
+        </div>
+
+        <div class="small-note">
+          Jika Anda kesulitan membaca Kode di atas,<br />
+          <a href="#" id="refreshCaptchaLink">klik di sini</a> untuk mengganti Kode baru.
+        </div>
+
+        <button class="login-submit" id="loginSubmitBtn" type="button">Login</button>
+
+        <div class="back-home">
+          Kembali ke <a href="#" id="backHomeBtn">Beranda</a>
+        </div>
+
+        <div class="forgot">
+          <a href="#">🔒 Lupa Password?</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================
+       AFTER LOGIN PLACEHOLDER
+  ========================= -->
+  <section id="afterLoginPage" class="after-login hidden">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-logo">SPSE</div>
+        <div class="brand-text">
+          <div class="main">INAPROC</div>
+          <div class="sub">SIMULASI PPK</div>
+        </div>
+      </div>
+      <div class="user-chip">
+        Login sebagai: <span id="loggedUserText">PPK</span>
+      </div>
+    </div>
+
+    <div class="after-wrap">
+      <div class="info-card">
+        <h2>Berhasil Login</h2>
+        <p>
+          Ini baru tahap awal simulasi login Non Penyedia untuk user PPK.
+          Setelah ini, tahap berikutnya kita buat halaman menu dan form
+          <strong>Pencatatan Paket Non Tender</strong>.
+        </p>
+
+        <a href="#" class="next-btn">Lanjut ke Tahap Berikutnya</a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const homePage = document.getElementById("homePage");
+    const loginModal = document.getElementById("loginModal");
+    const loginPage = document.getElementById("loginPage");
+    const afterLoginPage = document.getElementById("afterLoginPage");
+
+    const openLoginBtn = document.getElementById("openLoginBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const nonPenyediaBtn = document.getElementById("nonPenyediaBtn");
+    const penyediaBtn = document.getElementById("penyediaBtn");
+
+    const togglePasswordBtn = document.getElementById("togglePasswordBtn");
+    const passwordField = document.getElementById("passwordField");
+    const loginSubmitBtn = document.getElementById("loginSubmitBtn");
+    const backHomeBtn = document.getElementById("backHomeBtn");
+    const refreshCaptchaLink = document.getElementById("refreshCaptchaLink");
+    const captchaText = document.getElementById("captchaText");
+    const captchaField = document.getElementById("captchaField");
+    const loggedUserText = document.getElementById("loggedUserText");
+
+    function showPage(pageName){
+      homePage.classList.add("hidden");
+      loginPage.classList.add("hidden");
+      afterLoginPage.classList.add("hidden");
+      loginModal.classList.add("hidden");
+
+      if(pageName === "home"){
+        homePage.classList.remove("hidden");
+      }
+
+      if(pageName === "login"){
+        loginPage.classList.remove("hidden");
+      }
+
+      if(pageName === "after-login"){
+        afterLoginPage.classList.remove("hidden");
+      }
+    }
+
+    function openModal(){
+      loginModal.classList.remove("hidden");
+    }
+
+    function closeModal(){
+      loginModal.classList.add("hidden");
+    }
+
+    openLoginBtn.addEventListener("click", function(){
+      openModal();
+    });
+
+    closeModalBtn.addEventListener("click", function(){
+      closeModal();
+    });
+
+    loginModal.addEventListener("click", function(e){
+      if(e.target === loginModal){
+        closeModal();
+      }
+    });
+
+    penyediaBtn.addEventListener("click", function(){
+      alert("Untuk sementara simulasi baru dibuat untuk user NON PENYEDIA / PPK.");
+    });
+
+    nonPenyediaBtn.addEventListener("click", function(){
+      closeModal();
+      showPage("login");
+      window.scrollTo(0, 0);
+    });
+
+    togglePasswordBtn.addEventListener("click", function(){
+      if(passwordField.type === "password"){
+        passwordField.type = "text";
+      } else {
+        passwordField.type = "password";
+      }
+    });
+
+    function generateCaptcha(length = 6){
+      const chars = "abcdefghjkmnpqrstuvwxyz23456789";
+      let result = "";
+      for(let i = 0; i < length; i++){
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    refreshCaptchaLink.addEventListener("click", function(e){
+      e.preventDefault();
+      const newCaptcha = generateCaptcha(6);
+      captchaText.textContent = newCaptcha;
+      captchaField.value = newCaptcha;
+    });
+
+    loginSubmitBtn.addEventListener("click", function(){
+      loggedUserText.textContent = "PPK";
+      showPage("after-login");
+      window.scrollTo(0, 0);
+    });
+
+    backHomeBtn.addEventListener("click", function(e){
+      e.preventDefault();
+      showPage("home");
+      window.scrollTo(0, 0);
+    });
+
+    showPage("home");
+  </script>
+</body>
+</html>
