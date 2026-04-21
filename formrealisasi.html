@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Simulasi SPSE - Form Realisasi</title><link rel="stylesheet" href="style.css">
+</head>
+<body class="page-shell">
+<div class="topbar"><div class="topbar-inner"><div class="brand"><div class="brand-icon">SPSE</div><div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div></div><div class="logo-kota">Kota Bogor</div></div><div class="nav"><a href="home.html">BERANDA</a><a href="#" class="active">DAFTAR PAKET</a><a href="#">AMEL</a><a href="#">INBOX</a><a href="#">LOG AKSES</a><a href="#">GANTI PASSWORD</a><div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div></div><div class="system-bar"><div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div><div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div></div></div>
+<div class="edit-block" style="margin-top:22px;">
+  <div class="crumb"><span class="blue">Edit Paket</span> » Form Realisasi</div>
+  <div id="noticeBox" class="notice-success-inline hidden"></div>
+  <table class="edit-table">
+    <tr><td class="edit-left-label">Informasi Paket</td><td></td></tr>
+    <tr><td class="edit-left-label">Kode Paket</td><td id="pkgKode"></td></tr>
+    <tr><td class="edit-left-label">Nama Paket</td><td id="pkgNama"></td></tr>
+    <tr><td class="edit-left-label">Nilai Pagu</td><td id="pkgPagu"></td></tr>
+    <tr><td class="edit-left-label">Total Nilai Realisasi</td><td id="pkgTotalRealisasi"></td></tr>
+    <tr><td class="edit-left-label">Status Paket</td><td id="pkgStatus"></td></tr>
+    <tr><td class="edit-left-label">Realisasi</td><td></td></tr>
+    <tr><td class="edit-left-label">Bukti Pembayaran</td><td><select id="inputBuktiPembayaran" class="select-control field-slim" style="max-width:200px;"><option>Non SPK</option><option>SPK</option></select></td></tr>
+    <tr><td class="edit-left-label">Jenis Realisasi</td><td><select id="inputJenisRealisasi" class="select-control field-slim"><option>Bukti Pembelian</option><option>Kuitansi</option><option>Surat Perjanjian</option><option>Surat Pesanan</option><option>Dokumen Lainnya</option></select></td></tr>
+    <tr><td class="edit-left-label">Nama Dokumen <span class="req">*</span></td><td><input id="inputNamaDokumen" class="text-control"></td></tr>
+    <tr><td class="edit-left-label">Nomor Dokumen</td><td><input id="inputNomorDokumen" class="text-control"></td></tr>
+    <tr><td class="edit-left-label">Nilai Realisasi (Rp) <span class="req">*</span></td><td><input id="inputNilaiRealisasi" class="text-control"><div class="notice-yellow" style="margin:8px 0 0 0;">Gunakan koma untuk pemisah desimal.</div></td></tr>
+    <tr><td class="edit-left-label">Tanggal Realisasi <span class="req">*</span></td><td><input id="inputTanggalRealisasi" class="text-control field-slim" style="max-width:250px;" placeholder="dd-mm-yyyy"></td></tr>
+    <tr><td class="edit-left-label">Keterangan</td><td><textarea id="inputKeterangan" class="textarea-control" style="height:70px;"></textarea></td></tr>
+    <tr id="providerRow" class="hidden"><td class="edit-left-label">Pilih Penyedia</td><td><select id="inputProviderMode" class="select-control field-slim"><option>Data SIKaP</option><option>Data Non SIKaP</option></select><div id="providerPanel" style="margin-top:12px;border:1px solid #e36b6b;background:#d9534f;padding:10px;"><button class="btn-gray" id="btnTambahPenyedia" type="button">◉ Tambah Penyedia</button><table class="edit-mini-table" style="margin-top:10px;"><thead><tr><th style="width:36px;">No</th><th>Nama Penyedia</th><th>NPWP</th><th>Email</th><th>Telp</th><th>Alamat</th><th style="width:70px;"></th></tr></thead><tbody id="providerBody"><tr><td colspan="7" style="text-align:center;background:#fff;">Belum ada penyedia</td></tr></tbody></table></div></td></tr>
+    <tr id="docRow" class="hidden"><td class="edit-left-label">Dokumen Realisasi</td><td><div class="notice-yellow" style="margin:0 0 8px 0;">Dokumen yang dapat di upload hanya file/dokumen yang memiliki ekstensi *.pdf, *.jpg, *.jpeg, atau *.png.</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;"><input id="inputUploadDokumen" type="file" accept=".pdf,.jpg,.jpeg,.png"><button class="btn-green" id="btnUploadDokumen" type="button">◉ Upload</button></div><table class="edit-mini-table"><thead><tr><th>Nama File</th><th style="width:180px;">Tanggal Upload</th><th style="width:90px;">Aksi</th></tr></thead><tbody id="dokumenBody"><tr><td colspan="3" style="text-align:center;color:#666;">Belum ada dokumen</td></tr></tbody></table></td></tr>
+  </table>
+  <div class="action-bottom"><button class="btn-green" id="btnSaveRealisasi" type="button">◘ Simpan</button><button class="btn-back" id="btnBackEdit" type="button">Kembali</button></div>
+</div>
+<script src="app.js"></script>
+<script>
+if(!requireLogin()){}
+bindLogout();
+const packageId = getQueryParam('id');
+let currentPackage = null; let realisasiId = getQueryParam('realisasi_id') || ''; let providerRows = []; let documentRows = []; let allRealisasi = [];
+(async function init(){
+  await loadPackageRows(); currentPackage = findLoadedPackageById(packageId); if(!currentPackage){ location.href='pencatatannontender.html'; return; }
+  pkgKode.textContent = currentPackage.kode_rup || currentPackage.id_simulasi; pkgNama.textContent = currentPackage.nama_paket || ''; pkgPagu.textContent = formatRupiahFull(currentPackage.pagu || 0); pkgStatus.textContent = currentPackage.status_paket || 'Draft';
+  await refreshTotals();
+  if(realisasiId){ providerRow.classList.remove('hidden'); docRow.classList.remove('hidden'); await renderProviders(); await renderDocuments(); }
+})();
+async function refreshTotals(){ allRealisasi = await getRealisasiRows(packageId); const total = allRealisasi.reduce((a,b)=>a+Number(b.nilai_realisasi||0),0); pkgTotalRealisasi.textContent = formatRupiahFull(total); }
+function renderProviderRows(){ if(!providerRows.length){ providerBody.innerHTML='<tr><td colspan="7" style="text-align:center;background:#fff;">Belum ada penyedia</td></tr>'; return; } providerBody.innerHTML = providerRows.map((row,idx)=>`<tr style="background:#fff;"><td>${idx+1}</td><td>${escapeHtml(row.nama_penyedia||'')}</td><td>${escapeHtml(row.npwp||'')}</td><td>${escapeHtml(row.email||'')}</td><td>${escapeHtml(row.telp||'')}</td><td>${escapeHtml(row.alamat||'')}</td><td><button class="btn-red btnDelProvider" data-id="${escapeHtml(row.id_penyedia)}">Hapus</button></td></tr>`).join(''); document.querySelectorAll('.btnDelProvider').forEach(btn=>btn.onclick=async()=>{ await deleteProviderRow(btn.dataset.id); await renderProviders(); }); }
+async function renderProviders(){ providerRows = await getProviderRows(realisasiId); renderProviderRows(); }
+function renderDocumentRows(){ if(!documentRows.length){ dokumenBody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#666;">Belum ada dokumen</td></tr>'; return; } dokumenBody.innerHTML = documentRows.map(row=>`<tr><td>${escapeHtml(row.nama_file||'')}</td><td>${escapeHtml(formatTanggalIndonesia(row.created_at))}</td><td>${row.drive_url ? `<a class="btn-dark" target="_blank" href="${escapeHtml(row.drive_url)}">Lihat</a>` : ''}</td></tr>`).join(''); }
+async function renderDocuments(){ documentRows = await getDocumentRows(realisasiId); renderDocumentRows(); }
+function validateMain(){ if(!inputNamaDokumen.value.trim() || !inputNilaiRealisasi.value.trim() || !inputTanggalRealisasi.value.trim()){ alert('Field bertanda * wajib diisi.'); return false; } return true; }
+inputNilaiRealisasi.addEventListener('blur',()=>{ const val = parseRupiahInput(inputNilaiRealisasi.value); if(!Number.isNaN(val)) inputNilaiRealisasi.value = formatRupiahInput(val); });
+btnSaveRealisasi.onclick = async ()=>{
+  if(!validateMain()) return;
+  const nilai = parseRupiahInput(inputNilaiRealisasi.value); if(Number.isNaN(nilai)){ alert('Format nilai realisasi tidak valid.'); return; }
+  const totalExceptCurrent = allRealisasi.filter(r => normalizeWhitespace(r.id_realisasi) !== normalizeWhitespace(realisasiId)).reduce((a,b)=>a+Number(b.nilai_realisasi||0),0);
+  if(totalExceptCurrent + nilai > Number(currentPackage.pagu || 0)){ alert('Total Nilai Realisasi melebihi Pagu'); return; }
+  const payload = { id_realisasi: realisasiId || randomRealisasiId(), id_simulasi: packageId, bukti_pembayaran: inputBuktiPembayaran.value, jenis_realisasi: inputJenisRealisasi.value, nama_dokumen: inputNamaDokumen.value.trim(), nomor_dokumen: inputNomorDokumen.value.trim(), nilai_realisasi: nilai, tanggal_realisasi: inputTanggalRealisasi.value.trim(), keterangan: inputKeterangan.value.trim() };
+  await saveRealisasiRow(payload); realisasiId = payload.id_realisasi; providerRow.classList.remove('hidden'); docRow.classList.remove('hidden');
+  if(providerRows.length || documentRows.length){ noticeBox.textContent = 'Berhasil simpan Realisasi'; } else { noticeBox.textContent = 'Data realisasi tersimpan, lanjutkan pilih penyedia dan upload dokumen.'; }
+  noticeBox.classList.remove('hidden');
+  history.replaceState({},'', 'formrealisasi.html?id='+encodeURIComponent(packageId)+'&realisasi_id='+encodeURIComponent(realisasiId));
+  await refreshTotals(); await renderProviders(); await renderDocuments(); await savePackageToSheet({...currentPackage, status_realisasi:'Sudah Ada Realisasi', can_delete:'TIDAK'});
+};
+btnTambahPenyedia.onclick = ()=>{
+  if(inputProviderMode.value === 'Data Non SIKaP') location.href='penyedianonsikap.html?id='+encodeURIComponent(packageId)+'&realisasi_id='+encodeURIComponent(realisasiId);
+  else alert('Untuk simulasi ini, gunakan Data Non SIKaP.');
+};
+btnUploadDokumen.onclick = async ()=>{
+  const file = inputUploadDokumen.files[0]; if(!file){ alert('Pilih file dokumen terlebih dahulu.'); return; }
+  const ext = file.name.split('.').pop().toLowerCase(); if(!['pdf','jpg','jpeg','png'].includes(ext)){ alert('Ekstensi file tidak diperbolehkan.'); return; }
+  if(!realisasiId){ alert('Simpan realisasi dulu sebelum upload dokumen.'); return; }
+  const payload = await fileToDataPayload(file);
+  await uploadDocumentRow({ id_realisasi: realisasiId, id_simulasi: packageId, ...payload });
+  inputUploadDokumen.value=''; await renderDocuments(); noticeBox.textContent='Dokumen berhasil diupload, klik Simpan untuk menyelesaikan realisasi.'; noticeBox.classList.remove('hidden');
+};
+btnBackEdit.onclick = ()=> location.href='editpaketpencatatan.html?id='+encodeURIComponent(packageId);
+</script>
+</body>
+</html>
