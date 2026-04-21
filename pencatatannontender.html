@@ -25,8 +25,19 @@
       <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
     </div>
     <div class="system-bar">
-      <div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div>
-      <div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div>
+      <div class="left-mini">
+        <span style="font-weight:700;">⇵</span>
+        <span class="mini-link">▣ Petunjuk Penggunaan</span>
+        <span class="mini-link">Aplikasi e-Procurement Lainnya</span>
+      </div>
+      <div class="right-mini">
+        <span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span>
+        <span>|</span>
+        <span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span>
+        <span>✉️</span>
+        <span class="notif-badge">15</span>
+        <span style="color:#21a55b;">⬢</span>
+      </div>
     </div>
   </div>
 
@@ -40,6 +51,7 @@
 
   <div class="content-block">
     <div class="crumb"><span class="blue">Beranda</span> » Daftar Paket Non Tender</div>
+
     <div class="notice">
       Mohon diperhatikan amanat <strong>Peraturan Presiden Nomor 46 Tahun 2025</strong> tentang Perubahan Kedua Atas Peraturan Presiden Nomor 16 Tahun 2018 tentang Pengadaan Barang/Jasa Pemerintah sebagai berikut:<br><br>
       <strong>Pasal 38 Ayat 8</strong><br>
@@ -50,12 +62,21 @@
 
     <div class="action-row">
       <button class="btn-green" id="btnShowForm">Buat Paket</button>
-      <button class="btn-green">Import Paket</button>
+      <button class="btn-green" type="button">Import Paket</button>
     </div>
 
     <div class="sub-row">
-      <div style="font-size:13px;">Tampilkan <select class="select-control" style="width:56px;height:28px;padding:0 6px;"><option>25</option></select> data</div>
-      <div class="search-box"><span>Cari:</span><input type="text" id="tableSearchInput"></div>
+      <div style="font-size:13px;">
+        Tampilkan
+        <select class="select-control" style="width:56px;height:28px;padding:0 6px;">
+          <option>25</option>
+        </select>
+        data
+      </div>
+      <div class="search-box">
+        <span>Cari:</span>
+        <input type="text" id="tableSearchInput">
+      </div>
     </div>
 
     <table class="table-simple">
@@ -111,13 +132,6 @@
       satker: 'BAGIAN PENGADAAN BARANG DAN JASA',
       can_delete: 'TIDAK',
       status_realisasi: 'Sudah Ada Realisasi',
-      kode_rup: '65099268',
-      sumber_dana: 'APBD',
-      pagu: 2900000,
-      tahun: '2026',
-      instansi: 'Kota Bogor',
-      ppk: 'PPK',
-      kode_anggaran: '4.01.03.2.03.0002.5.1.02.04.001.00001.8.1.02.04.01.0001.00263',
       is_sample: true
     }
   ];
@@ -140,7 +154,13 @@
     const keyword = normalizeWhitespace(tableSearchInput.value).toLowerCase();
     const rows = getDisplayRows().filter(item =>
       !keyword ||
-      [item.nama_paket, item.metode_pemilihan, item.status_paket, item.satker, item.kode_rup].join(' ').toLowerCase().includes(keyword)
+      [
+        item.nama_paket,
+        item.metode_pemilihan,
+        item.status_paket,
+        item.satker,
+        item.kode_rup || ''
+      ].join(' ').toLowerCase().includes(keyword)
     );
 
     if(!rows.length){
@@ -196,9 +216,11 @@
           await loadPackageRows();
           renderRows();
         } catch(error) {
-          alert(error.message === 'API_URL_EMPTY'
-            ? 'Isi APP_CONFIG.apiUrl dulu lalu deploy Apps Script Web App.'
-            : error.message);
+          alert(
+            error.message === 'API_URL_EMPTY'
+              ? 'Isi APP_CONFIG.apiUrl dulu lalu deploy Apps Script Web App.'
+              : error.message
+          );
         }
       };
     });
