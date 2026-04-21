@@ -292,10 +292,23 @@
         location.href = `editpaket.html?id=${encodeURIComponent(existing.id_simulasi)}`;
         return;
       }
-    } catch(error){
-      alert(error.message === 'API_URL_EMPTY'
-        ? 'Isi APP_CONFIG.apiUrl dulu lalu deploy Apps Script Web App.'
-        : (error.message || 'Gagal menyimpan paket'));
+    } 
+    
+catch (error) {
+  console.error('SAVE PACKAGE ERROR FULL:', error);
+  let msg = 'Unknown error';
+  if (error) {
+    if (typeof error === 'string') msg = error;
+    else if (error.message) msg = error.message;
+    else {
+      try {
+        msg = JSON.stringify(error);
+      } catch (e) {
+        msg = String(error);
+      }
+    }
+  }
+  alert('Gagal menyimpan paket: ' + msg);
     }
   }
 
