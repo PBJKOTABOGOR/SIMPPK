@@ -56,7 +56,7 @@
           </table>
         </td>
       </tr>
-      <tr><td class="edit-left-label">Nama Paket <span class="req">*</span></td><td><textarea id="inputNamaPaket" class="textarea-control"> </textarea></td></tr>
+      <tr><td class="edit-left-label">Nama Paket <span class="req">*</span></td><td><textarea id="inputNamaPaket" class="textarea-control"></textarea></td></tr>
       <tr><td class="edit-left-label">Nilai Pagu Paket</td><td id="viewNilaiPagu"></td></tr>
       <tr>
         <td class="edit-left-label">Lokasi Pekerjaan <span class="req">*</span></td>
@@ -65,8 +65,8 @@
             <tr><th style="width:170px;">Provinsi <span class="req">*</span></th><th style="width:270px;">Kabupaten/Kota <span class="req">*</span></th><th>Detail Lokasi <span class="req">*</span></th></tr>
             <tr>
               <td><select id="inputProvinsi" class="select-control field-slim"><option>Jawa Barat</option></select></td>
-              <td><select id="inputKabkota" class="select-control field-slim"><option>Bogor (Kota)</option></select></td>
-              <td><input id="inputDetailLokasi" class="text-control field-slim" value="Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah"></td>
+              <td><select id="inputKabKota" class="select-control field-slim"><option>Bogor (Kota)</option></select></td>
+              <td><input id="inputDetailLokasi" class="text-control field-slim"></td>
             </tr>
           </table>
           <button class="btn-gray" type="button">◉ Tambah Lokasi</button>
@@ -84,56 +84,74 @@
   if(!requireLogin()) {}
   bindLogout();
 
-  const packageId = getQueryParam('packageId');
-  const currentPackage = packageId ? findPackageById(packageId) : null;
+  let currentPackage = null;
+  const packageId = getQueryParam('id');
 
-  if(!currentPackage){
-    location.href = 'pencatatannontender.html';
+  async function initPackage(){
+    if(packageId){
+      await loadPackageRows();
+      currentPackage = findLoadedPackageById(packageId);
+    } else {
+      currentPackage = getDraftPackage();
+    }
+    if(!currentPackage){
+      location.href = 'pencatatannontender.html';
+      return;
+    }
+    renderPackage();
   }
-
-  const saveNotice = document.getElementById('saveNotice');
-  const inputNamaPaket = document.getElementById('inputNamaPaket');
-  const inputProvinsi = document.getElementById('inputProvinsi');
-  const inputKabkota = document.getElementById('inputKabkota');
-  const inputDetailLokasi = document.getElementById('inputDetailLokasi');
 
   function renderPackage(){
-    const pkg = findPackageById(packageId);
-    if(!pkg) return;
-    document.getElementById('viewKodeRup').textContent = pkg.id_rup;
-    document.getElementById('viewNamaPaketTop').textContent = pkg.nama_paket;
-    document.getElementById('viewSumberDana').textContent = pkg.sumber_dana;
-    document.getElementById('viewInstansi').textContent = pkg.instansi;
-    document.getElementById('viewSatker').textContent = pkg.satker;
-    document.getElementById('viewTahun').textContent = pkg.tahun;
-    document.getElementById('viewSumberDana2').textContent = pkg.sumber_dana;
-    document.getElementById('viewKodeAnggaran').textContent = pkg.kode_anggaran;
-    document.getElementById('viewNilai').textContent = formatRupiahFull(pkg.pagu);
-    document.getElementById('viewPpk').textContent = pkg.ppk;
-    document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(pkg.pagu);
-    inputNamaPaket.value = pkg.nama_paket;
-    inputProvinsi.value = pkg.lokasi_provinsi || 'Jawa Barat';
-    inputKabkota.value = pkg.lokasi_kabkota || 'Bogor (Kota)';
-    inputDetailLokasi.value = pkg.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah';
-    if(pkg.is_saved) saveNotice.classList.remove('hidden');
+    document.getElementById('viewKodeRup').textContent = currentPackage.kode_rup || '';
+    document.getElementById('viewNamaPaketTop').textContent = currentPackage.nama_paket || '';
+    document.getElementById('viewSumberDana').textContent = currentPackage.sumber_dana || 'APBD';
+    document.getElementById('viewInstansi').textContent = currentPackage.instansi || APP_CONFIG.defaultInstansi;
+    document.getElementById('viewSatker').textContent = currentPackage.satker || '';
+    document.getElementById('viewTahun').textContent = currentPackage.tahun || APP_CONFIG.defaultTahun;
+    document.getElementById('viewSumberDana2').textContent = currentPackage.sumber_dana || 'APBD';
+    document.getElementById('viewKodeAnggaran').textContent = currentPackage.kode_anggaran || '';
+    document.getElementById('viewNilai').textContent = formatRupiahFull(currentPackage.pagu || 0);
+    document.getElementById('viewPpk').textContent = currentPackage.ppk || APP_CONFIG.currentUserName;
+    document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
+    document.getElementById('inputNamaPaket').value = currentPackage.nama_paket || '';
+    document.getElementById('inputProvinsi').value = currentPackage.lokasi_provinsi || 'Jawa Barat';
+    document.getElementById('inputKabKota').value = currentPackage.lokasi_kab_kota || 'Bogor (Kota)';
+    document.getElementById('inputDetailLokasi').value = currentPackage.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah';
   }
 
-  document.getElementById('btnSavePackage').onclick = () => {
-    updatePackage(packageId, pkg => ({
-      ...pkg,
-      nama_paket: inputNamaPaket.value.trim() || pkg.nama_paket,
-      lokasi_provinsi: inputProvinsi.value,
-      lokasi_kabkota: inputKabkota.value,
-      detail_lokasi: inputDetailLokasi.value.trim(),
-      is_saved: true,
-      status: 'Draft'
-    }));
-    saveNotice.classList.remove('hidden');
-    renderPackage();
+  document.getElementById('btnSavePackage').onclick = async () => {
+    const inputNamaPaket = document.getElementById('inputNamaPaket').value.trim();
+    const inputProvinsi = document.getElementById('inputProvinsi').value;
+    const inputKabKota = document.getElementById('inputKabKota').value;
+    const inputDetailLokasi = document.getElementById('inputDetailLokasi').value.trim();
+    if(!inputNamaPaket || !inputDetailLokasi){
+      alert('Nama Paket dan Detail Lokasi wajib diisi.');
+      return;
+    }
+    const payload = {
+      ...currentPackage,
+      nama_paket: inputNamaPaket,
+      lokasi_provinsi: inputProvinsi,
+      lokasi_kab_kota: inputKabKota,
+      detail_lokasi: inputDetailLokasi,
+      status_paket: 'Draft',
+      status_realisasi: 'Belum Ada Realisasi',
+      can_delete: 'YA',
+      isian_edit_selesai: 'BELUM'
+    };
+    try {
+      await savePackageToSheet(payload);
+      clearDraftPackage();
+      currentPackage = payload;
+      document.getElementById('saveNotice').classList.remove('hidden');
+      history.replaceState({}, '', 'editpaketpencatatan.html?id=' + encodeURIComponent(payload.id_simulasi));
+    } catch(error) {
+      alert(error.message === 'API_URL_EMPTY' ? 'Isi APP_CONFIG.apiUrl dulu lalu deploy Apps Script Web App.' : error.message);
+    }
   };
 
   document.getElementById('btnBackList').onclick = () => location.href = 'pencatatannontender.html';
-  renderPackage();
+  initPackage();
 </script>
 </body>
 </html>
