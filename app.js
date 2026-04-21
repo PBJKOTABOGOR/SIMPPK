@@ -6,7 +6,7 @@ const APP_CONFIG = {
   defaultTahun: '2026',
   currentUserName: 'PPK',
   currentUserRole: 'Pejabat Pembuat Komitmen',
-  apiUrl: 'https://script.google.com/macros/s/AKfycbz2YdOnLyniHWIAKC_hlGwFTpFftjDAxiF1nI2eHmnggj8DFkiD51MEbSbvJHCDMaj9Jg/exec' // isi setelah deploy Apps Script Web App
+  apiUrl: 'https://script.google.com/macros/s/AKfycbw4-u3KXZIzUUDm7Sqdjdl62OyaJX5_Vtjvyb8qtZjwgvtUEEWeoXa5FffCkD8Lhh72Hw/exec' // isi setelah deploy Apps Script Web App
 };
 
 window.SPSE_APP_STATE = window.SPSE_APP_STATE || {
