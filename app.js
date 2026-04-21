@@ -34,6 +34,18 @@ const STORAGE_KEYS = {
   draftPackage: 'spse_draft_package'
 };
 
+function buildApiUrl(action, params = {}){
+  if(!APP_CONFIG.apiUrl) throw new Error('API_URL_EMPTY');
+  const url = new URL(APP_CONFIG.apiUrl);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([key, value]) => {
+    if(value !== undefined && value !== null && value !== ''){
+      url.searchParams.set(key, value);
+    }
+  });
+  return url.toString();
+}
+
 function makeCaptcha(len = 6){
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
   let result = '';
