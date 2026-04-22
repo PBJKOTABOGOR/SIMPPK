@@ -859,7 +859,7 @@ function createDatePickerInput(options = {}) {
   } = options;
 
   const wrap = document.createElement('div');
-  wrap.style.display = 'flex';
+  wrap.style.display = 'inline-flex';
   wrap.style.alignItems = 'center';
   wrap.style.gap = '6px';
   wrap.style.position = 'relative';
@@ -873,54 +873,93 @@ function createDatePickerInput(options = {}) {
   text.style.cursor = 'pointer';
   text.value = value ? formatDateToDisplay(value) : '';
 
-  const hidden = document.createElement('input');
-  hidden.type = 'date';
-  hidden.style.position = 'absolute';
-  hidden.style.opacity = '0';
-  hidden.style.pointerEvents = 'none';
-  hidden.style.width = '1px';
-  hidden.style.height = '1px';
-  hidden.style.left = '-9999px';
-  hidden.tabIndex = -1;
-  hidden.value = value ? formatDateForInput(value) : '';
+  const buttonWrap = document.createElement('div');
+  buttonWrap.style.position = 'relative';
+  buttonWrap.style.width = '36px';
+  buttonWrap.style.height = '30px';
+  buttonWrap.style.flex = '0 0 36px';
 
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'btn-blue';
-  button.style.padding = '0 10px';
+  button.style.width = '36px';
   button.style.height = '30px';
+  button.style.padding = '0';
+  button.style.display = 'inline-flex';
+  button.style.alignItems = 'center';
+  button.style.justifyContent = 'center';
   button.textContent = '📅';
 
-  function openPicker() {
-    if (button.disabled || hidden.disabled) return;
-    if (typeof hidden.showPicker === 'function') {
-      hidden.showPicker();
-    } else {
-      hidden.click();
-    }
-  }
+  const hidden = document.createElement('input');
+  hidden.type = 'date';
+  hidden.value = value ? formatDateForInput(value) : '';
+  hidden.style.position = 'absolute';
+  hidden.style.inset = '0';
+  hidden.style.opacity = '0';
+  hidden.style.cursor = 'pointer';
+  hidden.style.zIndex = '2';
+  hidden.style.width = '100%';
+  hidden.style.height = '100%';
+  hidden.style.border = '0';
+  hidden.style.padding = '0';
+  hidden.style.margin = '0';
 
-  button.onclick = openPicker;
-  text.onclick = openPicker;
-
-  hidden.addEventListener('change', () => {
+  function syncFromHidden() {
     if (!hidden.value) {
       text.value = '';
       return;
     }
-    const parts = hidden.value.split('-');
-    if (parts.length === 3) {
-      text.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    text.value = formatDateToDisplay(hidden.value);
+  }
+
+  function openPicker() {
+    if (text.disabled || button.disabled || hidden.disabled) return;
+
+    try {
+      hidden.focus({ preventScroll: true });
+    } catch (e) {}
+
+    if (typeof hidden.showPicker === 'function') {
+      try {
+        hidden.showPicker();
+        return;
+      } catch (e) {}
     }
-  });
+
+    hidden.click();
+  }
+
+  text.addEventListener('click', openPicker);
+  button.addEventListener('click', openPicker);
+
+  hidden.addEventListener('change', syncFromHidden);
+  hidden.addEventListener('input', syncFromHidden);
+
+  buttonWrap.appendChild(button);
+  buttonWrap.appendChild(hidden);
 
   wrap.appendChild(text);
-  wrap.appendChild(button);
-  wrap.appendChild(hidden);
+  wrap.appendChild(buttonWrap);
 
-  text.disabled = !!disabled;
-  hidden.disabled = !!disabled;
-  button.disabled = !!disabled;
+  function setDisabled(state) {
+    const isDisabled = !!state;
+    text.disabled = isDisabled;
+    button.disabled = isDisabled;
+    hidden.disabled = isDisabled;
+
+    text.style.background = isDisabled ? '#f3f4f6' : '#fff';
+    text.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
+    button.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
+    hidden.style.pointerEvents = isDisabled ? 'none' : 'auto';
+  }
+
+  function setValue(val) {
+    hidden.value = val ? formatDateForInput(val) : '';
+    text.value = val ? formatDateToDisplay(val) : '';
+  }
+
+  setDisabled(disabled);
+  setValue(value);
 
   return {
     wrap,
@@ -930,14 +969,7 @@ function createDatePickerInput(options = {}) {
     getValue() {
       return text.value || '';
     },
-    setValue(val) {
-      text.value = val ? formatDateToDisplay(val) : '';
-      hidden.value = val ? formatDateForInput(val) : '';
-    },
-    setDisabled(state) {
-      text.disabled = !!state;
-      hidden.disabled = !!state;
-      button.disabled = !!state;
-    }
+    setValue,
+    setDisabled
   };
 }
