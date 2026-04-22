@@ -50,8 +50,8 @@
 
   <div class="content-block" style="margin-top:22px;">
     <div class="crumb">
-      <span class="blue">Beranda</span> » 
-      <span class="blue">Daftar Paket</span> » 
+      <span class="blue">Beranda</span> »
+      <span class="blue">Daftar Paket</span> »
       Edit Pencatatan Non Tender
     </div>
 
@@ -70,39 +70,21 @@
         <td class="form-label">Nama Paket</td>
         <td class="form-field">
           <span id="viewNamaPaket"></span>
-          <button
-            type="button"
-            class="btn-dark"
-            id="btnDetailPaket"
-            style="margin-left:8px;padding:2px 6px;font-size:11px;"
-          >Detil</button>
+          <button type="button" class="btn-dark" id="btnDetailPaket" style="margin-left:8px;padding:2px 6px;font-size:11px;">Detil</button>
         </td>
       </tr>
 
       <tr>
         <td class="form-label">Jenis Pengadaan</td>
         <td class="form-field">
-          <input
-            type="text"
-            id="inputJenisPengadaan"
-            class="text-control"
-            value="Jasa Lainnya"
-            readonly
-            style="max-width:220px;background:#f3f4f6;"
-          >
+          <input type="text" id="inputJenisPengadaan" class="text-control" readonly style="max-width:220px;background:#f3f4f6;">
         </td>
       </tr>
 
       <tr>
         <td class="form-label">Metode Pemilihan</td>
         <td class="form-field">
-          <input
-            type="text"
-            id="inputMetodePemilihan"
-            class="text-control"
-            readonly
-            style="max-width:260px;background:#f3f4f6;"
-          >
+          <input type="text" id="inputMetodePemilihan" class="text-control" readonly style="max-width:260px;background:#f3f4f6;">
         </td>
       </tr>
 
@@ -121,7 +103,7 @@
                 <th>Jenis Realisasi</th>
                 <th style="width:220px;">Nilai Realisasi</th>
                 <th style="width:220px;">Tanggal Realisasi</th>
-                <th style="width:80px;"></th>
+                <th style="width:100px;"></th>
               </tr>
             </thead>
             <tbody id="realisasiTableBody">
@@ -144,26 +126,14 @@
       <tr>
         <td class="form-label">Nilai Produk Dalam Negeri (PDN) (Rp.)</td>
         <td class="form-field">
-          <input
-            type="text"
-            id="inputPdn"
-            class="text-control"
-            style="max-width:200px;"
-            value="0,00"
-          >
+          <input type="text" id="inputPdn" class="text-control" style="max-width:220px;" value="0,00">
         </td>
       </tr>
 
       <tr>
         <td class="form-label">Nilai Usaha Mikro Kecil (UMK) (Rp.)</td>
         <td class="form-field">
-          <input
-            type="text"
-            id="inputUmk"
-            class="text-control"
-            style="max-width:200px;"
-            value="0,00"
-          >
+          <input type="text" id="inputUmk" class="text-control" style="max-width:220px;" value="0,00">
         </td>
       </tr>
 
@@ -173,10 +143,7 @@
           <div id="tanggalSelesaiWrap" style="margin-bottom:6px;"></div>
 
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-            <span
-              id="badgePerubahanTanggal"
-              style="display:none;background:#f4a12d;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;"
-            >1 kali perubahan</span>
+            <span id="badgePerubahanTanggal" style="display:none;background:#f4a12d;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;">1 kali perubahan</span>
           </div>
 
           <label style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;">
@@ -228,57 +195,20 @@
 
     const packageId = getQueryParam('id');
 
-    function formatNumberId(value) {
-      return Number(value || 0).toLocaleString('id-ID', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
+    function canEditRealisasi() {
+      if (!currentPackage) return false;
+      const status = normalizeWhitespace(currentPackage.status_paket);
+      return status === 'Draft' || status === 'Paket Sedang Berjalan';
     }
 
-    function parseNumberId(value) {
-      return parseNumber(value);
+    function canDeletePackageDraftOnly() {
+      if (!currentPackage) return false;
+      return normalizeWhitespace(currentPackage.status_paket) === 'Draft';
     }
 
-    function escapeAttr(v) {
-      return String(v == null ? '' : v).replace(/"/g, '&quot;');
-    }
-
-    function isAlreadyFilledTanggalSelesai() {
-      return normalizeWhitespace(currentPackage?.tanggal_paket_selesai || '') !== '';
-    }
-
-    function isTanggalChangeMode() {
-      return document.getElementById('checkUbahTanggal').checked;
-    }
-
-    function toggleTanggalMode() {
-      const alasanWrap = document.getElementById('alasanTanggalWrap');
-      const badge = document.getElementById('badgePerubahanTanggal');
-
-      const pernahUbah = normalizeWhitespace(currentPackage?.alasan_perubahan_tanggal || '') !== '';
-      badge.style.display = pernahUbah ? 'inline-block' : 'none';
-
-      if (isAlreadyFilledTanggalSelesai()) {
-        if (isTanggalChangeMode()) {
-          alasanWrap.classList.remove('hidden');
-          tanggalPicker.hidden.disabled = false;
-          tanggalPicker.button.disabled = false;
-          tanggalPicker.text.readOnly = true;
-          tanggalPicker.wrap.style.opacity = '1';
-        } else {
-          alasanWrap.classList.add('hidden');
-          tanggalPicker.hidden.disabled = true;
-          tanggalPicker.button.disabled = true;
-          tanggalPicker.text.readOnly = true;
-          tanggalPicker.wrap.style.opacity = '0.85';
-        }
-      } else {
-        alasanWrap.classList.add('hidden');
-        tanggalPicker.hidden.disabled = false;
-        tanggalPicker.button.disabled = false;
-        tanggalPicker.text.readOnly = true;
-        tanggalPicker.wrap.style.opacity = '1';
-      }
+    function syncPackageStatusByTanggal() {
+      const tanggal = normalizeWhitespace(currentPackage.tanggal_paket_selesai);
+      currentPackage.status_paket = hitungStatusPaketDariTanggal(tanggal);
     }
 
     function renderTanggalInput() {
@@ -292,20 +222,65 @@
 
       tanggalPicker.text.style.maxWidth = '200px';
       tanggalPicker.text.readOnly = true;
-      tanggalPicker.hidden.style.position = 'absolute';
-      tanggalPicker.hidden.style.opacity = '0';
-      tanggalPicker.hidden.style.pointerEvents = 'none';
-      tanggalPicker.hidden.style.width = '1px';
-      tanggalPicker.hidden.style.height = '1px';
+
+      const hidden = tanggalPicker.hidden;
+      hidden.style.position = 'absolute';
+      hidden.style.opacity = '0';
+      hidden.style.pointerEvents = 'none';
+      hidden.style.width = '1px';
+      hidden.style.height = '1px';
 
       wrap.appendChild(tanggalPicker.wrap);
-      toggleTanggalMode();
+      updateTanggalSectionState();
+    }
+
+    function updateTanggalSectionState() {
+      const pernahUbah = normalizeWhitespace(currentPackage.alasan_perubahan_tanggal) !== '';
+      const badge = document.getElementById('badgePerubahanTanggal');
+      const check = document.getElementById('checkUbahTanggal');
+      const alasanWrap = document.getElementById('alasanTanggalWrap');
+
+      badge.style.display = pernahUbah ? 'inline-block' : 'none';
+
+      const sudahAdaTanggal = normalizeWhitespace(currentPackage.tanggal_paket_selesai) !== '';
+      const lockedPackage = normalizeWhitespace(currentPackage.status_paket) === 'Paket Sudah Selesai';
+
+      if (lockedPackage) {
+        check.disabled = true;
+        alasanWrap.classList.add('hidden');
+        tanggalPicker.button.disabled = true;
+        tanggalPicker.hidden.disabled = true;
+        return;
+      }
+
+      if (!sudahAdaTanggal) {
+        check.disabled = true;
+        check.checked = false;
+        alasanWrap.classList.add('hidden');
+        tanggalPicker.button.disabled = false;
+        tanggalPicker.hidden.disabled = false;
+        return;
+      }
+
+      check.disabled = false;
+
+      if (check.checked) {
+        alasanWrap.classList.remove('hidden');
+        tanggalPicker.button.disabled = false;
+        tanggalPicker.hidden.disabled = false;
+      } else {
+        alasanWrap.classList.add('hidden');
+        tanggalPicker.button.disabled = true;
+        tanggalPicker.hidden.disabled = true;
+      }
     }
 
     function renderPage() {
+      syncPackageStatusByTanggal();
+
       document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
       document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
-      document.getElementById('inputJenisPengadaan').value = 'Jasa Lainnya';
+      document.getElementById('inputJenisPengadaan').value = currentPackage.jenis_pengadaan || 'Jasa Lainnya';
       document.getElementById('inputMetodePemilihan').value = currentPackage.metode_pemilihan || '';
       document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
       document.getElementById('inputPdn').value = currentPackage.pdn_realisasi || '0,00';
@@ -313,9 +288,17 @@
       document.getElementById('inputUraianPekerjaan').value = currentPackage.uraian_pekerjaan || '';
       document.getElementById('inputAlasanPerubahanTanggal').value = currentPackage.alasan_perubahan_tanggal || '';
       document.getElementById('viewStatusPaket').textContent = currentPackage.status_paket || 'Draft';
-      document.getElementById('checkUbahTanggal').checked = false;
 
+      document.getElementById('inputPdn').readOnly = !canEditRealisasi();
+      document.getElementById('inputUmk').readOnly = !canEditRealisasi();
+      document.getElementById('inputUraianPekerjaan').readOnly = !canEditRealisasi();
+
+      document.getElementById('checkUbahTanggal').checked = false;
       renderTanggalInput();
+
+      document.getElementById('btnTambahRealisasi').style.display = canEditRealisasi() ? 'inline-block' : 'none';
+      document.getElementById('btnSavePencatatan').style.display = canEditRealisasi() ? 'inline-block' : 'none';
+      document.getElementById('btnPaketBatal').style.display = canDeletePackageDraftOnly() ? 'inline-block' : 'none';
     }
 
     function renderRealisasiTable() {
@@ -333,37 +316,43 @@
         const nilai = Number(row.nilai_realisasi || 0);
         total += nilai;
 
+        const link = `formrealisasi.html?id=${encodeURIComponent(packageId)}&id_realisasi=${encodeURIComponent(row.id_realisasi)}`;
+        const hapusBtn = canEditRealisasi()
+          ? `<button class="btn-red btn-delete-realisasi" data-id="${escapeHtml(row.id_realisasi)}">Hapus</button>`
+          : '';
+
         return `
           <tr>
             <td>${index + 1}</td>
-            <td>${escapeHtml(row.jenis_realisasi || '')}</td>
+            <td>
+              <a href="${link}" style="color:#2f5ed0;text-decoration:none;">
+                ${escapeHtml(row.jenis_realisasi || '')}
+              </a>
+            </td>
             <td>${escapeHtml(formatRupiahFull(nilai))}</td>
             <td>${escapeHtml(formatDateInput(row.tanggal_realisasi || ''))}</td>
-            <td></td>
+            <td>${hapusBtn}</td>
           </tr>
         `;
       }).join('');
 
       document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(total);
-    }
 
-    function getTanggalSelesaiValue() {
-      return tanggalPicker ? formatDateInput(tanggalPicker.text.value || '') : '';
-    }
-
-    function hitungStatusPaket(tanggalSelesai) {
-      if (!tanggalSelesai) return 'Draft';
-
-      const ymd = ddmmyyyyToYmd(tanggalSelesai);
-      if (!ymd) return 'Draft';
-
-      const hariIni = new Date();
-      hariIni.setHours(0, 0, 0, 0);
-
-      const tanggalObj = new Date(ymd + 'T00:00:00');
-
-      if (tanggalObj <= hariIni) return 'Paket Sudah Selesai';
-      return 'Paket Sedang Berjalan';
+      document.querySelectorAll('.btn-delete-realisasi').forEach(btn => {
+        btn.onclick = async () => {
+          try {
+            if (!confirm('Hapus realisasi ini?')) return;
+            await deleteRealisasiFromSheet(packageId, btn.dataset.id);
+            currentPackage = findLoadedPackageById(packageId) || currentPackage;
+            realisasiRows = getPackageRealisasiRows(packageId);
+            renderPage();
+            renderRealisasiTable();
+            alert('Realisasi berhasil dihapus');
+          } catch (error) {
+            alert(error.message || 'Gagal menghapus realisasi');
+          }
+        };
+      });
     }
 
     document.getElementById('btnTambahRealisasi').onclick = () => {
@@ -374,8 +363,8 @@
       location.href = `editpaket.html?id=${encodeURIComponent(packageId)}`;
     };
 
-    document.getElementById('checkUbahTanggal').addEventListener('change', function () {
-      toggleTanggalMode();
+    document.getElementById('checkUbahTanggal').addEventListener('change', () => {
+      updateTanggalSectionState();
     });
 
     document.getElementById('btnKembali').onclick = () => {
@@ -384,13 +373,7 @@
 
     document.getElementById('btnPaketBatal').onclick = async () => {
       try {
-        if (!confirm('Yakin paket ini akan dibatalkan?')) return;
-
-        if (realisasiRows.length) {
-          alert('Paket sudah ada realisasi, tidak bisa dibatalkan.');
-          return;
-        }
-
+        if (!confirm('Yakin paket ini akan dihapus?')) return;
         await deletePackageFromSheet(packageId);
         alert('Paket berhasil dihapus');
         location.href = 'pencatatannontender.html';
@@ -401,56 +384,61 @@
 
     document.getElementById('btnSavePencatatan').onclick = async () => {
       try {
-        const tanggal = getTanggalSelesaiValue();
+        if (!canEditRealisasi()) {
+          alert('Paket sudah selesai, data tidak bisa diubah lagi.');
+          return;
+        }
+
+        const tanggal = formatDateInput(tanggalPicker.text.value || '');
         const ubahTanggal = document.getElementById('checkUbahTanggal').checked;
         const alasan = document.getElementById('inputAlasanPerubahanTanggal').value.trim();
         const uraian = document.getElementById('inputUraianPekerjaan').value.trim();
-        const pdn = document.getElementById('inputPdn').value.trim() || '0,00';
-        const umk = document.getElementById('inputUmk').value.trim() || '0,00';
 
         if (!tanggal) {
           alert('Tanggal Paket Selesai wajib diisi.');
           return;
         }
 
-        if (isAlreadyFilledTanggalSelesai() && ubahTanggal && !alasan) {
+        if (normalizeWhitespace(currentPackage.tanggal_paket_selesai) !== '' && ubahTanggal && !alasan) {
           alert('Alasan perubahan tanggal wajib diisi.');
           return;
         }
 
-        if (isAlreadyFilledTanggalSelesai() && !ubahTanggal) {
-          if (tanggal !== formatDateInput(currentPackage.tanggal_paket_selesai || '')) {
-            alert('Tanggal paket selesai hanya bisa diubah jika centang "Ubah Tanggal Selesai".');
+        if (normalizeWhitespace(currentPackage.tanggal_paket_selesai) !== '' && !ubahTanggal) {
+          const lama = formatDateInput(currentPackage.tanggal_paket_selesai || '');
+          const baru = formatDateInput(tanggalPicker.text.value || '');
+          if (lama !== baru) {
+            alert('Untuk mengubah tanggal paket selesai, centang dulu "Ubah Tanggal Selesai".');
             return;
           }
         }
 
+        const statusPaketBaru = hitungStatusPaketDariTanggal(tanggal);
+
         const payload = {
           ...currentPackage,
-          jenis_pengadaan: 'Jasa Lainnya',
-          metode_pemilihan: currentPackage.metode_pemilihan || '',
-          pdn_realisasi: pdn,
-          umk_realisasi: umk,
+          jenis_pengadaan: currentPackage.jenis_pengadaan || 'Jasa Lainnya',
+          pdn_realisasi: document.getElementById('inputPdn').value.trim() || '0,00',
+          umk_realisasi: document.getElementById('inputUmk').value.trim() || '0,00',
           tanggal_paket_selesai: tanggal,
           alasan_perubahan_tanggal: ubahTanggal ? alasan : (currentPackage.alasan_perubahan_tanggal || ''),
           uraian_pekerjaan: uraian,
-          status_paket: hitungStatusPaket(tanggal),
+          status_paket: statusPaketBaru,
           status_realisasi: realisasiRows.length ? 'Sudah Ada Realisasi' : 'Belum Ada Realisasi',
-          can_delete: realisasiRows.length ? 'TIDAK' : 'YA',
+          can_delete: statusPaketBaru === 'Draft' && !realisasiRows.length ? 'YA' : 'TIDAK',
           isian_edit_selesai: 'SUDAH'
         };
 
         const saved = await savePackageToSheet(payload);
         currentPackage = saved;
 
-        alert('Paket berhasil disimpan');
-
-        await loadPackageRows();
         await loadRealisasiRows(packageId);
         realisasiRows = getPackageRealisasiRows(packageId);
 
         renderPage();
         renderRealisasiTable();
+
+        alert('Paket berhasil disimpan');
       } catch (error) {
         alert(error.message || 'Gagal menyimpan paket');
       }
