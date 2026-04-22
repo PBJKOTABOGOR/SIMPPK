@@ -231,6 +231,12 @@
       hidden.style.height = '1px';
 
       wrap.appendChild(tanggalPicker.wrap);
+      tanggalPicker.text.style.cursor = 'pointer';
+tanggalPicker.text.addEventListener('click', () => {
+  if (tanggalPicker.button.disabled) return;
+  if (tanggalPicker.hidden.showPicker) tanggalPicker.hidden.showPicker();
+  else tanggalPicker.hidden.click();
+});
       updateTanggalSectionState();
     }
 
@@ -253,13 +259,14 @@
         return;
       }
 
-      if (!sudahAdaTanggal) {
-        check.disabled = true;
-        check.checked = false;
-        alasanWrap.classList.add('hidden');
-        tanggalPicker.button.disabled = false;
-        tanggalPicker.hidden.disabled = false;
-        return;
+if (!sudahAdaTanggal) {
+  check.disabled = true;
+  check.checked = false;
+  alasanWrap.classList.add('hidden');
+  tanggalPicker.button.disabled = false;
+  tanggalPicker.hidden.disabled = false;
+  tanggalPicker.text.readOnly = true;
+  return;
       }
 
       check.disabled = false;
