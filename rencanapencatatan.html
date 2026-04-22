@@ -11,14 +11,10 @@
     <div class="topbar-inner">
       <div class="brand">
         <div class="brand-icon">SPSE</div>
-        <div class="brand-text">
-          <div class="brand-main">INAPROC</div>
-          <div class="brand-sub">SPSE</div>
-        </div>
+        <div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div>
       </div>
       <div class="logo-kota">Kota Bogor</div>
     </div>
-
     <div class="nav">
       <a href="home.html">BERANDA</a>
       <a href="#" class="active">DAFTAR PAKET</a>
@@ -26,35 +22,16 @@
       <a href="#">INBOX</a>
       <a href="#">LOG AKSES</a>
       <a href="#">GANTI PASSWORD</a>
-      <div class="nav-right">
-        <button class="btn-logout" id="btnLogout">⏻ LOGOUT</button>
-      </div>
+      <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
     </div>
-
     <div class="system-bar">
-      <div class="left-mini">
-        <span style="font-weight:700;">⇵</span>
-        <span class="mini-link">▣ Petunjuk Penggunaan</span>
-        <span class="mini-link">Aplikasi e-Procurement Lainnya</span>
-      </div>
-      <div class="right-mini">
-        <span>
-          <a href="#" style="color:#315ec9;" data-user-name>PPK</a> -
-          <span data-user-role>Pejabat Pembuat Komitmen</span>
-        </span>
-        <span>|</span>
-        <span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span>
-        <span>✉️</span>
-        <span class="notif-badge">15</span>
-        <span style="color:#21a55b;">⬢</span>
-      </div>
+      <div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div>
+      <div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div>
     </div>
   </div>
 
   <div class="content-block" style="margin-top:22px;">
-    <div class="crumb">
-      <span class="blue">Daftar Paket</span> » Daftar Rencana Paket
-    </div>
+    <div class="crumb"><span class="blue">Daftar Paket</span> » Daftar Rencana Paket</div>
 
     <table class="form-table">
       <tr>
@@ -66,7 +43,6 @@
           </select>
         </td>
       </tr>
-
       <tr>
         <td class="form-label">Tahun Anggaran</td>
         <td class="form-field">
@@ -75,7 +51,6 @@
           </select>
         </td>
       </tr>
-
       <tr>
         <td class="form-label">Satuan Kerja <span class="req">*</span></td>
         <td class="form-field">
@@ -87,7 +62,6 @@
           </div>
         </td>
       </tr>
-
       <tr>
         <td class="form-label">Metode Pemilihan</td>
         <td class="form-field">
@@ -104,7 +78,6 @@
           </select>
         </td>
       </tr>
-
       <tr>
         <td class="form-label"></td>
         <td class="form-field">
@@ -121,15 +94,10 @@
     <div class="sub-row">
       <div style="font-size:13px;">
         Tampilkan
-        <select class="select-control" style="width:56px;height:28px;padding:0 6px;">
-          <option>25</option>
-        </select>
+        <select class="select-control" style="width:56px;height:28px;padding:0 6px;"><option>25</option></select>
         data
       </div>
-      <div class="search-box">
-        <span>Cari:</span>
-        <input type="text" id="tableSearchInput">
-      </div>
+      <div class="search-box"><span>Cari:</span><input type="text" id="tableSearchInput"></div>
     </div>
 
     <table class="table-simple">
@@ -145,25 +113,18 @@
         </tr>
       </thead>
       <tbody id="rupTableBody">
-        <tr>
-          <td colspan="7" style="text-align:center;color:#666;">No data available in table</td>
-        </tr>
+        <tr><td colspan="7" style="text-align:center;color:#666;">No data available in table</td></tr>
       </tbody>
     </table>
 
-    <div class="pager">
-      <button>‹</button>
-      <button>›</button>
-    </div>
+    <div class="pager"><button>‹</button><button>›</button></div>
 
     <div class="footer-action" style="justify-content:flex-start;">
       <div id="tableInfo" style="font-size:13px;margin-right:14px;">Tampilan 0 sampai 0 dari 0 data</div>
-
-      <div class="action-row" id="actionRowCreate" style="display:none;">
-        <button class="btn-green" id="btnCreatePackage" type="button">Buat Paket</button>
+      <div class="action-row" id="actionCreateWrap">
+        <button class="btn-green" id="btnCreatePackage">Buat Paket</button>
       </div>
-
-      <div class="action-row" id="actionRowEdit" style="display:none;">
+      <div class="action-row" id="actionSelectWrap" style="display:none;">
         <button class="btn-green" id="btnCreatePackageFinal" type="button">Pilih Rencana Pengadaan</button>
         <button class="btn-back" id="btnBack" type="button">◀ Kembali</button>
       </div>
@@ -175,352 +136,251 @@
       <div class="confirm-title">spse.inaproc.id says</div>
       <div class="confirm-msg">Apakah benar ini Paket Anda?</div>
       <div class="confirm-actions">
-        <button class="btn-ok" id="btnConfirmOk" type="button">OK</button>
-        <button class="btn-cancel" id="btnConfirmCancel" type="button">Cancel</button>
+        <button class="btn-ok" id="btnConfirmOk">OK</button>
+        <button class="btn-cancel" id="btnConfirmCancel">Cancel</button>
       </div>
     </div>
   </div>
 
-  <script src="app.js"></script>
-  <script>
-    if (!requireLogin()) {}
-    bindLogout();
+<script src="app.js"></script>
+<script>
+  if (!requireLogin()) {}
+  bindLogout();
 
-    const instansiSelect = document.getElementById('instansiSelect');
-    const tahunSelect = document.getElementById('tahunSelect');
-    const satkerSelect = document.getElementById('satkerSelect');
-    const metodeSelect = document.getElementById('metodeSelect');
-    const btnRefreshSatker = document.getElementById('btnRefreshSatker');
-    const btnUpdateRup = document.getElementById('btnUpdateRup');
-    const tableSearchInput = document.getElementById('tableSearchInput');
-    const rupTableBody = document.getElementById('rupTableBody');
-    const tableInfo = document.getElementById('tableInfo');
+  const instansiSelect = document.getElementById('instansiSelect');
+  const tahunSelect = document.getElementById('tahunSelect');
+  const satkerSelect = document.getElementById('satkerSelect');
+  const metodeSelect = document.getElementById('metodeSelect');
+  const btnRefreshSatker = document.getElementById('btnRefreshSatker');
+  const btnUpdateRup = document.getElementById('btnUpdateRup');
+  const tableSearchInput = document.getElementById('tableSearchInput');
+  const rupTableBody = document.getElementById('rupTableBody');
+  const tableInfo = document.getElementById('tableInfo');
+  const btnCreatePackage = document.getElementById('btnCreatePackage');
+  const btnCreatePackageFinal = document.getElementById('btnCreatePackageFinal');
+  const confirmOverlay = document.getElementById('confirmOverlay');
+  const btnConfirmOk = document.getElementById('btnConfirmOk');
+  const btnConfirmCancel = document.getElementById('btnConfirmCancel');
+  const actionCreateWrap = document.getElementById('actionCreateWrap');
+  const actionSelectWrap = document.getElementById('actionSelectWrap');
 
-    const actionRowCreate = document.getElementById('actionRowCreate');
-    const actionRowEdit = document.getElementById('actionRowEdit');
+  const mode = getQueryParam('mode') || 'create';
+  const packageId = getQueryParam('id') || '';
 
-    const btnCreatePackage = document.getElementById('btnCreatePackage');
-    const btnCreatePackageFinal = document.getElementById('btnCreatePackageFinal');
-    const btnBack = document.getElementById('btnBack');
+  function setDefaults() {
+    instansiSelect.value = APP_CONFIG.defaultInstansi;
+    tahunSelect.value = getQueryParam('tahun') || APP_CONFIG.defaultTahun;
+    if (getQueryParam('metode')) metodeSelect.value = getQueryParam('metode');
+  }
 
-    const confirmOverlay = document.getElementById('confirmOverlay');
-    const btnConfirmOk = document.getElementById('btnConfirmOk');
-    const btnConfirmCancel = document.getElementById('btnConfirmCancel');
-
-    const mode = getQueryParam('mode') || 'create';
-    const packageId = getQueryParam('id') || '';
-
-    function setDefaults() {
-      if (APP_CONFIG.defaultInstansi) {
-        instansiSelect.value = APP_CONFIG.defaultInstansi;
-      } else {
-        instansiSelect.value = 'Kota Bogor';
-      }
-
-      tahunSelect.value = getQueryParam('tahun') || APP_CONFIG.defaultTahun || '2026';
+  function updateActionButtons() {
+    if (mode === 'create') {
+      actionCreateWrap.style.display = 'flex';
+      actionSelectWrap.style.display = 'none';
+    } else {
+      actionCreateWrap.style.display = 'none';
+      actionSelectWrap.style.display = 'flex';
     }
+  }
 
-    function setupBottomButtons() {
-      if (mode === 'create') {
-        actionRowCreate.style.display = 'flex';
-        actionRowEdit.style.display = 'none';
-      } else {
-        actionRowCreate.style.display = 'none';
-        actionRowEdit.style.display = 'flex';
-      }
-    }
+  function populateSatkerOptions() {
+    const satkers = getUniqueSatkersByYear(tahunSelect.value || APP_CONFIG.defaultTahun);
+    const current = getQueryParam('satker') || satkerSelect.value;
+    satkerSelect.innerHTML = '<option value="">Pilih Satuan Kerja</option>';
 
-    function populateSatkerOptions() {
-      const satkers = getUniqueSatkersByYear(tahunSelect.value || APP_CONFIG.defaultTahun);
-      const current = getQueryParam('satker') || satkerSelect.value;
-
-      satkerSelect.innerHTML = '<option value="">Pilih Satuan Kerja</option>';
-
-      satkers.forEach(s => {
-        const op = document.createElement('option');
-        op.value = s;
-        op.textContent = s;
-        satkerSelect.appendChild(op);
-      });
-
-      if (current && satkers.includes(current)) {
-        satkerSelect.value = current;
-      }
-    }
-
-    function renderTable() {
-      const keyword = normalizeWhitespace(tableSearchInput.value).toLowerCase();
-
-      const rows = (window.SPSE_APP_STATE.filteredRup || []).filter(item => {
-        const haystack = [
-          item.id_rup,
-          item.nama_paket,
-          item.metode_rup,
-          item.sumber_dana,
-          item.satker,
-          item.tahun
-        ].join(' ').toLowerCase();
-
-        return !keyword || haystack.includes(keyword);
-      });
-
-      if (!rows.length) {
-        rupTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;">No data available in table</td></tr>';
-        tableInfo.textContent = 'Tampilan 0 hingga 0 dari 0 data';
-        return;
-      }
-
-      rupTableBody.innerHTML = rows.map(item => `
-        <tr>
-          <td>
-            <input
-              type="checkbox"
-              class="row-check"
-              data-id="${escapeHtml(String(item.id_rup || ''))}"
-            >
-          </td>
-          <td>${escapeHtml(String(item.id_rup || ''))}</td>
-          <td><a href="#" style="color:#2f5ed0;">${escapeHtml(String(item.nama_paket || ''))}</a></td>
-          <td>${escapeHtml(String(item.sumber_dana || 'APBD'))}</td>
-          <td>${escapeHtml(String(item.metode_rup || ''))}</td>
-          <td>${escapeHtml(formatRupiahShort(Number(item.pagu || 0)))}</td>
-          <td>${escapeHtml(String(item.tahun || ''))}</td>
-        </tr>
-      `).join('');
-
-      tableInfo.textContent = `Tampilan 1 sampai ${rows.length} dari ${rows.length} data`;
-
-      document.querySelectorAll('.row-check').forEach(box => {
-        box.onchange = function () {
-          document.querySelectorAll('.row-check').forEach(other => {
-            if (other !== this) other.checked = false;
-          });
-
-          window.SPSE_APP_STATE.selectedRows = this.checked
-            ? new Set([String(this.dataset.id || '')])
-            : new Set();
-        };
-      });
-    }
-
-    function applyFilters() {
-      const instansi = instansiSelect.value;
-      const satker = satkerSelect.value;
-      const metode = metodeSelect.value;
-
-      if (!instansi || !satker || !metode) {
-        window.SPSE_APP_STATE.filteredRup = [];
-        window.SPSE_APP_STATE.selectedRows = new Set();
-        renderTable();
-        return;
-      }
-
-      window.SPSE_APP_STATE.selectedRows = new Set();
-      window.SPSE_APP_STATE.filteredRup = filterRupRows({
-        tahun: tahunSelect.value,
-        satker: satker,
-        metode: metode
-      });
-
-      renderTable();
-    }
-
-    function getSelectedRupRow() {
-      const selectedId = [...(window.SPSE_APP_STATE.selectedRows || new Set())][0];
-
-      if (!selectedId) {
-        alert('Pilih salah satu paket terlebih dahulu.');
-        return null;
-      }
-
-      const selectedRup = (window.SPSE_APP_STATE.filteredRup || []).find(item => {
-        return String(item.id_rup || '') === String(selectedId);
-      });
-
-      if (!selectedRup) {
-        alert('Data paket tidak ditemukan.');
-        return null;
-      }
-
-      return selectedRup;
-    }
-
-    function buildPayloadFromSelectedRup(selectedRup, existingData) {
-      const base = existingData || {};
-
-      return {
-        id_simulasi: base.id_simulasi || '',
-        kode_rup: String(selectedRup.id_rup || ''),
-        nama_paket: String(selectedRup.nama_paket || ''),
-        satker: String(selectedRup.satker || ''),
-        tahun: String(selectedRup.tahun || ''),
-        metode_pemilihan: String(selectedRup.metode_rup || ''),
-        sumber_dana: String(selectedRup.sumber_dana || 'APBD'),
-        pagu: Number(selectedRup.pagu || 0),
-        kode_anggaran: String(base.kode_anggaran || ''),
-        ppk: String(base.ppk || 'PPK'),
-        instansi: String(base.instansi || 'Kota Bogor'),
-        status_paket: String(base.status_paket || 'Draft'),
-        status_realisasi: String(base.status_realisasi || 'Belum Ada Realisasi'),
-        can_delete: String(base.can_delete || 'YA'),
-        lokasi_provinsi: String(base.lokasi_provinsi || 'Jawa Barat'),
-        lokasi_kab_kota: String(base.lokasi_kab_kota || 'Bogor (Kota)'),
-        detail_lokasi: String(base.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah'),
-        isian_edit_selesai: String(base.isian_edit_selesai || ''),
-        pdn_realisasi: String(base.pdn_realisasi || '0,00'),
-        umk_realisasi: String(base.umk_realisasi || '0,00'),
-        tanggal_paket_selesai: String(base.tanggal_paket_selesai || ''),
-        alasan_perubahan_tanggal: String(base.alasan_perubahan_tanggal || ''),
-        uraian_pekerjaan: String(base.uraian_pekerjaan || ''),
-        jenis_pengadaan: String(base.jenis_pengadaan || 'Jasa Lainnya')
-      };
-    }
-
-    async function saveSelectedPackage() {
-      const selectedRup = getSelectedRupRow();
-      if (!selectedRup) return;
-
-      try {
-        if (mode === 'create') {
-          const payload = buildPayloadFromSelectedRup(selectedRup);
-
-          const saved = await savePackageToSheet(payload);
-          const savedId = (saved && saved.id_simulasi) ? saved.id_simulasi : payload.id_simulasi;
-
-          if (!savedId) {
-            throw new Error('id_simulasi hasil simpan tidak ditemukan.');
-          }
-
-          location.href = `editpaket.html?id=${encodeURIComponent(savedId)}`;
-          return;
-        }
-
-        await loadPackageRows();
-
-        const existing = findLoadedPackageById(packageId);
-        if (!existing) {
-          alert('Paket existing tidak ditemukan.');
-          return;
-        }
-
-        if (mode === 'update-rencana') {
-          const payload = buildPayloadFromSelectedRup(selectedRup, existing);
-          payload.id_simulasi = existing.id_simulasi;
-          payload.updated_at = new Date().toISOString();
-
-          const saved = await savePackageToSheet(payload);
-          const savedId = (saved && saved.id_simulasi) ? saved.id_simulasi : existing.id_simulasi;
-
-          location.href = `editpaket.html?id=${encodeURIComponent(savedId)}`;
-          return;
-        }
-
-        if (mode === 'tambah-rencana') {
-          const payload = {
-            ...existing,
-            id_simulasi: existing.id_simulasi,
-            pagu: Number(existing.pagu || 0) + Number(selectedRup.pagu || 0),
-            updated_at: new Date().toISOString()
-          };
-
-          const saved = await savePackageToSheet(payload);
-          const savedId = (saved && saved.id_simulasi) ? saved.id_simulasi : existing.id_simulasi;
-
-          location.href = `editpaket.html?id=${encodeURIComponent(savedId)}`;
-          return;
-        }
-      } catch (error) {
-        console.error('SAVE PACKAGE ERROR FULL:', error);
-
-        let msg = 'Unknown error';
-        if (error) {
-          if (typeof error === 'string') msg = error;
-          else if (error.message) msg = error.message;
-          else {
-            try {
-              msg = JSON.stringify(error);
-            } catch (e) {
-              msg = String(error);
-            }
-          }
-        }
-
-        alert('Gagal menyimpan paket: ' + msg);
-      }
-    }
-
-    btnRefreshSatker.onclick = applyFilters;
-    btnUpdateRup.onclick = applyFilters;
-    tableSearchInput.addEventListener('input', renderTable);
-
-    satkerSelect.addEventListener('change', applyFilters);
-    metodeSelect.addEventListener('change', applyFilters);
-    tahunSelect.addEventListener('change', () => {
-      populateSatkerOptions();
-      applyFilters();
+    satkers.forEach(s => {
+      const op = document.createElement('option');
+      op.value = s;
+      op.textContent = s;
+      satkerSelect.appendChild(op);
     });
 
-    btnCreatePackage.onclick = () => {
-      const selected = getSelectedRupRow();
-      if (!selected) return;
-      confirmOverlay.style.display = 'flex';
-    };
+    if (current && satkers.includes(current)) satkerSelect.value = current;
+  }
 
-    btnCreatePackageFinal.onclick = () => {
-      const selected = getSelectedRupRow();
-      if (!selected) return;
-      confirmOverlay.style.display = 'flex';
-    };
+  function renderTable() {
+    const keyword = normalizeWhitespace(tableSearchInput.value).toLowerCase();
 
-    btnConfirmCancel.onclick = () => {
-      confirmOverlay.style.display = 'none';
-    };
+    const rows = window.SPSE_APP_STATE.filteredRup.filter(item =>
+      !keyword ||
+      [item.id_rup, item.nama_paket, item.metode_rup, item.sumber_dana, item.satker].join(' ').toLowerCase().includes(keyword)
+    );
 
-    btnConfirmOk.onclick = async () => {
-      confirmOverlay.style.display = 'none';
-      await saveSelectedPackage();
-    };
+    if (!rows.length) {
+      rupTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;">No data available in table</td></tr>';
+      tableInfo.textContent = 'Tampilan 0 hingga 0 dari 0 data';
+      return;
+    }
 
-    btnBack.onclick = () => {
-      if (mode === 'create') {
-        location.href = 'pencatatannontender.html';
-      } else {
-        location.href = `editpaket.html?id=${encodeURIComponent(packageId)}`;
-      }
-    };
+    rupTableBody.innerHTML = rows.map(item => `
+      <tr>
+        <td><input type="checkbox" class="row-check" data-id="${escapeHtml(item.id_rup)}"></td>
+        <td>${escapeHtml(item.id_rup)}</td>
+        <td><a href="#" style="color:#2f5ed0;">${escapeHtml(item.nama_paket)}</a></td>
+        <td>${escapeHtml(item.sumber_dana)}</td>
+        <td>${escapeHtml(item.metode_rup)}</td>
+        <td>${escapeHtml(formatRupiahShort(item.pagu))}</td>
+        <td>${escapeHtml(item.tahun)}</td>
+      </tr>
+    `).join('');
 
-    (async function init() {
-      setDefaults();
-      setupBottomButtons();
+    tableInfo.textContent = `Tampilan 1 sampai ${rows.length} dari ${rows.length} data`;
+
+    document.querySelectorAll('.row-check').forEach(box => {
+      box.onchange = function () {
+        document.querySelectorAll('.row-check').forEach(other => {
+          if (other !== this) other.checked = false;
+        });
+        window.SPSE_APP_STATE.selectedRows = this.checked ? new Set([this.dataset.id]) : new Set();
+      };
+    });
+  }
+
+  function applyFilters() {
+    const instansi = instansiSelect.value;
+    const satker = satkerSelect.value;
+    const metode = metodeSelect.value;
+
+    if (!instansi || !satker || !metode) {
+      window.SPSE_APP_STATE.filteredRup = [];
+      renderTable();
+      return;
+    }
+
+    window.SPSE_APP_STATE.selectedRows = new Set();
+    window.SPSE_APP_STATE.filteredRup = filterRupRows({
+      tahun: tahunSelect.value,
+      satker,
+      metode
+    });
+    renderTable();
+  }
+
+  async function saveSelectedPackage() {
+    const selectedId = [...window.SPSE_APP_STATE.selectedRows][0];
+    if (!selectedId) {
+      alert('Pilih salah satu paket terlebih dahulu.');
+      return;
+    }
+
+    const selectedRup = window.SPSE_APP_STATE.filteredRup.find(item => item.id_rup === selectedId);
+    if (!selectedRup) {
+      alert('Data paket tidak ditemukan.');
+      return;
+    }
+
+    if (mode === 'create') {
+      const draft = buildDraftPackageFromRup(selectedRup);
+      const saved = await withLoading(() => savePackageToSheet(draft), 'Sedang menyimpan paket...');
+      location.href = `editpaket.html?id=${encodeURIComponent(saved.id_simulasi)}`;
+      return;
+    }
+
+    await withLoading(() => loadPackageRows(), 'Sedang memuat paket...');
+    const existing = findLoadedPackageById(packageId);
+    if (!existing) {
+      alert('Paket existing tidak ditemukan.');
+      return;
+    }
+
+    if (mode === 'update-rencana') {
+      const payload = {
+        ...existing,
+        kode_rup: selectedRup.id_rup,
+        nama_paket: selectedRup.nama_paket,
+        metode_pemilihan: selectedRup.metode_rup,
+        sumber_dana: selectedRup.sumber_dana || 'APBD',
+        pagu: Number(selectedRup.pagu || 0),
+        satker: selectedRup.satker,
+        tahun: selectedRup.tahun,
+        updated_at: new Date().toISOString()
+      };
+      const saved = await withLoading(() => savePackageToSheet(payload), 'Sedang memperbarui paket...');
+      location.href = `editpaket.html?id=${encodeURIComponent(saved.id_simulasi)}`;
+      return;
+    }
+
+    if (mode === 'tambah-rencana') {
+      const payload = {
+        ...existing,
+        pagu: Number(existing.pagu || 0) + Number(selectedRup.pagu || 0),
+        updated_at: new Date().toISOString()
+      };
+      const saved = await withLoading(() => savePackageToSheet(payload), 'Sedang menambah rencana...');
+      location.href = `editpaket.html?id=${encodeURIComponent(saved.id_simulasi)}`;
+    }
+  }
+
+  btnRefreshSatker.onclick = () => withLoading(() => {
+    populateSatkerOptions();
+    applyFilters();
+  }, 'Sedang menarik data satker...');
+
+  btnUpdateRup.onclick = () => withLoading(() => applyFilters(), 'Sedang menarik data RUP...');
+  tableSearchInput.addEventListener('input', renderTable);
+
+  satkerSelect.addEventListener('change', () => withLoading(() => applyFilters(), 'Sedang menarik data RUP...'));
+  metodeSelect.addEventListener('change', () => withLoading(() => applyFilters(), 'Sedang menarik data RUP...'));
+  tahunSelect.addEventListener('change', () => withLoading(async () => {
+    populateSatkerOptions();
+    applyFilters();
+  }, 'Sedang menarik data...'));
+
+  btnCreatePackage.onclick = async () => {
+    await saveSelectedPackage();
+  };
+
+  btnCreatePackageFinal.onclick = () => {
+    const selectedId = [...window.SPSE_APP_STATE.selectedRows][0];
+    if (!selectedId) {
+      alert('Pilih salah satu paket terlebih dahulu.');
+      return;
+    }
+    confirmOverlay.style.display = 'flex';
+  };
+
+  btnConfirmCancel.onclick = () => {
+    confirmOverlay.style.display = 'none';
+  };
+
+  btnConfirmOk.onclick = async () => {
+    confirmOverlay.style.display = 'none';
+    await saveSelectedPackage();
+  };
+
+  document.getElementById('btnBack').onclick = () => {
+    location.href = `editpaket.html?id=${encodeURIComponent(packageId)}`;
+  };
+
+  (async function init() {
+    setDefaults();
+    updateActionButtons();
+
+    await withLoading(async () => {
       await ensureDataLoaded();
       populateSatkerOptions();
-
-      const defaultMetode = getQueryParam('metode') || '';
-      if (defaultMetode) {
-        metodeSelect.value = defaultMetode;
-      }
-
       applyFilters();
+    }, 'Sedang menarik data RUP...');
 
-      setupTutorial({
-        steps: [
-          {
-            target: '#satkerSelect',
-            title: 'Langkah 1',
-            text: 'Pilih <b>Satuan Kerja</b> dan <b>Metode Pemilihan</b> untuk menampilkan paket RUP.',
-            place: 'bottom'
-          },
-          {
-            target: '#rupTableBody',
-            title: 'Langkah 2',
-            text: mode === 'create'
-              ? 'Pilih salah satu paket, lalu klik <b>Buat Paket</b>.'
-              : 'Pilih salah satu paket, lalu klik <b>Pilih Rencana Pengadaan</b>.',
-            place: 'top'
-          }
-        ]
-      });
-    })();
-  </script>
+    setupTutorial({
+      steps: [
+        {
+          target:'#satkerSelect',
+          title:'Langkah 1',
+          text:'Pilih <b>Satuan Kerja</b> dan <b>Metode Pemilihan</b> untuk menampilkan paket RUP.',
+          place:'bottom'
+        },
+        {
+          target:'#rupTableBody',
+          title:'Langkah 2',
+          text: mode === 'create'
+            ? 'Pilih salah satu paket, lalu klik <b>Buat Paket</b>.'
+            : 'Pilih salah satu paket, lalu klik <b>Pilih Rencana Pengadaan</b>.',
+          place:'top'
+        }
+      ]
+    });
+  })();
+</script>
 </body>
 </html>
