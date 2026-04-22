@@ -11,10 +11,14 @@
     <div class="topbar-inner">
       <div class="brand">
         <div class="brand-icon">SPSE</div>
-        <div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div>
+        <div class="brand-text">
+          <div class="brand-main">INAPROC</div>
+          <div class="brand-sub">SPSE</div>
+        </div>
       </div>
       <div class="logo-kota">Kota Bogor</div>
     </div>
+
     <div class="nav">
       <a href="home.html">BERANDA</a>
       <a href="#" class="active">DAFTAR PAKET</a>
@@ -22,11 +26,28 @@
       <a href="#">INBOX</a>
       <a href="#">LOG AKSES</a>
       <a href="#">GANTI PASSWORD</a>
-      <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
+      <div class="nav-right">
+        <button class="btn-logout" id="btnLogout">⏻ LOGOUT</button>
+      </div>
     </div>
+
     <div class="system-bar">
-      <div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div>
-      <div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div>
+      <div class="left-mini">
+        <span style="font-weight:700;">⇵</span>
+        <span class="mini-link">▣ Petunjuk Penggunaan</span>
+        <span class="mini-link">Aplikasi e-Procurement Lainnya</span>
+      </div>
+      <div class="right-mini">
+        <span>
+          <a href="#" style="color:#315ec9;" data-user-name>PPK</a> -
+          <span data-user-role>Pejabat Pembuat Komitmen</span>
+        </span>
+        <span>|</span>
+        <span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span>
+        <span>✉️</span>
+        <span class="notif-badge">15</span>
+        <span style="color:#21a55b;">⬢</span>
+      </div>
     </div>
   </div>
 
@@ -40,6 +61,7 @@
 
   <div class="content-block">
     <div class="crumb"><span class="blue">Beranda</span> » Daftar Paket Non Tender</div>
+
     <div class="notice">
       Mohon diperhatikan amanat <strong>Peraturan Presiden Nomor 46 Tahun 2025</strong> tentang Perubahan Kedua Atas Peraturan Presiden Nomor 16 Tahun 2018 tentang Pengadaan Barang/Jasa Pemerintah sebagai berikut:<br><br>
       <strong>Pasal 38 Ayat 8</strong><br>
@@ -50,12 +72,21 @@
 
     <div class="action-row">
       <button class="btn-green" id="btnShowForm">Buat Paket</button>
-      <button class="btn-green">Import Paket</button>
+      <button class="btn-green" type="button">Import Paket</button>
     </div>
 
     <div class="sub-row">
-      <div style="font-size:13px;">Tampilkan <select class="select-control" style="width:56px;height:28px;padding:0 6px;"><option>25</option></select> data</div>
-      <div class="search-box"><span>Cari:</span><input type="text" id="tableSearchInput"></div>
+      <div style="font-size:13px;">
+        Tampilkan
+        <select class="select-control" style="width:56px;height:28px;padding:0 6px;">
+          <option>25</option>
+        </select>
+        data
+      </div>
+      <div class="search-box">
+        <span>Cari:</span>
+        <input type="text" id="tableSearchInput">
+      </div>
     </div>
 
     <table class="table-simple">
@@ -73,7 +104,11 @@
       </tbody>
     </table>
 
-    <div class="pager"><button>‹</button><button>›</button></div>
+    <div class="pager">
+      <button>‹</button>
+      <button>›</button>
+    </div>
+
     <div style="font-size:13px;margin-top:10px;" id="packageListInfo">Tampilan 0 sampai 0 dari 0 data</div>
 
     <div class="notice-yellow" style="margin-top:18px;">
@@ -82,132 +117,125 @@
     </div>
   </div>
 
-<script src="app.js"></script>
-<script>
-  if (!requireLogin()) {}
-  bindLogout();
+  <script src="app.js"></script>
+  <script>
+    if (!requireLogin()) {}
+    bindLogout();
 
-  const sampleRows = [
-    {
-      id_simulasi: 'sample-1',
-      nama_paket: 'Broadcast Whatsapp API',
-      metode_pemilihan: 'Pengadaan Langsung',
-      status_paket: 'Paket Sudah Selesai',
-      created_at: '2026-02-09T00:00:00',
-      satker: 'BAGIAN PENGADAAN BARANG DAN JASA',
-      can_delete: 'TIDAK',
-      status_realisasi: 'Sudah Ada Realisasi',
-      kode_rup: '65099268',
-      sumber_dana: 'APBD',
-      pagu: 2900000,
-      tahun: '2026',
-      instansi: 'Kota Bogor',
-      ppk: 'PPK',
-      kode_anggaran: '4.01.03.2.03.0002.5.1.02.04.001.00001.8.1.02.04.01.0001.00263',
-      is_sample: true,
-      tanggal_paket_selesai: '06-02-2027'
-    }
-  ];
+    const sampleRows = [
+      {
+        id_simulasi: 'sample-1',
+        nama_paket: 'Broadcast Whatsapp API',
+        metode_pemilihan: 'Pengadaan Langsung',
+        status_paket: 'Paket Sudah Selesai',
+        created_at: '2026-02-09T00:00:00',
+        satker: 'BAGIAN PENGADAAN BARANG DAN JASA',
+        can_delete: 'TIDAK',
+        status_realisasi: 'Sudah Ada Realisasi',
+        is_sample: true
+      }
+    ];
 
-  const packageListBody = document.getElementById('packageListBody');
-  const packageListInfo = document.getElementById('packageListInfo');
-  const tableSearchInput = document.getElementById('tableSearchInput');
+    const packageListBody = document.getElementById('packageListBody');
+    const packageListInfo = document.getElementById('packageListInfo');
+    const tableSearchInput = document.getElementById('tableSearchInput');
 
-  function getDisplayRows() {
-    return sampleRows.concat(window.SPSE_APP_STATE.packageRows || []);
-  }
-
-  function renderRows() {
-    const keyword = normalizeWhitespace(tableSearchInput.value).toLowerCase();
-
-    const rows = getDisplayRows().filter(item =>
-      !keyword ||
-      [
-        item.nama_paket,
-        item.metode_pemilihan,
-        item.status_paket,
-        item.satker,
-        item.kode_rup
-      ].join(' ').toLowerCase().includes(keyword)
-    );
-
-    if (!rows.length) {
-      packageListBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">No data available in table</td></tr>';
-      packageListInfo.textContent = 'Tampilan 0 sampai 0 dari 0 data';
-      return;
+    function canDeleteRow(item) {
+      const statusPaket = normalizeWhitespace(item.status_paket).toUpperCase();
+      const statusRealisasi = normalizeWhitespace(item.status_realisasi).toUpperCase();
+      return !item.is_sample && statusPaket === 'DRAFT' && statusRealisasi !== 'SUDAH ADA REALISASI';
     }
 
-    packageListBody.innerHTML = rows.map(item => {
-      const effectiveStatus = item.is_sample ? (item.status_paket || 'Draft') : getPackageEffectiveStatus(item);
+    function getDisplayRows() {
+      const apiRows = (window.SPSE_APP_STATE.packageRows || []).slice()
+        .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+      return sampleRows.concat(apiRows);
+    }
 
-      const namaPaketHref = item.is_sample
-        ? '#'
-        : `editpaket.html?id=${encodeURIComponent(item.id_simulasi)}`;
+    function renderRows() {
+      const keyword = normalizeWhitespace(tableSearchInput.value).toLowerCase();
+      const rows = getDisplayRows().filter(item => {
+        const haystack = [
+          item.nama_paket,
+          item.metode_pemilihan,
+          item.status_paket,
+          item.satker,
+          item.kode_rup
+        ].join(' ').toLowerCase();
 
-      const paketPencatatanHref = item.is_sample
-        ? '#'
-        : `editpaketpencatatan.html?id=${encodeURIComponent(item.id_simulasi)}`;
+        return !keyword || haystack.includes(keyword);
+      });
 
-      const allowDelete = !item.is_sample && canDeletePackage(item);
+      if (!rows.length) {
+        packageListBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">No data available in table</td></tr>';
+        packageListInfo.textContent = 'Tampilan 0 sampai 0 dari 0 data';
+        return;
+      }
 
-      return `
-        <tr>
-          <td>
-            <a href="${namaPaketHref}" class="package-name-link" data-sample="${item.is_sample ? '1' : '0'}">
-              ${escapeHtml(item.nama_paket || '')}
-            </a>
-            <span class="pill-method">${escapeHtml(item.metode_pemilihan || '')}</span>
-            <span class="pill-spse">spse 4.5</span>
-          </td>
-          <td>${escapeHtml(effectiveStatus)}</td>
-          <td>${escapeHtml(formatTanggalIndonesia(item.created_at))}</td>
-          <td>${escapeHtml(item.satker || '')}</td>
-          <td>
-            <div class="row-actions">
-              <a href="${paketPencatatanHref}" class="btn-dark package-pencatatan-link" data-sample="${item.is_sample ? '1' : '0'}">📝 Paket Pencatatan</a>
-              ${allowDelete ? `<button class="btn-red btn-delete" data-id="${escapeHtml(item.id_simulasi)}">Hapus Pencatatan</button>` : ''}
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+      packageListBody.innerHTML = rows.map(item => {
+        const namaPaketHref = item.is_sample
+          ? '#'
+          : `editpaket.html?id=${encodeURIComponent(item.id_simulasi)}`;
 
-    packageListInfo.textContent = `Tampilan 1 sampai ${rows.length} dari ${rows.length} data`;
+        const paketPencatatanHref = item.is_sample
+          ? '#'
+          : `editpaketpencatatan.html?id=${encodeURIComponent(item.id_simulasi)}`;
 
-    document.querySelectorAll('.package-name-link, .package-pencatatan-link').forEach(link => {
-      link.onclick = e => {
-        if (link.dataset.sample === '1') e.preventDefault();
-      };
-    });
+        return `
+          <tr>
+            <td>
+              <a href="${namaPaketHref}" class="package-name-link" data-sample="${item.is_sample ? '1' : '0'}">
+                ${escapeHtml(item.nama_paket || '(Tanpa Nama Paket)')}
+              </a>
+              <span class="pill-method">${escapeHtml(item.metode_pemilihan || '')}</span>
+              <span class="pill-spse">spse 4.5</span>
+            </td>
+            <td>${escapeHtml(item.status_paket || 'Draft')}</td>
+            <td>${escapeHtml(formatTanggalIndonesia(item.created_at))}</td>
+            <td>${escapeHtml(item.satker || '')}</td>
+            <td>
+              <div class="row-actions">
+                <a href="${paketPencatatanHref}" class="btn-dark package-pencatatan-link" data-sample="${item.is_sample ? '1' : '0'}">📝 Paket Pencatatan</a>
+                ${canDeleteRow(item) ? `<button class="btn-red btn-delete" data-id="${escapeHtml(item.id_simulasi)}">Hapus Pencatatan</button>` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
 
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-      btn.onclick = async () => {
-        if (!confirm('Hapus paket pencatatan ini?')) return;
+      packageListInfo.textContent = `Tampilan 1 sampai ${rows.length} dari ${rows.length} data`;
 
-        try {
-          await withLoading(() => deletePackageFromSheet(btn.dataset.id), 'Sedang menghapus paket...');
-          await withLoading(() => loadPackageRows(), 'Sedang menarik data paket...');
-          renderRows();
-          alert('Paket berhasil dihapus');
-        } catch (error) {
-          alert(error.message || 'Gagal menghapus paket');
-        }
-      };
-    });
-  }
+      document.querySelectorAll('.package-name-link, .package-pencatatan-link').forEach(link => {
+        link.onclick = e => {
+          if (link.dataset.sample === '1') e.preventDefault();
+        };
+      });
 
-  document.getElementById('btnShowForm').onclick = () => {
-    location.href = 'rencanapencatatan.html';
-  };
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.onclick = async () => {
+          try {
+            if (!confirm('Hapus paket pencatatan ini?')) return;
+            await deletePackageFromSheet(btn.dataset.id);
+            await loadPackageRows();
+            renderRows();
+            alert('Paket berhasil dihapus');
+          } catch (error) {
+            alert(error.message || 'Gagal menghapus paket');
+          }
+        };
+      });
+    }
 
-  tableSearchInput.addEventListener('input', renderRows);
+    document.getElementById('btnShowForm').onclick = () => {
+      location.href = 'rencanapencatatan.html';
+    };
 
-  (async function init() {
-    await withLoading(async () => {
+    tableSearchInput.addEventListener('input', renderRows);
+
+    (async function init() {
       await loadPackageRows();
       renderRows();
-    }, 'Sedang menarik data paket...');
-  })();
-</script>
+    })();
+  </script>
 </body>
 </html>
