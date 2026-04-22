@@ -862,7 +862,6 @@ function createDatePickerInput(options = {}) {
   wrap.style.display = 'inline-flex';
   wrap.style.alignItems = 'center';
   wrap.style.gap = '6px';
-  wrap.style.position = 'relative';
 
   const text = document.createElement('input');
   text.type = 'text';
@@ -873,16 +872,17 @@ function createDatePickerInput(options = {}) {
   text.style.cursor = 'pointer';
   text.value = value ? formatDateToDisplay(value) : '';
 
-  const buttonWrap = document.createElement('div');
-  buttonWrap.style.position = 'relative';
-  buttonWrap.style.width = '36px';
-  buttonWrap.style.height = '30px';
-  buttonWrap.style.flex = '0 0 36px';
+  const buttonHolder = document.createElement('div');
+  buttonHolder.style.position = 'relative';
+  buttonHolder.style.width = '32px';
+  buttonHolder.style.height = '30px';
+  buttonHolder.style.flex = '0 0 32px';
+  buttonHolder.style.display = 'inline-block';
 
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'btn-blue';
-  button.style.width = '36px';
+  button.style.width = '32px';
   button.style.height = '30px';
   button.style.padding = '0';
   button.style.display = 'inline-flex';
@@ -894,15 +894,16 @@ function createDatePickerInput(options = {}) {
   hidden.type = 'date';
   hidden.value = value ? formatDateForInput(value) : '';
   hidden.style.position = 'absolute';
-  hidden.style.inset = '0';
-  hidden.style.opacity = '0';
+  hidden.style.left = '0';
+  hidden.style.top = '0';
+  hidden.style.width = '32px';
+  hidden.style.height = '30px';
+  hidden.style.opacity = '0.01';
   hidden.style.cursor = 'pointer';
-  hidden.style.zIndex = '2';
-  hidden.style.width = '100%';
-  hidden.style.height = '100%';
+  hidden.style.zIndex = '3';
   hidden.style.border = '0';
-  hidden.style.padding = '0';
   hidden.style.margin = '0';
+  hidden.style.padding = '0';
 
   function syncFromHidden() {
     if (!hidden.value) {
@@ -912,11 +913,11 @@ function createDatePickerInput(options = {}) {
     text.value = formatDateToDisplay(hidden.value);
   }
 
-  function openPicker() {
-    if (text.disabled || button.disabled || hidden.disabled) return;
+  function openPickerFromText() {
+    if (hidden.disabled) return;
 
     try {
-      hidden.focus({ preventScroll: true });
+      hidden.focus();
     } catch (e) {}
 
     if (typeof hidden.showPicker === 'function') {
@@ -929,20 +930,20 @@ function createDatePickerInput(options = {}) {
     hidden.click();
   }
 
-  text.addEventListener('click', openPicker);
-  button.addEventListener('click', openPicker);
-
+  text.addEventListener('click', openPickerFromText);
+  button.addEventListener('click', openPickerFromText);
   hidden.addEventListener('change', syncFromHidden);
   hidden.addEventListener('input', syncFromHidden);
 
-  buttonWrap.appendChild(button);
-  buttonWrap.appendChild(hidden);
+  buttonHolder.appendChild(button);
+  buttonHolder.appendChild(hidden);
 
   wrap.appendChild(text);
-  wrap.appendChild(buttonWrap);
+  wrap.appendChild(buttonHolder);
 
   function setDisabled(state) {
     const isDisabled = !!state;
+
     text.disabled = isDisabled;
     button.disabled = isDisabled;
     hidden.disabled = isDisabled;
@@ -958,8 +959,8 @@ function createDatePickerInput(options = {}) {
     text.value = val ? formatDateToDisplay(val) : '';
   }
 
-  setDisabled(disabled);
   setValue(value);
+  setDisabled(disabled);
 
   return {
     wrap,
