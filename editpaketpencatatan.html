@@ -289,9 +289,23 @@
       document.getElementById('inputAlasanPerubahanTanggal').value = currentPackage.alasan_perubahan_tanggal || '';
       document.getElementById('viewStatusPaket').textContent = currentPackage.status_paket || 'Draft';
 
-      document.getElementById('inputPdn').readOnly = !canEditRealisasi();
-      document.getElementById('inputUmk').readOnly = !canEditRealisasi();
-      document.getElementById('inputUraianPekerjaan').readOnly = !canEditRealisasi();
+const lock = !canEditRealisasi();
+
+const inputPdn = document.getElementById('inputPdn');
+const inputUmk = document.getElementById('inputUmk');
+const inputUraian = document.getElementById('inputUraianPekerjaan');
+
+inputPdn.disabled = lock;
+inputUmk.disabled = lock;
+inputUraian.disabled = lock;
+
+inputPdn.style.background = lock ? '#111' : '#fff';
+inputUmk.style.background = lock ? '#111' : '#fff';
+inputUraian.style.background = lock ? '#111' : '#fff';
+
+inputPdn.style.color = lock ? '#fff' : '#111';
+inputUmk.style.color = lock ? '#fff' : '#111';
+inputUraian.style.color = lock ? '#fff' : '#111';
 
       document.getElementById('checkUbahTanggal').checked = false;
       renderTanggalInput();
