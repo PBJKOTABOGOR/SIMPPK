@@ -25,19 +25,8 @@
       <div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div>
     </div>
     <div class="system-bar">
-      <div class="left-mini">
-        <span style="font-weight:700;">⇵</span>
-        <span class="mini-link">▣ Petunjuk Penggunaan</span>
-        <span class="mini-link">Aplikasi e-Procurement Lainnya</span>
-      </div>
-      <div class="right-mini">
-        <span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span>
-        <span>|</span>
-        <span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span>
-        <span>✉️</span>
-        <span class="notif-badge">15</span>
-        <span style="color:#21a55b;">⬢</span>
-      </div>
+      <div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div>
+      <div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div>
     </div>
   </div>
 
@@ -51,7 +40,6 @@
 
   <div class="content-block">
     <div class="crumb"><span class="blue">Beranda</span> » Daftar Paket Non Tender</div>
-
     <div class="notice">
       Mohon diperhatikan amanat <strong>Peraturan Presiden Nomor 46 Tahun 2025</strong> tentang Perubahan Kedua Atas Peraturan Presiden Nomor 16 Tahun 2018 tentang Pengadaan Barang/Jasa Pemerintah sebagai berikut:<br><br>
       <strong>Pasal 38 Ayat 8</strong><br>
@@ -62,21 +50,12 @@
 
     <div class="action-row">
       <button class="btn-green" id="btnShowForm">Buat Paket</button>
-      <button class="btn-green" type="button">Import Paket</button>
+      <button class="btn-green">Import Paket</button>
     </div>
 
     <div class="sub-row">
-      <div style="font-size:13px;">
-        Tampilkan
-        <select class="select-control" style="width:56px;height:28px;padding:0 6px;">
-          <option>25</option>
-        </select>
-        data
-      </div>
-      <div class="search-box">
-        <span>Cari:</span>
-        <input type="text" id="tableSearchInput">
-      </div>
+      <div style="font-size:13px;">Tampilkan <select class="select-control" style="width:56px;height:28px;padding:0 6px;"><option>25</option></select> data</div>
+      <div class="search-box"><span>Cari:</span><input type="text" id="tableSearchInput"></div>
     </div>
 
     <table class="table-simple">
@@ -103,23 +82,9 @@
     </div>
   </div>
 
-  <div id="tourOverlay" class="tour-overlay">
-    <div id="tourHighlight" class="tour-highlight"></div>
-    <div id="tourArrow" class="tour-arrow"></div>
-    <div id="tourCard" class="tour-card">
-      <h4 id="tourTitle">Petunjuk</h4>
-      <p id="tourText"></p>
-      <div class="tour-actions">
-        <button class="tour-btn ghost" id="tourNeverBtn">Jangan Munculkan</button>
-        <button class="tour-btn secondary" id="tourSkipBtn">Lewati</button>
-        <button class="tour-btn primary" id="tourNextBtn">Lanjut</button>
-      </div>
-    </div>
-  </div>
-
 <script src="app.js"></script>
 <script>
-  if(!requireLogin()) {}
+  if (!requireLogin()) {}
   bindLogout();
 
   const sampleRows = [
@@ -132,7 +97,15 @@
       satker: 'BAGIAN PENGADAAN BARANG DAN JASA',
       can_delete: 'TIDAK',
       status_realisasi: 'Sudah Ada Realisasi',
-      is_sample: true
+      kode_rup: '65099268',
+      sumber_dana: 'APBD',
+      pagu: 2900000,
+      tahun: '2026',
+      instansi: 'Kota Bogor',
+      ppk: 'PPK',
+      kode_anggaran: '4.01.03.2.03.0002.5.1.02.04.001.00001.8.1.02.04.01.0001.00263',
+      is_sample: true,
+      tanggal_paket_selesai: '06-02-2027'
     }
   ];
 
@@ -140,18 +113,13 @@
   const packageListInfo = document.getElementById('packageListInfo');
   const tableSearchInput = document.getElementById('tableSearchInput');
 
-  function canDeleteRow(item){
-    const realisasi = normalizeWhitespace(item.status_realisasi).toUpperCase();
-    const canDelete = normalizeWhitespace(item.can_delete).toUpperCase();
-    return !item.is_sample && canDelete !== 'TIDAK' && realisasi !== 'SUDAH ADA REALISASI';
-  }
-
-  function getDisplayRows(){
+  function getDisplayRows() {
     return sampleRows.concat(window.SPSE_APP_STATE.packageRows || []);
   }
 
-  function renderRows(){
+  function renderRows() {
     const keyword = normalizeWhitespace(tableSearchInput.value).toLowerCase();
+
     const rows = getDisplayRows().filter(item =>
       !keyword ||
       [
@@ -159,17 +127,19 @@
         item.metode_pemilihan,
         item.status_paket,
         item.satker,
-        item.kode_rup || ''
+        item.kode_rup
       ].join(' ').toLowerCase().includes(keyword)
     );
 
-    if(!rows.length){
+    if (!rows.length) {
       packageListBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">No data available in table</td></tr>';
       packageListInfo.textContent = 'Tampilan 0 sampai 0 dari 0 data';
       return;
     }
 
     packageListBody.innerHTML = rows.map(item => {
+      const effectiveStatus = item.is_sample ? (item.status_paket || 'Draft') : getPackageEffectiveStatus(item);
+
       const namaPaketHref = item.is_sample
         ? '#'
         : `editpaket.html?id=${encodeURIComponent(item.id_simulasi)}`;
@@ -178,22 +148,24 @@
         ? '#'
         : `editpaketpencatatan.html?id=${encodeURIComponent(item.id_simulasi)}`;
 
+      const allowDelete = !item.is_sample && canDeletePackage(item);
+
       return `
         <tr>
           <td>
             <a href="${namaPaketHref}" class="package-name-link" data-sample="${item.is_sample ? '1' : '0'}">
-              ${escapeHtml(item.nama_paket)}
+              ${escapeHtml(item.nama_paket || '')}
             </a>
             <span class="pill-method">${escapeHtml(item.metode_pemilihan || '')}</span>
             <span class="pill-spse">spse 4.5</span>
           </td>
-          <td>${escapeHtml(item.status_paket || 'Draft')}</td>
+          <td>${escapeHtml(effectiveStatus)}</td>
           <td>${escapeHtml(formatTanggalIndonesia(item.created_at))}</td>
           <td>${escapeHtml(item.satker || '')}</td>
           <td>
             <div class="row-actions">
               <a href="${paketPencatatanHref}" class="btn-dark package-pencatatan-link" data-sample="${item.is_sample ? '1' : '0'}">📝 Paket Pencatatan</a>
-              ${canDeleteRow(item) ? `<button class="btn-red btn-delete" data-id="${escapeHtml(item.id_simulasi)}">Hapus Pencatatan</button>` : ''}
+              ${allowDelete ? `<button class="btn-red btn-delete" data-id="${escapeHtml(item.id_simulasi)}">Hapus Pencatatan</button>` : ''}
             </div>
           </td>
         </tr>
@@ -204,23 +176,21 @@
 
     document.querySelectorAll('.package-name-link, .package-pencatatan-link').forEach(link => {
       link.onclick = e => {
-        if(link.dataset.sample === '1') e.preventDefault();
+        if (link.dataset.sample === '1') e.preventDefault();
       };
     });
 
     document.querySelectorAll('.btn-delete').forEach(btn => {
       btn.onclick = async () => {
-        if(!confirm('Hapus paket pencatatan ini?')) return;
+        if (!confirm('Hapus paket pencatatan ini?')) return;
+
         try {
-          await deletePackageFromSheet(btn.dataset.id);
-          await loadPackageRows();
+          await withLoading(() => deletePackageFromSheet(btn.dataset.id), 'Sedang menghapus paket...');
+          await withLoading(() => loadPackageRows(), 'Sedang menarik data paket...');
           renderRows();
-        } catch(error) {
-          alert(
-            error.message === 'API_URL_EMPTY'
-              ? 'Isi APP_CONFIG.apiUrl dulu lalu deploy Apps Script Web App.'
-              : error.message
-          );
+          alert('Paket berhasil dihapus');
+        } catch (error) {
+          alert(error.message || 'Gagal menghapus paket');
         }
       };
     });
@@ -232,25 +202,11 @@
 
   tableSearchInput.addEventListener('input', renderRows);
 
-  (async function init(){
-    await loadPackageRows();
-    renderRows();
-    setupTutorial({
-      steps: [
-        {
-          target:'#btnShowForm',
-          title:'Langkah 1',
-          text:'Klik <b>Buat Paket</b> untuk masuk ke halaman baru daftar rencana paket.',
-          place:'bottom'
-        },
-        {
-          target:'#packageListBody',
-          title:'Langkah 2',
-          text:'Klik <b>nama paket</b> untuk masuk ke halaman <b>Edit Paket</b>, sedangkan tombol <b>Paket Pencatatan</b> untuk masuk ke halaman <b>Edit Pencatatan Non Tender</b>.',
-          place:'top'
-        }
-      ]
-    });
+  (async function init() {
+    await withLoading(async () => {
+      await loadPackageRows();
+      renderRows();
+    }, 'Sedang menarik data paket...');
   })();
 </script>
 </body>
