@@ -127,6 +127,7 @@
         <td class="form-label">Tanggal Paket Selesai <span class="req">*</span></td>
         <td class="form-field">
           <div id="tanggalPaketSelesaiWrap"></div>
+
           <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <label style="font-size:13px;">
               <input type="checkbox" id="checkUbahTanggalSelesai">
@@ -134,12 +135,14 @@
             </label>
             <span id="badgePerubahanTanggal" style="display:none;background:#f0ad4e;color:#fff;padding:3px 8px;border-radius:3px;font-size:11px;font-weight:700;">1 kali perubahan</span>
           </div>
+
           <div id="wrapAlasanPerubahan" style="display:none;margin-top:8px;">
             <div style="color:#c9302c;font-size:12px;font-weight:700;margin-bottom:4px;">
               *Alasan wajib diisi jika ada perubahan tanggal paket selesai
             </div>
             <textarea id="inputAlasanPerubahan" class="textarea-control" style="height:70px;"></textarea>
           </div>
+
           <div class="notice-yellow" style="margin-top:8px;">
             Tanggal Paket Selesai adalah Tanggal berakhirnya Kontrak.
           </div>
@@ -164,340 +167,387 @@
     </div>
   </div>
 
-<script src="app.js"></script>
-<script>
-if(!requireLogin()) {}
-bindLogout();
+  <script src="app.js"></script>
+  <script>
+    if (!requireLogin()) {}
+    bindLogout();
 
-const packageId = getQueryParam('id');
+    const packageId = getQueryParam('id');
 
-let currentPackage = null;
-let tanggalPaketPicker = null;
-let realisasiRows = [];
+    let currentPackage = null;
+    let tanggalPaketPicker = null;
+    let realisasiRows = [];
 
-function safeText(v){
-  return String(v == null ? '' : v);
-}
-
-function getTodayDateOnly(){
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
-function parseDateFlexible(value){
-  const raw = safeText(value).trim();
-  if(!raw) return null;
-
-  if(/^\d{2}-\d{2}-\d{4}$/.test(raw)){
-    const [dd, mm, yyyy] = raw.split('-').map(Number);
-    return new Date(yyyy, mm - 1, dd);
-  }
-
-  if(/^\d{4}-\d{2}-\d{2}/.test(raw)){
-    const d = new Date(raw);
-    if(!isNaN(d)) return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  }
-
-  return null;
-}
-
-function formatDateForInput(value){
-  const d = parseDateFlexible(value);
-  if(!d) return '';
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
-}
-
-function hitungStatusPaket(pkg){
-  const tgl = parseDateFlexible(pkg.tanggal_paket_selesai);
-  if(!tgl) return 'Draft';
-
-  const today = getTodayDateOnly();
-  if(tgl < today) return 'Paket Sudah Selesai';
-  return 'Paket Sedang Berjalan';
-}
-
-function bolehHapusPaket(pkg){
-  return hitungStatusPaket(pkg) === 'Draft';
-}
-
-function bolehTambahRealisasi(pkg){
-  return hitungStatusPaket(pkg) !== 'Paket Sudah Selesai';
-}
-
-function bolehEditRealisasi(pkg){
-  return hitungStatusPaket(pkg) !== 'Paket Sudah Selesai';
-}
-
-function bolehHapusRealisasi(pkg){
-  return hitungStatusPaket(pkg) === 'Draft';
-}
-
-function setReadonlyByStatus(){
-  const status = hitungStatusPaket(currentPackage);
-  const isSelesai = status === 'Paket Sudah Selesai';
-
-  document.getElementById('viewStatusPaket').textContent = status;
-  document.getElementById('inputPdn').disabled = isSelesai;
-  document.getElementById('inputUmk').disabled = isSelesai;
-  document.getElementById('inputUraianPekerjaan').disabled = isSelesai;
-  document.getElementById('checkUbahTanggalSelesai').disabled = isSelesai;
-  document.getElementById('btnTambahRealisasi').style.display = bolehTambahRealisasi(currentPackage) ? 'inline-flex' : 'none';
-  document.getElementById('btnPaketBatal').style.display = bolehHapusPaket(currentPackage) ? 'inline-flex' : 'none';
-
-  if(tanggalPaketPicker){
-    tanggalPaketPicker.text.disabled = isSelesai;
-    tanggalPaketPicker.button.disabled = isSelesai;
-  }
-}
-
-function fillHeader(){
-  document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
-  document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
-  document.getElementById('inputJenisPengadaan').value = currentPackage.jenis_pengadaan || 'Jasa Lainnya';
-  document.getElementById('inputMetodePemilihan').value = currentPackage.metode_pemilihan || '';
-  document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(parseNumber(currentPackage.pagu || 0));
-  document.getElementById('inputPdn').value = currentPackage.pdn_realisasi || '0,00';
-  document.getElementById('inputUmk').value = currentPackage.umk_realisasi || '0,00';
-  document.getElementById('inputUraianPekerjaan').value = currentPackage.uraian_pekerjaan || '';
-
-  const pernahUbah = safeText(currentPackage.alasan_perubahan_tanggal).trim() !== '';
-  document.getElementById('badgePerubahanTanggal').style.display = pernahUbah ? 'inline-block' : 'none';
-}
-
-function renderTanggalPaketSelesai(){
-  const wrap = document.getElementById('tanggalPaketSelesaiWrap');
-  wrap.innerHTML = '';
-
-  tanggalPaketPicker = createDatePickerInput({
-    value: currentPackage.tanggal_paket_selesai || '',
-    placeholder: 'dd-mm-yyyy'
-  });
-
-  tanggalPaketPicker.text.style.maxWidth = '220px';
-  wrap.appendChild(tanggalPaketPicker.wrap);
-
-  const check = document.getElementById('checkUbahTanggalSelesai');
-  const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
-  const inputAlasan = document.getElementById('inputAlasanPerubahan');
-
-  inputAlasan.value = currentPackage.alasan_perubahan_tanggal || '';
-  wrapAlasan.style.display = check.checked ? 'block' : 'none';
-
-  check.onchange = function(){
-    wrapAlasan.style.display = this.checked ? 'block' : 'none';
-    if(!this.checked){
-      inputAlasan.value = '';
+    function safeText(v) {
+      return String(v == null ? '' : v);
     }
-  };
-}
 
-function getTotalRealisasi(){
-  return realisasiRows.reduce((sum, row) => sum + parseNumber(row.nilai_realisasi || 0), 0);
-}
+    function getTodayDateOnly() {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
 
-function renderRealisasiTable(){
-  const tbody = document.getElementById('realisasiTableBody');
-  const headerAksi = document.getElementById('realisasiAksiHeader');
-  const status = hitungStatusPaket(currentPackage);
+    function parseDateFlexible(value) {
+      const raw = safeText(value).trim();
+      if (!raw) return null;
 
-  document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(getTotalRealisasi());
+      if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
+        const [dd, mm, yyyy] = raw.split('-').map(Number);
+        const d = new Date(yyyy, mm - 1, dd);
+        return isNaN(d.getTime()) ? null : d;
+      }
 
-  if(!realisasiRows.length){
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>';
-    headerAksi.style.display = bolehHapusRealisasi(currentPackage) ? '' : 'none';
-    return;
-  }
+      if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
 
-  headerAksi.style.display = bolehHapusRealisasi(currentPackage) ? '' : 'none';
+      return null;
+    }
 
-  tbody.innerHTML = realisasiRows.map((row, index) => {
-    const detailHref = `formrealisasi.html?id=${encodeURIComponent(packageId)}&id_realisasi=${encodeURIComponent(row.id_realisasi)}`;
-    const bisaHapus = bolehHapusRealisasi(currentPackage);
+    function formatDateForDisplay(value) {
+      const d = parseDateFlexible(value);
+      if (!d) return '';
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    }
 
-    return `
-      <tr>
-        <td>${index + 1}</td>
-        <td>
-          <a href="${detailHref}" class="realisasi-link" data-id="${escapeHtml(row.id_realisasi)}" style="color:#2f5ed0;">
-            ${escapeHtml(row.jenis_realisasi || '')}
-          </a>
-        </td>
-        <td>${escapeHtml(formatRupiahFull(parseNumber(row.nilai_realisasi || 0)))}</td>
-        <td>${escapeHtml(formatDateForInput(row.tanggal_realisasi || ''))}</td>
-        <td style="${bisaHapus ? '' : 'display:none;'}">
-          ${bisaHapus ? `<button class="btn-red btn-hapus-realisasi" data-id="${escapeHtml(row.id_realisasi)}">Hapus</button>` : ''}
-        </td>
-      </tr>
-    `;
-  }).join('');
+    function hitungStatusPaket(pkg) {
+      const tgl = parseDateFlexible(pkg.tanggal_paket_selesai);
+      if (!tgl) return 'Draft';
 
-  document.querySelectorAll('.realisasi-link').forEach(link => {
-    link.onclick = function(){
-      location.href = `formrealisasi.html?id=${encodeURIComponent(packageId)}&id_realisasi=${encodeURIComponent(this.dataset.id)}`;
+      const today = getTodayDateOnly();
+      if (tgl < today) return 'Paket Sudah Selesai';
+      return 'Paket Sedang Berjalan';
+    }
+
+    function bolehHapusPaket(pkg) {
+      return hitungStatusPaket(pkg) === 'Draft';
+    }
+
+    function bolehTambahRealisasi(pkg) {
+      return hitungStatusPaket(pkg) !== 'Paket Sudah Selesai';
+    }
+
+    function bolehHapusRealisasi(pkg) {
+      return hitungStatusPaket(pkg) === 'Draft';
+    }
+
+    function tanggalSudahAda() {
+      return safeText(currentPackage?.tanggal_paket_selesai).trim() !== '';
+    }
+
+    function pernahUbahTanggal() {
+      return safeText(currentPackage?.alasan_perubahan_tanggal).trim() !== '';
+    }
+
+    function setTanggalSelesaiEditableState() {
+      if (!tanggalPaketPicker || !currentPackage) return;
+
+      const status = hitungStatusPaket(currentPackage);
+      const isSelesai = status === 'Paket Sudah Selesai';
+      const check = document.getElementById('checkUbahTanggalSelesai');
+      const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
+
+      let allowEditTanggal = false;
+
+      if (check.checked) {
+        allowEditTanggal = true;
+      }
+
+      if (isSelesai && !check.checked) {
+        allowEditTanggal = false;
+      }
+
+      tanggalPaketPicker.text.disabled = !allowEditTanggal;
+      tanggalPaketPicker.button.disabled = !allowEditTanggal;
+      tanggalPaketPicker.hidden.disabled = !allowEditTanggal;
+
+      if (tanggalPaketPicker.text) {
+        tanggalPaketPicker.text.style.background = allowEditTanggal ? '#fff' : '#f3f4f6';
+        tanggalPaketPicker.text.style.cursor = allowEditTanggal ? 'pointer' : 'not-allowed';
+      }
+
+      if (pernahUbahTanggal() && check.checked && tanggalSudahAda()) {
+        wrapAlasan.style.display = 'block';
+      } else if (!pernahUbahTanggal() && check.checked && tanggalSudahAda()) {
+        wrapAlasan.style.display = 'block';
+      } else {
+        wrapAlasan.style.display = 'none';
+      }
+    }
+
+    function setReadonlyByStatus() {
+      const status = hitungStatusPaket(currentPackage);
+      const isSelesai = status === 'Paket Sudah Selesai';
+
+      document.getElementById('viewStatusPaket').textContent = status;
+
+      document.getElementById('inputPdn').disabled = isSelesai;
+      document.getElementById('inputUmk').disabled = isSelesai;
+      document.getElementById('inputUraianPekerjaan').disabled = false;
+
+      document.getElementById('inputPdn').style.background = isSelesai ? '#f3f4f6' : '#fff';
+      document.getElementById('inputUmk').style.background = isSelesai ? '#f3f4f6' : '#fff';
+
+      document.getElementById('btnTambahRealisasi').style.display = bolehTambahRealisasi(currentPackage) ? 'inline-flex' : 'none';
+      document.getElementById('btnPaketBatal').style.display = bolehHapusPaket(currentPackage) ? 'inline-flex' : 'none';
+
+      setTanggalSelesaiEditableState();
+    }
+
+    function fillHeader() {
+      document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
+      document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
+      document.getElementById('inputJenisPengadaan').value = currentPackage.jenis_pengadaan || 'Jasa Lainnya';
+      document.getElementById('inputMetodePemilihan').value = currentPackage.metode_pemilihan || '';
+      document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(parseNumber(currentPackage.pagu || 0));
+      document.getElementById('inputPdn').value = currentPackage.pdn_realisasi || '0,00';
+      document.getElementById('inputUmk').value = currentPackage.umk_realisasi || '0,00';
+      document.getElementById('inputUraianPekerjaan').value = currentPackage.uraian_pekerjaan || '';
+
+      document.getElementById('badgePerubahanTanggal').style.display = pernahUbahTanggal() ? 'inline-block' : 'none';
+      document.getElementById('inputAlasanPerubahan').value = currentPackage.alasan_perubahan_tanggal || '';
+    }
+
+    function renderTanggalPaketSelesai() {
+      const wrap = document.getElementById('tanggalPaketSelesaiWrap');
+      wrap.innerHTML = '';
+
+      tanggalPaketPicker = createDatePickerInput({
+        value: currentPackage.tanggal_paket_selesai || '',
+        placeholder: 'dd-mm-yyyy'
+      });
+
+      tanggalPaketPicker.text.style.maxWidth = '220px';
+      wrap.appendChild(tanggalPaketPicker.wrap);
+
+      const check = document.getElementById('checkUbahTanggalSelesai');
+      const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
+
+      check.checked = false;
+      wrapAlasan.style.display = 'none';
+
+      check.onchange = function () {
+        if (!this.checked) {
+          document.getElementById('inputAlasanPerubahan').value = currentPackage.alasan_perubahan_tanggal || '';
+        }
+        setTanggalSelesaiEditableState();
+      };
+
+      setTanggalSelesaiEditableState();
+    }
+
+    function getTotalRealisasi() {
+      return realisasiRows.reduce((sum, row) => sum + parseNumber(row.nilai_realisasi || 0), 0);
+    }
+
+    function renderRealisasiTable() {
+      const tbody = document.getElementById('realisasiTableBody');
+      const headerAksi = document.getElementById('realisasiAksiHeader');
+      const status = hitungStatusPaket(currentPackage);
+
+      document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(getTotalRealisasi());
+
+      if (!realisasiRows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>';
+        headerAksi.style.display = bolehHapusRealisasi(currentPackage) ? '' : 'none';
+        return;
+      }
+
+      headerAksi.style.display = bolehHapusRealisasi(currentPackage) ? '' : 'none';
+
+      tbody.innerHTML = realisasiRows.map((row, index) => {
+        const detailHref = `formrealisasi.html?id=${encodeURIComponent(packageId)}&id_realisasi=${encodeURIComponent(row.id_realisasi)}`;
+        const bisaHapus = bolehHapusRealisasi(currentPackage);
+
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td>
+              <a href="${detailHref}" class="realisasi-link" data-id="${escapeHtml(row.id_realisasi)}" style="color:#2f5ed0;">
+                ${escapeHtml(row.jenis_realisasi || '')}
+              </a>
+            </td>
+            <td>${escapeHtml(formatRupiahFull(parseNumber(row.nilai_realisasi || 0)))}</td>
+            <td>${escapeHtml(formatDateForDisplay(row.tanggal_realisasi || ''))}</td>
+            <td style="${bisaHapus ? '' : 'display:none;'}">
+              ${bisaHapus ? `<button class="btn-red btn-hapus-realisasi" data-id="${escapeHtml(row.id_realisasi)}">Hapus</button>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.realisasi-link').forEach(link => {
+        link.onclick = function () {
+          location.href = `formrealisasi.html?id=${encodeURIComponent(packageId)}&id_realisasi=${encodeURIComponent(this.dataset.id)}`;
+          return false;
+        };
+      });
+
+      document.querySelectorAll('.btn-hapus-realisasi').forEach(btn => {
+        btn.onclick = async function () {
+          if (!confirm('Hapus realisasi ini?')) return;
+
+          try {
+            showLoading('Mohon Tunggu', 'Sedang menghapus realisasi...');
+            await deleteRealisasiFromSheet(packageId, this.dataset.id);
+            await refreshAll();
+            hideLoading();
+          } catch (error) {
+            hideLoading();
+            alert(error.message || 'Gagal menghapus realisasi');
+          }
+        };
+      });
+
+      if (status === 'Paket Sudah Selesai') {
+        document.querySelectorAll('.btn-hapus-realisasi').forEach(btn => btn.style.display = 'none');
+      }
+    }
+
+    async function refreshAll() {
+      await loadPackageRows();
+      currentPackage = findLoadedPackageById(packageId);
+      if (!currentPackage) throw new Error('Data paket tidak ditemukan.');
+
+      await loadRealisasiRows(packageId);
+      realisasiRows = window.SPSE_APP_STATE.realisasiRows || [];
+
+      currentPackage.status_paket = hitungStatusPaket(currentPackage);
+
+      fillHeader();
+      renderTanggalPaketSelesai();
+      renderRealisasiTable();
+      setReadonlyByStatus();
+    }
+
+    function validateSavePaket() {
+      const tanggalBaru = tanggalPaketPicker ? safeText(tanggalPaketPicker.text.value).trim() : '';
+      const tanggalLama = formatDateForDisplay(currentPackage.tanggal_paket_selesai || '');
+      const checkUbah = document.getElementById('checkUbahTanggalSelesai').checked;
+      const alasan = document.getElementById('inputAlasanPerubahan').value.trim();
+
+      if (checkUbah && !tanggalBaru) {
+        alert('Tanggal Paket Selesai wajib diisi.');
+        return false;
+      }
+
+      if (tanggalSudahAda() && checkUbah && tanggalBaru && tanggalBaru !== tanggalLama && !alasan) {
+        alert('Alasan perubahan tanggal paket selesai wajib diisi.');
+        return false;
+      }
+
+      return true;
+    }
+
+    document.getElementById('btnDetailPaket').onclick = function () {
+      location.href = `editpaket.html?id=${encodeURIComponent(packageId)}`;
       return false;
     };
-  });
 
-  document.querySelectorAll('.btn-hapus-realisasi').forEach(btn => {
-    btn.onclick = async function(){
-      if(!confirm('Hapus realisasi ini?')) return;
-      try{
-        showLoading('Mohon Tunggu','Sedang menghapus realisasi...');
-        await deleteRealisasiFromSheet(this.dataset.id);
-        await refreshAll();
+    document.getElementById('btnTambahRealisasi').onclick = function () {
+      if (!bolehTambahRealisasi(currentPackage)) {
+        alert('Paket Sudah Selesai, tidak bisa tambah realisasi.');
+        return;
+      }
+      location.href = `formrealisasi.html?id=${encodeURIComponent(packageId)}`;
+    };
+
+    document.getElementById('btnKembali').onclick = function () {
+      location.href = 'pencatatannontender.html';
+    };
+
+    document.getElementById('btnPaketBatal').onclick = async function () {
+      if (!bolehHapusPaket(currentPackage)) {
+        alert('Hanya paket Draft yang bisa dihapus.');
+        return;
+      }
+
+      if (!confirm('Hapus paket pencatatan ini?')) return;
+
+      try {
+        showLoading('Mohon Tunggu', 'Sedang menghapus paket...');
+        await deletePackageFromSheet(packageId);
         hideLoading();
-      }catch(error){
+        location.href = 'pencatatannontender.html';
+      } catch (error) {
         hideLoading();
-        alert(error.message || 'Gagal menghapus realisasi');
+        alert(error.message || 'Gagal menghapus paket');
       }
     };
-  });
 
-  if(status === 'Paket Sudah Selesai'){
-    document.querySelectorAll('.btn-hapus-realisasi').forEach(btn => btn.style.display = 'none');
-  }
-}
+    document.getElementById('btnSimpanPaket').onclick = async function () {
+      try {
+        if (!validateSavePaket()) return;
 
-async function refreshAll(){
-  await loadPackageRows();
-  currentPackage = findLoadedPackageById(packageId);
-  if(!currentPackage) throw new Error('Data paket tidak ditemukan.');
+        const checkUbah = document.getElementById('checkUbahTanggalSelesai').checked;
+        const tanggalBaru = tanggalPaketPicker ? safeText(tanggalPaketPicker.text.value).trim() : '';
+        const tanggalLama = formatDateForDisplay(currentPackage.tanggal_paket_selesai || '');
+        const alasanInput = document.getElementById('inputAlasanPerubahan').value.trim();
 
-  await loadRealisasiRows(packageId);
-  realisasiRows = window.SPSE_APP_STATE.realisasiRows || [];
+        let finalTanggal = currentPackage.tanggal_paket_selesai || '';
+        let finalAlasan = currentPackage.alasan_perubahan_tanggal || '';
 
-  currentPackage.status_paket = hitungStatusPaket(currentPackage);
+        if (checkUbah && tanggalBaru) {
+          finalTanggal = tanggalBaru;
 
-  fillHeader();
-  renderTanggalPaketSelesai();
-  renderRealisasiTable();
-  setReadonlyByStatus();
-}
+          if (tanggalSudahAda() && tanggalBaru !== tanggalLama) {
+            finalAlasan = alasanInput;
+          }
+        }
 
-function validateSavePaket(){
-  const status = hitungStatusPaket(currentPackage);
-  const tanggalBaru = tanggalPaketPicker ? tanggalPaketPicker.text.value.trim() : '';
-  const tanggalLama = safeText(currentPackage.tanggal_paket_selesai).trim();
-  const checkUbah = document.getElementById('checkUbahTanggalSelesai').checked;
-  const alasan = document.getElementById('inputAlasanPerubahan').value.trim();
+        showLoading('Mohon Tunggu', 'Sedang menyimpan paket...');
 
-  if(status !== 'Draft' && !tanggalBaru){
-    alert('Tanggal Paket Selesai wajib diisi.');
-    return false;
-  }
+        const payload = {
+          ...currentPackage,
+          jenis_pengadaan: 'Jasa Lainnya',
+          metode_pemilihan: currentPackage.metode_pemilihan || '',
+          pdn_realisasi: document.getElementById('inputPdn').value.trim() || '0,00',
+          umk_realisasi: document.getElementById('inputUmk').value.trim() || '0,00',
+          tanggal_paket_selesai: finalTanggal,
+          alasan_perubahan_tanggal: finalAlasan,
+          uraian_pekerjaan: document.getElementById('inputUraianPekerjaan').value.trim(),
+          status_paket: (() => {
+            const tmp = { ...currentPackage, tanggal_paket_selesai: finalTanggal };
+            return hitungStatusPaket(tmp);
+          })(),
+          status_realisasi: realisasiRows.length ? 'Sudah Ada Realisasi' : 'Belum Ada Realisasi',
+          can_delete: (() => {
+            const tmp = { ...currentPackage, tanggal_paket_selesai: finalTanggal };
+            return hitungStatusPaket(tmp) === 'Draft' ? 'YA' : 'TIDAK';
+          })(),
+          isian_edit_selesai: 'SUDAH'
+        };
 
-  if(tanggalLama && tanggalBaru && tanggalBaru !== formatDateForInput(tanggalLama)){
-    if(!checkUbah){
-      alert('Centang Ubah Tanggal Selesai jika ingin mengubah tanggal paket selesai.');
-      return false;
-    }
-    if(!alasan){
-      alert('Alasan perubahan tanggal paket selesai wajib diisi.');
-      return false;
-    }
-  }
-
-  return true;
-}
-
-document.getElementById('btnDetailPaket').onclick = function(){
-  location.href = `editpaket.html?id=${encodeURIComponent(packageId)}`;
-  return false;
-};
-
-document.getElementById('btnTambahRealisasi').onclick = function(){
-  if(!bolehTambahRealisasi(currentPackage)){
-    alert('Paket Sudah Selesai, tidak bisa tambah realisasi.');
-    return;
-  }
-  location.href = `formrealisasi.html?id=${encodeURIComponent(packageId)}`;
-};
-
-document.getElementById('btnKembali').onclick = function(){
-  location.href = 'pencatatannontender.html';
-};
-
-document.getElementById('btnPaketBatal').onclick = async function(){
-  if(!bolehHapusPaket(currentPackage)){
-    alert('Hanya paket Draft yang bisa dihapus.');
-    return;
-  }
-
-  if(!confirm('Hapus paket pencatatan ini?')) return;
-
-  try{
-    showLoading('Mohon Tunggu','Sedang menghapus paket...');
-    await deletePackageFromSheet(packageId);
-    hideLoading();
-    location.href = 'pencatatannontender.html';
-  }catch(error){
-    hideLoading();
-    alert(error.message || 'Gagal menghapus paket');
-  }
-};
-
-document.getElementById('btnSimpanPaket').onclick = async function(){
-  try{
-    if(!validateSavePaket()) return;
-
-    const tanggalBaru = tanggalPaketPicker ? tanggalPaketPicker.text.value.trim() : '';
-    const tanggalLama = formatDateForInput(currentPackage.tanggal_paket_selesai || '');
-    const adaPerubahanTanggal = tanggalLama && tanggalBaru && tanggalLama !== tanggalBaru;
-
-    showLoading('Mohon Tunggu','Sedang menyimpan paket...');
-
-    const payload = {
-      ...currentPackage,
-      jenis_pengadaan: 'Jasa Lainnya',
-      metode_pemilihan: currentPackage.metode_pemilihan || '',
-      pdn_realisasi: document.getElementById('inputPdn').value.trim() || '0,00',
-      umk_realisasi: document.getElementById('inputUmk').value.trim() || '0,00',
-      tanggal_paket_selesai: tanggalBaru,
-      alasan_perubahan_tanggal: adaPerubahanTanggal ? document.getElementById('inputAlasanPerubahan').value.trim() : (currentPackage.alasan_perubahan_tanggal || ''),
-      uraian_pekerjaan: document.getElementById('inputUraianPekerjaan').value.trim(),
-      status_paket: (() => {
-        const tmp = { ...currentPackage, tanggal_paket_selesai: tanggalBaru };
-        return hitungStatusPaket(tmp);
-      })(),
-      status_realisasi: realisasiRows.length ? 'Sudah Ada Realisasi' : 'Belum Ada Realisasi',
-      can_delete: (() => {
-        const tmp = { ...currentPackage, tanggal_paket_selesai: tanggalBaru };
-        return hitungStatusPaket(tmp) === 'Draft' ? 'YA' : 'TIDAK';
-      })(),
-      isian_edit_selesai: 'SUDAH'
+        await savePackageToSheet(payload);
+        await refreshAll();
+        hideLoading();
+        alert('Paket berhasil disimpan');
+      } catch (error) {
+        hideLoading();
+        alert(error.message || 'Gagal menyimpan paket');
+      }
     };
 
-    await savePackageToSheet(payload);
-    await refreshAll();
-    hideLoading();
-    alert('Paket berhasil disimpan');
-  }catch(error){
-    hideLoading();
-    alert(error.message || 'Gagal menyimpan paket');
-  }
-};
+    (async function initPage() {
+      try {
+        if (!packageId) {
+          location.href = 'pencatatannontender.html';
+          return;
+        }
 
-(async function initPage(){
-  try{
-    if(!packageId){
-      location.href = 'pencatatannontender.html';
-      return;
-    }
-
-    showLoading('Mohon Tunggu','Sedang menarik data paket...');
-
-    await refreshAll();
-
-    hideLoading();
-  }catch(error){
-    hideLoading();
-    alert(error.message || 'Gagal menarik data paket');
-    location.href = 'pencatatannontender.html';
-  }
-})();
-</script>
+        showLoading('Mohon Tunggu', 'Sedang menarik data paket...');
+        await refreshAll();
+        hideLoading();
+      } catch (error) {
+        hideLoading();
+        alert(error.message || 'Gagal menarik data paket');
+        location.href = 'pencatatannontender.html';
+      }
+    })();
+  </script>
 </body>
 </html>
