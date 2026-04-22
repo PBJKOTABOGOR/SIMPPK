@@ -128,7 +128,7 @@
         <td class="form-field">
           <div id="tanggalPaketSelesaiWrap"></div>
 
-          <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div id="wrapUbahTanggal" style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <label style="font-size:13px;">
               <input type="checkbox" id="checkUbahTanggalSelesai">
               Ubah Tanggal Selesai
@@ -215,7 +215,7 @@
     }
 
     function hitungStatusPaket(pkg) {
-      const tgl = parseDateFlexible(pkg.tanggal_paket_selesai);
+      const tgl = parseDateFlexible(pkg && pkg.tanggal_paket_selesai);
       if (!tgl) return 'Draft';
 
       const today = getTodayDateOnly();
@@ -236,77 +236,12 @@
     }
 
     function tanggalSudahAda() {
-      return safeText(currentPackage?.tanggal_paket_selesai).trim() !== '';
+      return safeText(currentPackage && currentPackage.tanggal_paket_selesai).trim() !== '';
     }
 
     function pernahUbahTanggal() {
-      return safeText(currentPackage?.alasan_perubahan_tanggal).trim() !== '';
+      return safeText(currentPackage && currentPackage.alasan_perubahan_tanggal).trim() !== '';
     }
-
-function setTanggalSelesaiEditableState() {
-  if (!tanggalPaketPicker || !currentPackage) return;
-
-  const status = hitungStatusPaket(currentPackage);
-  const check = document.getElementById('checkUbahTanggalSelesai');
-  const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
-
-  let allowEditTanggal = false;
-
-  if (status === 'Draft') {
-    allowEditTanggal = true;
-    check.checked = false;
-  } else if (status === 'Paket Sedang Berjalan') {
-    allowEditTanggal = check.checked;
-  } else if (status === 'Paket Sudah Selesai') {
-    allowEditTanggal = false;
-    check.checked = false;
-  }
-
-  tanggalPaketPicker.text.disabled = !allowEditTanggal;
-  tanggalPaketPicker.button.disabled = !allowEditTanggal;
-  tanggalPaketPicker.hidden.disabled = !allowEditTanggal;
-
-  tanggalPaketPicker.text.style.background = allowEditTanggal ? '#fff' : '#f3f4f6';
-  tanggalPaketPicker.text.style.cursor = allowEditTanggal ? 'pointer' : 'not-allowed';
-
-  if (status === 'Draft') {
-    wrapAlasan.style.display = 'none';
-  } else if (status === 'Paket Sedang Berjalan' && check.checked && tanggalSudahAda()) {
-    wrapAlasan.style.display = 'block';
-  } else {
-    wrapAlasan.style.display = 'none';
-  }
-}
-
-function setReadonlyByStatus() {
-  const status = hitungStatusPaket(currentPackage);
-  const isSelesai = status === 'Paket Sudah Selesai';
-  const check = document.getElementById('checkUbahTanggalSelesai');
-
-  document.getElementById('viewStatusPaket').textContent = status;
-
-  document.getElementById('inputPdn').disabled = isSelesai;
-  document.getElementById('inputUmk').disabled = isSelesai;
-
-  document.getElementById('inputPdn').style.background = isSelesai ? '#f3f4f6' : '#fff';
-  document.getElementById('inputUmk').style.background = isSelesai ? '#f3f4f6' : '#fff';
-
-  document.getElementById('btnTambahRealisasi').style.display = bolehTambahRealisasi(currentPackage) ? 'inline-flex' : 'none';
-  document.getElementById('btnPaketBatal').style.display = bolehHapusPaket(currentPackage) ? 'inline-flex' : 'none';
-
-  if (status === 'Draft') {
-    check.disabled = false;
-    check.parentElement.style.opacity = '0.7';
-  } else if (status === 'Paket Sedang Berjalan') {
-    check.disabled = false;
-    check.parentElement.style.opacity = '1';
-  } else {
-    check.disabled = true;
-    check.parentElement.style.opacity = '0.6';
-  }
-
-  setTanggalSelesaiEditableState();
-}
 
     function fillHeader() {
       document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
@@ -322,6 +257,69 @@ function setReadonlyByStatus() {
       document.getElementById('inputAlasanPerubahan').value = currentPackage.alasan_perubahan_tanggal || '';
     }
 
+    function setTanggalSelesaiEditableState() {
+      if (!tanggalPaketPicker || !currentPackage) return;
+
+      const status = hitungStatusPaket(currentPackage);
+      const check = document.getElementById('checkUbahTanggalSelesai');
+      const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
+      const wrapUbahTanggal = document.getElementById('wrapUbahTanggal');
+
+      let allowEditTanggal = false;
+
+      if (status === 'Draft') {
+        allowEditTanggal = true;
+        check.checked = false;
+        wrapUbahTanggal.style.opacity = '0.65';
+      } else if (status === 'Paket Sedang Berjalan') {
+        allowEditTanggal = check.checked;
+        wrapUbahTanggal.style.opacity = '1';
+      } else {
+        allowEditTanggal = false;
+        check.checked = false;
+        wrapUbahTanggal.style.opacity = '0.6';
+      }
+
+      tanggalPaketPicker.text.disabled = !allowEditTanggal;
+      tanggalPaketPicker.button.disabled = !allowEditTanggal;
+      tanggalPaketPicker.hidden.disabled = !allowEditTanggal;
+
+      tanggalPaketPicker.text.readOnly = true;
+      tanggalPaketPicker.text.style.background = allowEditTanggal ? '#fff' : '#f3f4f6';
+      tanggalPaketPicker.text.style.cursor = allowEditTanggal ? 'pointer' : 'not-allowed';
+
+      if (status === 'Paket Sedang Berjalan' && check.checked && tanggalSudahAda()) {
+        wrapAlasan.style.display = 'block';
+      } else {
+        wrapAlasan.style.display = 'none';
+      }
+    }
+
+    function setReadonlyByStatus() {
+      const status = hitungStatusPaket(currentPackage);
+      const isSelesai = status === 'Paket Sudah Selesai';
+      const check = document.getElementById('checkUbahTanggalSelesai');
+
+      document.getElementById('viewStatusPaket').textContent = status;
+
+      document.getElementById('inputPdn').disabled = isSelesai;
+      document.getElementById('inputUmk').disabled = isSelesai;
+
+      document.getElementById('inputPdn').style.background = isSelesai ? '#f3f4f6' : '#fff';
+      document.getElementById('inputUmk').style.background = isSelesai ? '#f3f4f6' : '#fff';
+
+      document.getElementById('btnTambahRealisasi').style.display = bolehTambahRealisasi(currentPackage) ? 'inline-flex' : 'none';
+      document.getElementById('btnPaketBatal').style.display = bolehHapusPaket(currentPackage) ? 'inline-flex' : 'none';
+
+      if (status === 'Paket Sudah Selesai') {
+        check.disabled = true;
+      } else {
+        check.disabled = false;
+      }
+
+      setTanggalSelesaiEditableState();
+    }
+
     function renderTanggalPaketSelesai() {
       const wrap = document.getElementById('tanggalPaketSelesaiWrap');
       wrap.innerHTML = '';
@@ -335,24 +333,19 @@ function setReadonlyByStatus() {
       wrap.appendChild(tanggalPaketPicker.wrap);
 
       const check = document.getElementById('checkUbahTanggalSelesai');
-      const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
-
       check.checked = false;
-      wrapAlasan.style.display = 'none';
 
-check.onchange = function () {
-  const status = hitungStatusPaket(currentPackage);
+      check.onchange = function () {
+        if (hitungStatusPaket(currentPackage) === 'Draft') {
+          this.checked = false;
+        }
 
-  if (status === 'Draft') {
-    this.checked = false;
-  }
+        if (!this.checked) {
+          document.getElementById('inputAlasanPerubahan').value = currentPackage.alasan_perubahan_tanggal || '';
+        }
 
-  if (!this.checked) {
-    document.getElementById('inputAlasanPerubahan').value = currentPackage.alasan_perubahan_tanggal || '';
-  }
-
-  setTanggalSelesaiEditableState();
-};
+        setTanggalSelesaiEditableState();
+      };
 
       setTanggalSelesaiEditableState();
     }
@@ -442,17 +435,23 @@ check.onchange = function () {
     }
 
     function validateSavePaket() {
+      const status = hitungStatusPaket(currentPackage);
+      const checkUbah = document.getElementById('checkUbahTanggalSelesai').checked;
       const tanggalBaru = tanggalPaketPicker ? safeText(tanggalPaketPicker.text.value).trim() : '';
       const tanggalLama = formatDateForDisplay(currentPackage.tanggal_paket_selesai || '');
-      const checkUbah = document.getElementById('checkUbahTanggalSelesai').checked;
       const alasan = document.getElementById('inputAlasanPerubahan').value.trim();
 
-      if (checkUbah && !tanggalBaru) {
+      if (status === 'Draft' && !tanggalBaru) {
         alert('Tanggal Paket Selesai wajib diisi.');
         return false;
       }
 
-      if (tanggalSudahAda() && checkUbah && tanggalBaru && tanggalBaru !== tanggalLama && !alasan) {
+      if (status === 'Paket Sedang Berjalan' && checkUbah && !tanggalBaru) {
+        alert('Tanggal Paket Selesai wajib diisi.');
+        return false;
+      }
+
+      if (tanggalSudahAda() && status === 'Paket Sedang Berjalan' && checkUbah && tanggalBaru !== tanggalLama && !alasan) {
         alert('Alasan perubahan tanggal paket selesai wajib diisi.');
         return false;
       }
@@ -500,18 +499,22 @@ check.onchange = function () {
       try {
         if (!validateSavePaket()) return;
 
+        const statusSaatIni = hitungStatusPaket(currentPackage);
         const checkUbah = document.getElementById('checkUbahTanggalSelesai').checked;
-        const tanggalBaru = tanggalPaketPicker ? safeText(tanggalPaketPicker.text.value).trim() : '';
+        const tanggalInput = tanggalPaketPicker ? safeText(tanggalPaketPicker.text.value).trim() : '';
         const tanggalLama = formatDateForDisplay(currentPackage.tanggal_paket_selesai || '');
         const alasanInput = document.getElementById('inputAlasanPerubahan').value.trim();
 
         let finalTanggal = currentPackage.tanggal_paket_selesai || '';
         let finalAlasan = currentPackage.alasan_perubahan_tanggal || '';
 
-        if (checkUbah && tanggalBaru) {
-          finalTanggal = tanggalBaru;
+        if (statusSaatIni === 'Draft') {
+          finalTanggal = tanggalInput;
+          finalAlasan = currentPackage.alasan_perubahan_tanggal || '';
+        } else if (statusSaatIni === 'Paket Sedang Berjalan' && checkUbah && tanggalInput) {
+          finalTanggal = tanggalInput;
 
-          if (tanggalSudahAda() && tanggalBaru !== tanggalLama) {
+          if (tanggalSudahAda() && tanggalInput !== tanggalLama) {
             finalAlasan = alasanInput;
           }
         }
