@@ -18,6 +18,7 @@
       </div>
       <div class="logo-kota">Kota Bogor</div>
     </div>
+
     <div class="nav">
       <a href="home.html">BERANDA</a>
       <a href="#" class="active">DAFTAR PAKET</a>
@@ -29,6 +30,7 @@
         <button class="btn-logout" id="btnLogout">⏻ LOGOUT</button>
       </div>
     </div>
+
     <div class="system-bar">
       <div class="left-mini">
         <span style="font-weight:700;">⇵</span>
@@ -36,7 +38,10 @@
         <span class="mini-link">Aplikasi e-Procurement Lainnya</span>
       </div>
       <div class="right-mini">
-        <span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span>
+        <span>
+          <a href="#" style="color:#315ec9;" data-user-name>PPK</a> -
+          <span data-user-role>Pejabat Pembuat Komitmen</span>
+        </span>
         <span>|</span>
         <span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span>
         <span>✉️</span>
@@ -47,7 +52,9 @@
   </div>
 
   <div class="edit-block" style="margin-top:22px;">
-    <div class="crumb"><span class="blue">Daftar Paket</span> » Edit Paket</div>
+    <div class="crumb">
+      <span class="blue">Daftar Paket</span> » Edit Paket
+    </div>
 
     <table class="edit-table">
       <tr>
@@ -66,7 +73,7 @@
             </tr>
           </table>
 
-          <div style="margin-bottom:8px;">
+          <div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-gray" id="btnTambahRencana" type="button">◉ Tambah Rencana Pengadaan</button>
             <button class="btn-gray" id="btnUpdateRencana" type="button">Update Rencana Pengadaan</button>
           </div>
@@ -143,46 +150,57 @@
 
   <script src="app.js"></script>
   <script>
-    if(!requireLogin()) {}
+    if (!requireLogin()) {}
     bindLogout();
 
     let currentPackage = null;
     const packageId = getQueryParam('id');
 
-    async function initPackage(){
-      if(!packageId){
+    function fillText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || '';
+    }
+
+    async function initPackage() {
+      if (!packageId) {
         location.href = 'pencatatannontender.html';
         return;
       }
+
       await loadPackageRows();
       currentPackage = findLoadedPackageById(packageId);
-      if(!currentPackage){
+
+      if (!currentPackage) {
+        alert('Data paket tidak ditemukan.');
         location.href = 'pencatatannontender.html';
         return;
       }
+
       renderPackage();
     }
 
-    function renderPackage(){
-      document.title = 'EDIT-' + (currentPackage.kode_rup || '');
-      document.getElementById('viewKodeRup').textContent = currentPackage.kode_rup || '';
-      document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
-      document.getElementById('viewNamaPaket2').textContent = currentPackage.nama_paket || '';
-      document.getElementById('viewSumberDana').textContent = currentPackage.sumber_dana || 'APBD';
-      document.getElementById('viewInstansi').textContent = currentPackage.instansi || APP_CONFIG.defaultInstansi;
-      document.getElementById('viewSatker').textContent = currentPackage.satker || '';
-      document.getElementById('viewTahun').textContent = currentPackage.tahun || APP_CONFIG.defaultTahun;
-      document.getElementById('viewSumberDana2').textContent = currentPackage.sumber_dana || 'APBD';
-      document.getElementById('viewKodeAnggaran').textContent = currentPackage.kode_anggaran || '';
-      document.getElementById('viewNilai').textContent = formatRupiahFull(currentPackage.pagu || 0);
-      document.getElementById('viewPpk').textContent = currentPackage.ppk || APP_CONFIG.currentUserName;
-      document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
-      document.getElementById('viewProvinsi').textContent = currentPackage.lokasi_provinsi || 'Jawa Barat';
-      document.getElementById('viewKabKota').textContent = currentPackage.lokasi_kab_kota || 'Bogor (Kota)';
-      document.getElementById('viewDetailLokasi').textContent = currentPackage.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah';
+    function renderPackage() {
+      document.title = 'EDIT-' + (currentPackage.kode_rup || currentPackage.id_simulasi || '');
+
+      fillText('viewKodeRup', currentPackage.kode_rup || '');
+      fillText('viewNamaPaket', currentPackage.nama_paket || '');
+      fillText('viewNamaPaket2', currentPackage.nama_paket || '');
+      fillText('viewSumberDana', currentPackage.sumber_dana || 'APBD');
+      fillText('viewInstansi', currentPackage.instansi || APP_CONFIG.defaultInstansi);
+      fillText('viewSatker', currentPackage.satker || '');
+      fillText('viewTahun', currentPackage.tahun || APP_CONFIG.defaultTahun);
+      fillText('viewSumberDana2', currentPackage.sumber_dana || 'APBD');
+      fillText('viewKodeAnggaran', currentPackage.kode_anggaran || '');
+      fillText('viewNilai', formatRupiahFull(currentPackage.pagu || 0));
+      fillText('viewPpk', currentPackage.ppk || APP_CONFIG.currentUserName);
+      fillText('viewNilaiPagu', formatRupiahFull(currentPackage.pagu || 0));
+      fillText('viewProvinsi', currentPackage.lokasi_provinsi || 'Jawa Barat');
+      fillText('viewKabKota', currentPackage.lokasi_kab_kota || 'Bogor (Kota)');
+      fillText('viewDetailLokasi', currentPackage.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah');
     }
 
     document.getElementById('btnTambahRencana').onclick = () => {
+      if (!currentPackage) return;
       location.href =
         'rencanapencatatan.html' +
         '?mode=tambah-rencana' +
@@ -193,6 +211,7 @@
     };
 
     document.getElementById('btnUpdateRencana').onclick = () => {
+      if (!currentPackage) return;
       location.href =
         'rencanapencatatan.html' +
         '?mode=update-rencana' +
