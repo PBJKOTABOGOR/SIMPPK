@@ -68,7 +68,12 @@ function safeNumber(value) {
   if (typeof value === 'number') return isNaN(value) ? 0 : value;
   if (value === null || value === undefined || value === '') return 0;
 
-  const clean = String(value)
+  const raw = String(value).trim();
+
+  if (!raw) return 0;
+
+  const clean = raw
+    .replace(/\s/g, '')
     .replace(/\./g, '')
     .replace(',', '.')
     .replace(/[^\d.-]/g, '');
@@ -119,12 +124,23 @@ function parseTanggalIndonesia(value) {
     return isNaN(d.getTime()) ? null : d;
   }
 
+  if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+    const d = new Date(text);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
   const parts = text.split(/[-/]/);
   if (parts.length !== 3) return null;
 
-  const day = Number(parts[0]);
-  const month = Number(parts[1]) - 1;
-  const year = Number(parts[2]);
+  let day = Number(parts[0]);
+  let month = Number(parts[1]) - 1;
+  let year = Number(parts[2]);
+
+  if (String(parts[0]).length === 4) {
+    year = Number(parts[0]);
+    month = Number(parts[1]) - 1;
+    day = Number(parts[2]);
+  }
 
   const date = new Date(year, month, day);
   return isNaN(date.getTime()) ? null : date;
@@ -132,27 +148,17 @@ function parseTanggalIndonesia(value) {
 
 function formatDateToDisplay(value) {
   if (!value) return '';
-  if (value instanceof Date) {
-    const dd = String(value.getDate()).padStart(2, '0');
-    const mm = String(value.getMonth() + 1).padStart(2, '0');
-    const yyyy = value.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
-  }
-
-  const asDate = parseTanggalIndonesia(String(value).replace(/\//g, '-'));
-  if (asDate) {
-    const dd = String(asDate.getDate()).padStart(2, '0');
-    const mm = String(asDate.getMonth() + 1).padStart(2, '0');
-    const yyyy = asDate.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
-  }
-
-  return String(value);
+  const date = value instanceof Date ? value : parseTanggalIndonesia(value);
+  if (!date) return '';
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
 }
 
 function formatDateForInput(value) {
   if (!value) return '';
-  const date = value instanceof Date ? value : parseTanggalIndonesia(String(value).replace(/\//g, '-'));
+  const date = value instanceof Date ? value : parseTanggalIndonesia(value);
   if (!date) return '';
   const dd = String(date.getDate()).padStart(2, '0');
   const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -167,7 +173,15 @@ function formatDateInput(value) {
 function formatTanggalIndonesia(dateInput) {
   if (!dateInput) return '';
   const date = new Date(dateInput);
-  if (isNaN(date.getTime())) return String(dateInput);
+  if (isNaN(date.getTime())) {
+    const parsed = parseTanggalIndonesia(dateInput);
+    if (!parsed) return String(dateInput);
+    return parsed.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
   return date.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -176,7 +190,7 @@ function formatTanggalIndonesia(dateInput) {
 }
 
 function randomKodeAnggaran() {
-  const blocks = [1,2,2,4,1,2,2,4,1,2,2,4].map(len => {
+  const blocks = [1, 2, 2, 4, 1, 2, 2, 4, 1, 2, 2, 4].map(len => {
     let out = '';
     for (let i = 0; i < len; i++) out += Math.floor(Math.random() * 10);
     return out;
@@ -280,6 +294,7 @@ function setupTutorial(options) {
 
     setTimeout(() => {
       const rect = target.getBoundingClientRect();
+
       highlight.style.left = (rect.left - 8) + 'px';
       highlight.style.top = (rect.top - 8) + 'px';
       highlight.style.width = (rect.width + 16) + 'px';
@@ -290,6 +305,7 @@ function setupTutorial(options) {
 
       let left = Math.max(12, Math.min(window.innerWidth - 352, rect.left));
       let top = step.place === 'top' ? rect.top - 190 : rect.bottom + 26;
+
       if (top < 12) top = rect.bottom + 26;
       if (top + 170 > window.innerHeight) top = rect.top - 190;
 
@@ -409,6 +425,11 @@ function hideLoading() {
 async function fetchSheetRows(gid) {
   const url = `https://docs.google.com/spreadsheets/d/${APP_CONFIG.spreadsheetId}/gviz/tq?gid=${gid}&tqx=out:json`;
   const res = await fetch(url, { cache: 'no-store' });
+
+  if (!res.ok) {
+    throw new Error('Gagal mengambil data sheet.');
+  }
+
   const text = await res.text();
   const jsonText = text.substring(47).slice(0, -2);
   const json = JSON.parse(jsonText);
@@ -427,6 +448,7 @@ async function ensureDataLoaded() {
   if (window.SPSE_APP_STATE.dataLoaded) return;
 
   const rows = await fetchSheetRows(APP_CONFIG.rupMasterGid);
+
   window.SPSE_APP_STATE.allRup = rows.map(item => ({
     id_rup: normalizeWhitespace(item.id_rup),
     nama_paket: normalizeWhitespace(item.nama_paket),
@@ -437,11 +459,13 @@ async function ensureDataLoaded() {
     tahun: normalizeWhitespace(item.tahun),
     sumber_dana: normalizeWhitespace(item.sumber_dana || 'APBD') || 'APBD'
   }));
+
   window.SPSE_APP_STATE.dataLoaded = true;
 }
 
 function getUniqueSatkersByYear(tahun) {
   const map = new Map();
+
   window.SPSE_APP_STATE.allRup
     .filter(item => String(item.tahun) === String(tahun) && item.satker)
     .forEach(item => {
@@ -453,6 +477,7 @@ function getUniqueSatkersByYear(tahun) {
 
 function filterRupRows({ tahun, satker, metode }) {
   const satkerKey = normalizeSatkerKey(satker);
+
   return window.SPSE_APP_STATE.allRup.filter(item => (
     String(item.tahun) === String(tahun) &&
     item.satker_key === satkerKey &&
@@ -482,6 +507,7 @@ function clearDraftPackage() {
 
 function buildDraftPackageFromRup(rupItem) {
   const now = new Date();
+
   return {
     id_simulasi: randomPackageId(),
     created_at: now.toISOString(),
@@ -521,6 +547,7 @@ function ensureApiUrl() {
 
 function buildApiUrl(action, params = {}) {
   ensureApiUrl();
+
   const url = new URL(APP_CONFIG.apiUrl);
   url.searchParams.set('action', action);
 
@@ -535,18 +562,28 @@ function buildApiUrl(action, params = {}) {
 
 async function callApiGet(action, params = {}) {
   ensureApiUrl();
+
   const res = await fetch(buildApiUrl(action, params), {
     method: 'GET',
     cache: 'no-store'
   });
 
+  if (!res.ok) {
+    throw new Error('Gagal mengambil data dari API');
+  }
+
   const json = await res.json();
-  if (!json.ok) throw new Error(json.message || 'Gagal mengambil data');
+
+  if (!json.ok) {
+    throw new Error(json.message || 'Gagal mengambil data');
+  }
+
   return json.data;
 }
 
 async function callApiPost(payload) {
   ensureApiUrl();
+
   const res = await fetch(APP_CONFIG.apiUrl, {
     method: 'POST',
     headers: {
@@ -555,8 +592,16 @@ async function callApiPost(payload) {
     body: JSON.stringify(payload)
   });
 
+  if (!res.ok) {
+    throw new Error('Gagal memproses data ke API');
+  }
+
   const json = await res.json();
-  if (!json.ok) throw new Error(json.message || 'Gagal memproses data');
+
+  if (!json.ok) {
+    throw new Error(json.message || 'Gagal memproses data');
+  }
+
   return json.data;
 }
 
@@ -625,6 +670,7 @@ async function deletePackageFromSheet(idSimulasi) {
     action: 'deletePackage',
     id_simulasi: idSimulasi
   });
+
   await loadPackageRows();
   return result;
 }
@@ -681,18 +727,6 @@ async function saveRealisasiToSheet(payload) {
   await loadRealisasiRows(payload.id_simulasi);
   await loadPackageRows();
   return normalizeRealisasiRow(saved);
-}
-
-async function deleteRealisasiFromSheet(idSimulasi, idRealisasi) {
-  const result = await callApiPost({
-    action: 'deleteRealisasi',
-    id_simulasi: idSimulasi,
-    id_realisasi: idRealisasi
-  });
-
-  await loadRealisasiRows(idSimulasi);
-  await loadPackageRows();
-  return result;
 }
 
 /* =========================
@@ -813,6 +847,7 @@ function createDatePickerInput(options = {}) {
   wrap.style.display = 'flex';
   wrap.style.alignItems = 'center';
   wrap.style.gap = '6px';
+  wrap.style.position = 'relative';
 
   const text = document.createElement('input');
   text.type = 'text';
@@ -820,6 +855,7 @@ function createDatePickerInput(options = {}) {
   text.readOnly = true;
   text.placeholder = placeholder;
   text.style.maxWidth = '160px';
+  text.style.cursor = 'pointer';
   text.value = value ? formatDateToDisplay(value) : '';
 
   const hidden = document.createElement('input');
@@ -827,6 +863,9 @@ function createDatePickerInput(options = {}) {
   hidden.style.position = 'absolute';
   hidden.style.opacity = '0';
   hidden.style.pointerEvents = 'none';
+  hidden.style.width = '1px';
+  hidden.style.height = '1px';
+  hidden.style.left = '-9999px';
   hidden.tabIndex = -1;
   hidden.value = value ? formatDateForInput(value) : '';
 
@@ -839,13 +878,15 @@ function createDatePickerInput(options = {}) {
 
   function openPicker() {
     if (button.disabled || hidden.disabled) return;
-    if (typeof hidden.showPicker === 'function') hidden.showPicker();
-    else hidden.click();
+    if (typeof hidden.showPicker === 'function') {
+      hidden.showPicker();
+    } else {
+      hidden.click();
+    }
   }
 
   button.onclick = openPicker;
   text.onclick = openPicker;
-  text.style.cursor = 'pointer';
 
   hidden.addEventListener('change', () => {
     if (!hidden.value) {
