@@ -868,7 +868,8 @@ function createDatePickerInput(options = {}) {
   text.className = 'text-control';
   text.readOnly = true;
   text.placeholder = placeholder;
-  text.style.maxWidth = '160px';
+  text.style.maxWidth = '150px';
+  text.style.width = '150px';
   text.style.cursor = 'pointer';
   text.value = value ? formatDateToDisplay(value) : '';
 
@@ -877,7 +878,6 @@ function createDatePickerInput(options = {}) {
   buttonHolder.style.width = '32px';
   buttonHolder.style.height = '30px';
   buttonHolder.style.flex = '0 0 32px';
-  buttonHolder.style.display = 'inline-block';
 
   const button = document.createElement('button');
   button.type = 'button';
@@ -898,14 +898,14 @@ function createDatePickerInput(options = {}) {
   hidden.style.top = '0';
   hidden.style.width = '32px';
   hidden.style.height = '30px';
-  hidden.style.opacity = '0.01';
+  hidden.style.opacity = '0';
   hidden.style.cursor = 'pointer';
-  hidden.style.zIndex = '3';
+  hidden.style.zIndex = '5';
   hidden.style.border = '0';
   hidden.style.margin = '0';
   hidden.style.padding = '0';
 
-  function syncFromHidden() {
+  function syncTextFromHidden() {
     if (!hidden.value) {
       text.value = '';
       return;
@@ -913,7 +913,7 @@ function createDatePickerInput(options = {}) {
     text.value = formatDateToDisplay(hidden.value);
   }
 
-  function openPickerFromText() {
+  function openPicker() {
     if (hidden.disabled) return;
 
     try {
@@ -930,16 +930,21 @@ function createDatePickerInput(options = {}) {
     hidden.click();
   }
 
-  text.addEventListener('click', openPickerFromText);
-  button.addEventListener('click', openPickerFromText);
-  hidden.addEventListener('change', syncFromHidden);
-  hidden.addEventListener('input', syncFromHidden);
+  text.addEventListener('click', openPicker);
+  button.addEventListener('click', openPicker);
+  hidden.addEventListener('change', syncTextFromHidden);
+  hidden.addEventListener('input', syncTextFromHidden);
 
   buttonHolder.appendChild(button);
   buttonHolder.appendChild(hidden);
 
   wrap.appendChild(text);
   wrap.appendChild(buttonHolder);
+
+  function setValue(val) {
+    hidden.value = val ? formatDateForInput(val) : '';
+    text.value = val ? formatDateToDisplay(val) : '';
+  }
 
   function setDisabled(state) {
     const isDisabled = !!state;
@@ -952,11 +957,6 @@ function createDatePickerInput(options = {}) {
     text.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
     button.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
     hidden.style.pointerEvents = isDisabled ? 'none' : 'auto';
-  }
-
-  function setValue(val) {
-    hidden.value = val ? formatDateForInput(val) : '';
-    text.value = val ? formatDateToDisplay(val) : '';
   }
 
   setValue(value);
