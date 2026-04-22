@@ -1,38 +1,306 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Simulasi SPSE - Pilih Non Badan Usaha</title><link rel="stylesheet" href="style.css"></head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulasi SPSE - Pilih Non Badan Usaha</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body class="page-shell">
-<div class="topbar"><div class="topbar-inner"><div class="brand"><div class="brand-icon">SPSE</div><div class="brand-text"><div class="brand-main">INAPROC</div><div class="brand-sub">SPSE</div></div></div><div class="logo-kota">Kota Bogor</div></div><div class="nav"><a href="home.html">BERANDA</a><a href="#" class="active">DAFTAR PAKET</a><a href="#">AMEL</a><a href="#">INBOX</a><a href="#">LOG AKSES</a><a href="#">GANTI PASSWORD</a><div class="nav-right"><button class="btn-logout" id="btnLogout">⏻ LOGOUT</button></div></div><div class="system-bar"><div class="left-mini"><span style="font-weight:700;">⇵</span><span class="mini-link">▣ Petunjuk Penggunaan</span><span class="mini-link">Aplikasi e-Procurement Lainnya</span></div><div class="right-mini"><span><a href="#" style="color:#315ec9;" data-user-name>PPK</a> - <span data-user-role>Pejabat Pembuat Komitmen</span></span><span>|</span><span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span><span>✉️</span><span class="notif-badge">15</span><span style="color:#21a55b;">⬢</span></div></div></div>
-<div class="edit-block" style="margin-top:22px;">
-<div class="crumb"><span class="blue">Beranda</span> » Edit Jenis Realisasi » Pilih Non Badan Usaha</div>
-<table class="edit-table">
-<tr><td class="edit-left-label">Bentuk Usaha <span class="req">*</span></td><td><select id="inputBentukUsaha" class="select-control"></select></td></tr>
-<tr><td class="edit-left-label">Nama Penyedia <span class="req">*</span></td><td><input id="inputNamaPenyedia" class="text-control"></td></tr>
-<tr><td class="edit-left-label">NPWP</td><td><input id="inputNpwp" class="text-control" style="max-width:380px;"></td></tr>
-<tr><td class="edit-left-label">Email</td><td><input id="inputEmail" class="text-control"></td></tr>
-<tr><td class="edit-left-label">No. Telepon</td><td><input id="inputTelp" class="text-control"></td></tr>
-<tr><td class="edit-left-label">Provinsi <span class="req">*</span></td><td><select id="inputProvinsiPenyedia" class="select-control"></select></td></tr>
-<tr><td class="edit-left-label">Kabupaten/Kota <span class="req">*</span></td><td><select id="inputKabKotaPenyedia" class="select-control"></select></td></tr>
-<tr><td class="edit-left-label">Alamat</td><td><textarea id="inputAlamatPenyedia" class="textarea-control" style="height:70px;"></textarea></td></tr>
-</table>
-<div class="action-bottom"><button class="btn-blue" id="btnTambahPenyedia" type="button">◘ Tambah Penyedia</button><button class="btn-back" id="btnKembali" type="button">Kembali</button></div>
-</div>
-<script src="app.js"></script>
-<script>
-if(!requireLogin()){}
-bindLogout();
-const packageId = getQueryParam('id'); const realisasiId = getQueryParam('realisasi_id');
-function fillSelect(select, items, first){ select.innerHTML = ''; if(first) select.innerHTML += `<option value="">${first}</option>`; items.forEach(item => { const op=document.createElement('option'); op.value=item; op.textContent=item; select.appendChild(op); }); }
-fillSelect(inputBentukUsaha, PROVIDER_BENTUK_USAHA, 'Pilih Bentuk Usaha'); fillSelect(inputProvinsiPenyedia, PROVINSI_LIST, 'Pilih Provinsi');
-inputProvinsiPenyedia.addEventListener('change', ()=>{ if(inputProvinsiPenyedia.value === 'Jawa Barat'){ fillSelect(inputKabKotaPenyedia, KABKOTA_JABAR, 'Pilih Kabupaten/Kota'); } else { fillSelect(inputKabKotaPenyedia, ['Bogor (Kota)'], 'Pilih Kabupaten/Kota'); } });
-inputProvinsiPenyedia.value = 'Jawa Barat'; inputProvinsiPenyedia.dispatchEvent(new Event('change')); inputKabKotaPenyedia.value = 'Bogor (Kota)';
-btnTambahPenyedia.onclick = async ()=>{
-  if(!inputBentukUsaha.value || !inputNamaPenyedia.value.trim() || !inputProvinsiPenyedia.value || !inputKabKotaPenyedia.value){ alert('Bentuk Usaha, Nama Penyedia, Provinsi, dan Kabupaten/Kota wajib diisi.'); return; }
-  await saveProviderRow({ id_penyedia: randomProviderId(), id_realisasi: realisasiId, id_simulasi: packageId, bentuk_usaha: inputBentukUsaha.value, nama_penyedia: inputNamaPenyedia.value.trim(), npwp: inputNpwp.value.trim(), email: inputEmail.value.trim(), telp: inputTelp.value.trim(), provinsi: inputProvinsiPenyedia.value, kabupaten_kota: inputKabKotaPenyedia.value, alamat: inputAlamatPenyedia.value.trim() });
-  location.href='formrealisasi.html?id='+encodeURIComponent(packageId)+'&realisasi_id='+encodeURIComponent(realisasiId);
-};
-btnKembali.onclick = ()=> location.href='formrealisasi.html?id='+encodeURIComponent(packageId)+'&realisasi_id='+encodeURIComponent(realisasiId);
-</script>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-icon">SPSE</div>
+        <div class="brand-text">
+          <div class="brand-main">INAPROC</div>
+          <div class="brand-sub">SPSE</div>
+        </div>
+      </div>
+      <div class="logo-kota">Kota Bogor</div>
+    </div>
+
+    <div class="nav">
+      <a href="home.html">BERANDA</a>
+      <a href="#" class="active">DAFTAR PAKET</a>
+      <a href="#">AMEL</a>
+      <a href="#">INBOX</a>
+      <a href="#">LOG AKSES</a>
+      <a href="#">GANTI PASSWORD</a>
+      <div class="nav-right">
+        <button class="btn-logout" id="btnLogout">⏻ LOGOUT</button>
+      </div>
+    </div>
+
+    <div class="system-bar">
+      <div class="left-mini">
+        <span style="font-weight:700;">⇵</span>
+        <span class="mini-link">▣ Petunjuk Penggunaan</span>
+        <span class="mini-link">Aplikasi e-Procurement Lainnya</span>
+      </div>
+      <div class="right-mini">
+        <span>
+          <a href="#" style="color:#315ec9;" data-user-name>PPK</a> -
+          <span data-user-role>Pejabat Pembuat Komitmen</span>
+        </span>
+        <span>|</span>
+        <span><a href="#" style="color:#315ec9;">🔑 Enable 2FA</a></span>
+        <span>✉️</span>
+        <span class="notif-badge">15</span>
+        <span style="color:#21a55b;">⬢</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="edit-block" style="margin-top:22px;">
+    <div class="crumb">
+      <span class="blue">Beranda</span> » Edit Jenis Realisasi » Pilih Non Badan Usaha
+    </div>
+
+    <table class="edit-table">
+      <tr>
+        <td class="edit-left-label">Bentuk Usaha <span class="req">*</span></td>
+        <td>
+          <select id="inputBentukUsaha" class="select-control"></select>
+        </td>
+      </tr>
+      <tr>
+        <td class="edit-left-label">Nama Penyedia <span class="req">*</span></td>
+        <td>
+          <input id="inputNamaPenyedia" class="text-control">
+        </td>
+      </tr>
+      <tr>
+        <td class="edit-left-label">NPWP</td>
+        <td>
+          <input id="inputNpwp" class="text-control" style="max-width:380px;">
+        </td>
+      </tr>
+      <tr>
+        <td class="edit-left-label">Email</td>
+        <td>
+          <input id="inputEmail" class="text-control">
+        </td>
+      </tr>
+      <tr>
+        <td class="edit-left-label">No. Telepon</td>
+        <td>
+          <input id="inputTelp" class="text-control">
+        </td>
+      </tr>
+      <tr>
+        <td class="edit-left-label">Provinsi <span class="req">*</span></td>
+        <td>
+          <select id="inputProvinsiPenyedia" class="select-control"></select>
+        </td>
+      </tr>
+      <tr>
+        <td class="edit-left-label">Kabupaten/Kota <span class="req">*</span></td>
+        <td>
+          <select id="inputKabKotaPenyedia" class="select-control"></select>
+        </td>
+      </tr>
+      <tr>
+        <td class="edit-left-label">Alamat</td>
+        <td>
+          <textarea id="inputAlamatPenyedia" class="textarea-control" style="height:70px;"></textarea>
+        </td>
+      </tr>
+    </table>
+
+    <div class="action-bottom">
+      <button class="btn-blue" id="btnTambahPenyedia" type="button">◘ Tambah Penyedia</button>
+      <button class="btn-back" id="btnKembali" type="button">Kembali</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if (!requireLogin()) {}
+    bindLogout();
+
+    const packageId = getQueryParam('id');
+    const realisasiId = getQueryParam('id_realisasi');
+
+    const inputBentukUsaha = document.getElementById('inputBentukUsaha');
+    const inputNamaPenyedia = document.getElementById('inputNamaPenyedia');
+    const inputNpwp = document.getElementById('inputNpwp');
+    const inputEmail = document.getElementById('inputEmail');
+    const inputTelp = document.getElementById('inputTelp');
+    const inputProvinsiPenyedia = document.getElementById('inputProvinsiPenyedia');
+    const inputKabKotaPenyedia = document.getElementById('inputKabKotaPenyedia');
+    const inputAlamatPenyedia = document.getElementById('inputAlamatPenyedia');
+    const btnTambahPenyedia = document.getElementById('btnTambahPenyedia');
+    const btnKembali = document.getElementById('btnKembali');
+
+    const BENTUK_USAHA_LIST = [
+      'BUM Desa',
+      'BUM Desa Bersama',
+      'Badan Layanan Umum (BLU)',
+      'Badan Usaha Luar Negeri',
+      'Badan hukum lainnya',
+      'Bentuk Usaha Tetap',
+      'Kantor Perwakilan',
+      'Koperasi',
+      'Orang Perseorangan',
+      'Persekutuan Firma (FA / Venootschap Onder Firma)',
+      'Persekutuan Komanditer (CV / Commanditaire Venootschap)',
+      'Persekutuan Perdata',
+      'Perseroan Terbatas (PT)',
+      'Perseroan Terbatas (PT) Perorangan',
+      'Persyarikatan atau Perkumpulan',
+      'Perusahaan umum (Perum)',
+      'Perusahaan umum daerah (Perumda)'
+    ];
+
+    const PROVINSI_LIST = [
+      'Aceh',
+      'Bali',
+      'Banten',
+      'Bengkulu',
+      'DI Yogyakarta',
+      'DKI Jakarta',
+      'Gorontalo',
+      'Jambi',
+      'Jawa Barat',
+      'Jawa Tengah',
+      'Jawa Timur',
+      'Kalimantan Barat',
+      'Kalimantan Selatan',
+      'Kalimantan Tengah',
+      'Kalimantan Timur',
+      'Kalimantan Utara',
+      'Kepulauan Bangka Belitung',
+      'Kepulauan Riau',
+      'Lampung',
+      'Maluku',
+      'Maluku Utara',
+      'Nusa Tenggara Barat',
+      'Nusa Tenggara Timur',
+      'Papua',
+      'Papua Barat',
+      'Papua Barat Daya',
+      'Papua Pegunungan',
+      'Papua Selatan',
+      'Papua Tengah',
+      'Riau',
+      'Sulawesi Barat',
+      'Sulawesi Selatan',
+      'Sulawesi Tengah',
+      'Sulawesi Tenggara',
+      'Sulawesi Utara',
+      'Sumatera Barat',
+      'Sumatera Selatan',
+      'Sumatera Utara'
+    ];
+
+    const KABKOTA_JABAR = [
+      'Bandung (Kab.)',
+      'Bandung (Kota)',
+      'Bandung Barat (Kab.)',
+      'Banjar (Kota)',
+      'Bekasi (Kab.)',
+      'Bekasi (Kota)',
+      'Bogor (Kab.)',
+      'Bogor (Kota)',
+      'Ciamis (Kab.)',
+      'Cianjur (Kab.)',
+      'Cimahi (Kota)',
+      'Cirebon (Kab.)',
+      'Cirebon (Kota)',
+      'Depok (Kota)',
+      'Garut (Kab.)',
+      'Indramayu (Kab.)',
+      'Karawang (Kab.)',
+      'Kuningan (Kab.)',
+      'Majalengka (Kab.)',
+      'Pangandaran (Kab.)',
+      'Purwakarta (Kab.)',
+      'Subang (Kab.)',
+      'Sukabumi (Kab.)',
+      'Sukabumi (Kota)',
+      'Sumedang (Kab.)',
+      'Tasikmalaya (Kab.)',
+      'Tasikmalaya (Kota)'
+    ];
+
+    function fillSelect(select, items, firstLabel) {
+      select.innerHTML = '';
+      if (firstLabel) {
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = firstLabel;
+        select.appendChild(first);
+      }
+
+      items.forEach(item => {
+        const op = document.createElement('option');
+        op.value = item;
+        op.textContent = item;
+        select.appendChild(op);
+      });
+    }
+
+    function fillKabKotaByProvinsi() {
+      const prov = inputProvinsiPenyedia.value;
+
+      if (prov === 'Jawa Barat') {
+        fillSelect(inputKabKotaPenyedia, KABKOTA_JABAR, 'Pilih Kabupaten/Kota');
+      } else {
+        fillSelect(inputKabKotaPenyedia, ['Bogor (Kota)'], 'Pilih Kabupaten/Kota');
+      }
+    }
+
+    btnKembali.onclick = () => {
+      location.href = 'formrealisasi.html?id=' + encodeURIComponent(packageId) + '&id_realisasi=' + encodeURIComponent(realisasiId);
+    };
+
+    btnTambahPenyedia.onclick = async () => {
+      try {
+        if (!packageId || !realisasiId) {
+          alert('ID paket atau ID realisasi tidak ditemukan.');
+          return;
+        }
+
+        if (!inputBentukUsaha.value || !inputNamaPenyedia.value.trim() || !inputProvinsiPenyedia.value || !inputKabKotaPenyedia.value) {
+          alert('Bentuk Usaha, Nama Penyedia, Provinsi, dan Kabupaten/Kota wajib diisi.');
+          return;
+        }
+
+        showLoading('Mohon Tunggu', 'Sedang menyimpan data penyedia...');
+
+        await savePenyediaToSheet({
+          id_penyedia: randomPenyediaId(),
+          id_realisasi: realisasiId,
+          id_simulasi: packageId,
+          bentuk_usaha: inputBentukUsaha.value,
+          nama_penyedia: inputNamaPenyedia.value.trim(),
+          npwp: inputNpwp.value.trim(),
+          email: inputEmail.value.trim(),
+          telp: inputTelp.value.trim(),
+          provinsi: inputProvinsiPenyedia.value,
+          kabupaten_kota: inputKabKotaPenyedia.value,
+          alamat: inputAlamatPenyedia.value.trim()
+        });
+
+        hideLoading();
+        alert('Penyedia berhasil ditambahkan');
+        location.href = 'formrealisasi.html?id=' + encodeURIComponent(packageId) + '&id_realisasi=' + encodeURIComponent(realisasiId);
+      } catch (error) {
+        hideLoading();
+        alert(error.message || 'Gagal menyimpan penyedia');
+      }
+    };
+
+    (function initPage() {
+      fillSelect(inputBentukUsaha, BENTUK_USAHA_LIST, 'Pilih Bentuk Usaha');
+      fillSelect(inputProvinsiPenyedia, PROVINSI_LIST, 'Pilih Provinsi');
+
+      inputProvinsiPenyedia.addEventListener('change', fillKabKotaByProvinsi);
+
+      inputProvinsiPenyedia.value = 'Jawa Barat';
+      fillKabKotaByProvinsi();
+      inputKabKotaPenyedia.value = 'Bogor (Kota)';
+    })();
+  </script>
 </body>
 </html>
