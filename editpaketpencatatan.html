@@ -243,60 +243,70 @@
       return safeText(currentPackage?.alasan_perubahan_tanggal).trim() !== '';
     }
 
-    function setTanggalSelesaiEditableState() {
-      if (!tanggalPaketPicker || !currentPackage) return;
+function setTanggalSelesaiEditableState() {
+  if (!tanggalPaketPicker || !currentPackage) return;
 
-      const status = hitungStatusPaket(currentPackage);
-      const isSelesai = status === 'Paket Sudah Selesai';
-      const check = document.getElementById('checkUbahTanggalSelesai');
-      const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
+  const status = hitungStatusPaket(currentPackage);
+  const check = document.getElementById('checkUbahTanggalSelesai');
+  const wrapAlasan = document.getElementById('wrapAlasanPerubahan');
 
-      let allowEditTanggal = false;
+  let allowEditTanggal = false;
 
-      if (check.checked) {
-        allowEditTanggal = true;
-      }
+  if (status === 'Draft') {
+    allowEditTanggal = true;
+    check.checked = false;
+  } else if (status === 'Paket Sedang Berjalan') {
+    allowEditTanggal = check.checked;
+  } else if (status === 'Paket Sudah Selesai') {
+    allowEditTanggal = false;
+    check.checked = false;
+  }
 
-      if (isSelesai && !check.checked) {
-        allowEditTanggal = false;
-      }
+  tanggalPaketPicker.text.disabled = !allowEditTanggal;
+  tanggalPaketPicker.button.disabled = !allowEditTanggal;
+  tanggalPaketPicker.hidden.disabled = !allowEditTanggal;
 
-      tanggalPaketPicker.text.disabled = !allowEditTanggal;
-      tanggalPaketPicker.button.disabled = !allowEditTanggal;
-      tanggalPaketPicker.hidden.disabled = !allowEditTanggal;
+  tanggalPaketPicker.text.style.background = allowEditTanggal ? '#fff' : '#f3f4f6';
+  tanggalPaketPicker.text.style.cursor = allowEditTanggal ? 'pointer' : 'not-allowed';
 
-      if (tanggalPaketPicker.text) {
-        tanggalPaketPicker.text.style.background = allowEditTanggal ? '#fff' : '#f3f4f6';
-        tanggalPaketPicker.text.style.cursor = allowEditTanggal ? 'pointer' : 'not-allowed';
-      }
+  if (status === 'Draft') {
+    wrapAlasan.style.display = 'none';
+  } else if (status === 'Paket Sedang Berjalan' && check.checked && tanggalSudahAda()) {
+    wrapAlasan.style.display = 'block';
+  } else {
+    wrapAlasan.style.display = 'none';
+  }
+}
 
-      if (pernahUbahTanggal() && check.checked && tanggalSudahAda()) {
-        wrapAlasan.style.display = 'block';
-      } else if (!pernahUbahTanggal() && check.checked && tanggalSudahAda()) {
-        wrapAlasan.style.display = 'block';
-      } else {
-        wrapAlasan.style.display = 'none';
-      }
-    }
+function setReadonlyByStatus() {
+  const status = hitungStatusPaket(currentPackage);
+  const isSelesai = status === 'Paket Sudah Selesai';
+  const check = document.getElementById('checkUbahTanggalSelesai');
 
-    function setReadonlyByStatus() {
-      const status = hitungStatusPaket(currentPackage);
-      const isSelesai = status === 'Paket Sudah Selesai';
+  document.getElementById('viewStatusPaket').textContent = status;
 
-      document.getElementById('viewStatusPaket').textContent = status;
+  document.getElementById('inputPdn').disabled = isSelesai;
+  document.getElementById('inputUmk').disabled = isSelesai;
 
-      document.getElementById('inputPdn').disabled = isSelesai;
-      document.getElementById('inputUmk').disabled = isSelesai;
-      document.getElementById('inputUraianPekerjaan').disabled = false;
+  document.getElementById('inputPdn').style.background = isSelesai ? '#f3f4f6' : '#fff';
+  document.getElementById('inputUmk').style.background = isSelesai ? '#f3f4f6' : '#fff';
 
-      document.getElementById('inputPdn').style.background = isSelesai ? '#f3f4f6' : '#fff';
-      document.getElementById('inputUmk').style.background = isSelesai ? '#f3f4f6' : '#fff';
+  document.getElementById('btnTambahRealisasi').style.display = bolehTambahRealisasi(currentPackage) ? 'inline-flex' : 'none';
+  document.getElementById('btnPaketBatal').style.display = bolehHapusPaket(currentPackage) ? 'inline-flex' : 'none';
 
-      document.getElementById('btnTambahRealisasi').style.display = bolehTambahRealisasi(currentPackage) ? 'inline-flex' : 'none';
-      document.getElementById('btnPaketBatal').style.display = bolehHapusPaket(currentPackage) ? 'inline-flex' : 'none';
+  if (status === 'Draft') {
+    check.disabled = false;
+    check.parentElement.style.opacity = '0.7';
+  } else if (status === 'Paket Sedang Berjalan') {
+    check.disabled = false;
+    check.parentElement.style.opacity = '1';
+  } else {
+    check.disabled = true;
+    check.parentElement.style.opacity = '0.6';
+  }
 
-      setTanggalSelesaiEditableState();
-    }
+  setTanggalSelesaiEditableState();
+}
 
     function fillHeader() {
       document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
@@ -330,12 +340,19 @@
       check.checked = false;
       wrapAlasan.style.display = 'none';
 
-      check.onchange = function () {
-        if (!this.checked) {
-          document.getElementById('inputAlasanPerubahan').value = currentPackage.alasan_perubahan_tanggal || '';
-        }
-        setTanggalSelesaiEditableState();
-      };
+check.onchange = function () {
+  const status = hitungStatusPaket(currentPackage);
+
+  if (status === 'Draft') {
+    this.checked = false;
+  }
+
+  if (!this.checked) {
+    document.getElementById('inputAlasanPerubahan').value = currentPackage.alasan_perubahan_tanggal || '';
+  }
+
+  setTanggalSelesaiEditableState();
+};
 
       setTanggalSelesaiEditableState();
     }
