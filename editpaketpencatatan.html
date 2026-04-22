@@ -18,6 +18,7 @@
       </div>
       <div class="logo-kota">Kota Bogor</div>
     </div>
+
     <div class="nav">
       <a href="home.html">BERANDA</a>
       <a href="#" class="active">DAFTAR PAKET</a>
@@ -29,6 +30,7 @@
         <button class="btn-logout" id="btnLogout">⏻ LOGOUT</button>
       </div>
     </div>
+
     <div class="system-bar">
       <div class="left-mini">
         <span style="font-weight:700;">⇵</span>
@@ -47,7 +49,11 @@
   </div>
 
   <div class="content-block" style="margin-top:22px;">
-    <div class="crumb"><span class="blue">Beranda</span> » <span class="blue">Daftar Paket</span> » Edit Pencatatan Non Tender</div>
+    <div class="crumb">
+      <span class="blue">Beranda</span> »
+      <span class="blue">Daftar Paket</span> »
+      Edit Pencatatan Non Tender
+    </div>
 
     <div class="notice" style="padding:12px 14px;">
       <strong>Penting:</strong><br>
@@ -59,6 +65,7 @@
         <td class="form-label">Kode Paket</td>
         <td class="form-field" id="viewKodePaket"></td>
       </tr>
+
       <tr>
         <td class="form-label">Nama Paket</td>
         <td class="form-field">
@@ -66,18 +73,33 @@
           <button type="button" class="btn-dark" id="btnDetailPaket" style="margin-left:8px;padding:2px 6px;font-size:11px;">Detil</button>
         </td>
       </tr>
+
       <tr>
         <td class="form-label">Jenis Pengadaan</td>
         <td class="form-field">
-          <input type="text" id="inputJenisPengadaan" class="text-control" readonly style="max-width:220px;background:#f3f4f6;">
+          <input
+            type="text"
+            id="inputJenisPengadaan"
+            class="text-control"
+            readonly
+            style="max-width:220px;background:#f3f4f6;"
+          >
         </td>
       </tr>
+
       <tr>
         <td class="form-label">Metode Pemilihan</td>
         <td class="form-field">
-          <input type="text" id="inputMetodePemilihan" class="text-control" readonly style="max-width:220px;background:#f3f4f6;">
+          <input
+            type="text"
+            id="inputMetodePemilihan"
+            class="text-control"
+            readonly
+            style="max-width:240px;background:#f3f4f6;"
+          >
         </td>
       </tr>
+
       <tr>
         <td class="form-label">Nilai Pagu</td>
         <td class="form-field" id="viewNilaiPagu"></td>
@@ -93,11 +115,13 @@
                 <th>Jenis Realisasi</th>
                 <th style="width:220px;">Nilai Realisasi</th>
                 <th style="width:220px;">Tanggal Realisasi</th>
-                <th style="width:100px;"></th>
+                <th style="width:80px;"></th>
               </tr>
             </thead>
             <tbody id="realisasiTableBody">
-              <tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>
+              <tr>
+                <td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td>
+              </tr>
             </tbody>
           </table>
 
@@ -113,20 +137,28 @@
 
       <tr>
         <td class="form-label">Nilai Produk Dalam Negeri (PDN) (Rp.)</td>
-        <td class="form-field"><input type="text" id="inputPdn" class="text-control" style="max-width:200px;" value="0,00"></td>
+        <td class="form-field">
+          <input type="text" id="inputPdn" class="text-control" style="max-width:200px;">
+        </td>
       </tr>
+
       <tr>
         <td class="form-label">Nilai Usaha Mikro Kecil (UMK) (Rp.)</td>
-        <td class="form-field"><input type="text" id="inputUmk" class="text-control" style="max-width:200px;" value="0,00"></td>
+        <td class="form-field">
+          <input type="text" id="inputUmk" class="text-control" style="max-width:200px;">
+        </td>
       </tr>
 
       <tr>
         <td class="form-label" style="vertical-align:top;">Tanggal Paket Selesai <span class="req">*</span></td>
         <td class="form-field">
-          <div id="tanggalSelesaiWrap" style="margin-bottom:6px;"></div>
+          <div id="tanggalSelesaiWrap" style="margin-bottom:8px;"></div>
 
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-            <span id="badgePerubahanTanggal" style="display:none;background:#f4a12d;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;">1 kali perubahan</span>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+            <span
+              id="badgePerubahanTanggal"
+              style="display:none;background:#f4a12d;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;"
+            >1 kali perubahan</span>
           </div>
 
           <label style="font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;">
@@ -141,22 +173,315 @@
             <textarea id="inputAlasanPerubahanTanggal" class="textarea-control" style="height:66px;"></textarea>
           </div>
 
-          <div class="notice-yellow" style="margin:0;">Tanggal Paket Selesai adalah Tanggal berakhirnya Kontrak.</div>
+          <div class="notice-yellow" style="margin:0;">
+            Tanggal Paket Selesai adalah Tanggal berakhirnya Kontrak.
+          </div>
         </td>
       </tr>
 
       <tr>
         <td class="form-label" style="vertical-align:top;">Uraian Pekerjaan</td>
         <td class="form-field">
-          <textarea id="inputUraianPekerjaan" class="textarea-control" style="height:160px;"></textarea>
+          <textarea id="inputUraianPekerjaan" class="textarea-control" style="height:150px;"></textarea>
         </td>
       </tr>
 
       <tr>
         <td class="form-label">Status Paket</td>
-        <td class="form-field" id="viewStatusPaket">Draft</td>
+        <td class="form-field" id="viewStatusPaket"></td>
       </tr>
     </table>
 
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button
+      <button class="btn-green" id="btnSavePencatatan" type="button">◘ Simpan</button>
+      <button class="btn-red" id="btnPaketBatal" type="button">Paket Batal</button>
+      <button class="btn-back" id="btnKembali" type="button">◀ Kembali</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if(!requireLogin()) {}
+    bindLogout();
+
+    const packageId = getQueryParam('id');
+    let currentPackage = null;
+    let realisasiRows = [];
+    let tanggalPicker = null;
+
+    function getCurrentStatusByForm(){
+      return getStatusFromTanggalSelesai(tanggalPicker ? tanggalPicker.text.value : (currentPackage?.tanggal_paket_selesai || ''));
+    }
+
+    function isLockedPage(){
+      return getCurrentStatusByForm() === 'Paket Sudah Selesai';
+    }
+
+    function toggleTanggalControls(){
+      const hasTanggal = normalizeWhitespace(currentPackage?.tanggal_paket_selesai || '') !== '';
+      const pernahUbah = normalizeWhitespace(currentPackage?.alasan_perubahan_tanggal || '') !== '';
+      const ubah = document.getElementById('checkUbahTanggal').checked;
+
+      document.getElementById('badgePerubahanTanggal').style.display = pernahUbah ? 'inline-block' : 'none';
+
+      if(isLockedPage()){
+        document.getElementById('checkUbahTanggal').disabled = true;
+        document.getElementById('alasanTanggalWrap').classList.add('hidden');
+        tanggalPicker.button.disabled = true;
+        return;
+      }
+
+      if(!hasTanggal){
+        document.getElementById('checkUbahTanggal').checked = false;
+        document.getElementById('checkUbahTanggal').disabled = true;
+        document.getElementById('alasanTanggalWrap').classList.add('hidden');
+        tanggalPicker.button.disabled = false;
+        return;
+      }
+
+      document.getElementById('checkUbahTanggal').disabled = false;
+      tanggalPicker.button.disabled = !ubah;
+      document.getElementById('alasanTanggalWrap').classList.toggle('hidden', !ubah);
+    }
+
+    function renderTanggalPicker(){
+      const wrap = document.getElementById('tanggalSelesaiWrap');
+      wrap.innerHTML = '';
+
+      tanggalPicker = createDatePickerInput({
+        value: currentPackage.tanggal_paket_selesai || '',
+        placeholder: 'dd-mm-yyyy',
+        onChange: () => {
+          updateStatusText();
+          applyPageRules();
+        }
+      });
+
+      tanggalPicker.text.style.maxWidth = '200px';
+      wrap.appendChild(tanggalPicker.wrap);
+    }
+
+    function updateStatusText(){
+      document.getElementById('viewStatusPaket').textContent = getCurrentStatusByForm();
+    }
+
+    function renderPage(){
+      document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
+      document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
+      document.getElementById('inputJenisPengadaan').value = currentPackage.jenis_pengadaan || 'Jasa Lainnya';
+      document.getElementById('inputMetodePemilihan').value = currentPackage.metode_pemilihan || '';
+      document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
+      document.getElementById('inputPdn').value = currentPackage.pdn_realisasi || '0,00';
+      document.getElementById('inputUmk').value = currentPackage.umk_realisasi || '0,00';
+      document.getElementById('inputUraianPekerjaan').value = currentPackage.uraian_pekerjaan || '';
+      document.getElementById('inputAlasanPerubahanTanggal').value = currentPackage.alasan_perubahan_tanggal || '';
+
+      renderTanggalPicker();
+      updateStatusText();
+      toggleTanggalControls();
+    }
+
+    function renderRealisasiTable(){
+      const tbody = document.getElementById('realisasiTableBody');
+
+      if(!realisasiRows.length){
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Belum ada realisasi</td></tr>';
+        document.getElementById('viewTotalRealisasi').textContent = 'Rp. 0,00';
+        return;
+      }
+
+      let total = 0;
+
+      tbody.innerHTML = realisasiRows.map((row, index) => {
+        const nilai = Number(row.nilai_realisasi || 0);
+        total += nilai;
+
+        const bisaEdit = canEditRealisasi({ tanggal_paket_selesai: tanggalPicker.text.value });
+        const linkHref = `formrealisasi.html?id=${encodeURIComponent(packageId)}&realisasi_id=${encodeURIComponent(row.id_realisasi)}&mode=${bisaEdit ? 'edit' : 'view'}`;
+
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td>
+              <a href="${linkHref}" style="color:#2f5ed0;">${escapeHtml(row.jenis_realisasi || '')}</a>
+            </td>
+            <td>${escapeHtml(formatRupiahFull(nilai))}</td>
+            <td>${escapeHtml(formatDateInput(row.tanggal_realisasi || ''))}</td>
+            <td>
+              ${canDeleteRealisasi({ tanggal_paket_selesai: tanggalPicker.text.value })
+                ? `<button class="btn-red btn-delete-realisasi" data-id="${escapeHtml(row.id_realisasi)}">Hapus</button>`
+                : ''
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('viewTotalRealisasi').textContent = formatRupiahFull(total);
+
+      document.querySelectorAll('.btn-delete-realisasi').forEach(btn => {
+        btn.onclick = async () => {
+          try{
+            if(!confirm('Hapus realisasi ini?')) return;
+            showLoading('Mohon tunggu, sedang menghapus realisasi...');
+            await deleteRealisasiFromSheet(btn.dataset.id, packageId);
+            await reloadAll();
+          } catch(error){
+            alert(error.message || 'Gagal menghapus realisasi');
+          } finally {
+            hideLoading();
+          }
+        };
+      });
+    }
+
+    function applyPageRules(){
+      const locked = isLockedPage();
+      const running = getCurrentStatusByForm() === 'Paket Sedang Berjalan';
+      const draft = getCurrentStatusByForm() === 'Draft';
+
+      document.getElementById('btnTambahRealisasi').disabled = locked;
+      document.getElementById('btnTambahRealisasi').style.opacity = locked ? '.55' : '1';
+
+      document.getElementById('btnPaketBatal').disabled = !draft;
+      document.getElementById('btnPaketBatal').style.opacity = draft ? '1' : '.55';
+
+      document.getElementById('inputPdn').readOnly = locked;
+      document.getElementById('inputUmk').readOnly = locked;
+      document.getElementById('inputUraianPekerjaan').readOnly = locked;
+
+      if(locked){
+        document.getElementById('inputPdn').style.background = '#f3f4f6';
+        document.getElementById('inputUmk').style.background = '#f3f4f6';
+        document.getElementById('inputUraianPekerjaan').style.background = '#f3f4f6';
+      } else {
+        document.getElementById('inputPdn').style.background = '#fff';
+        document.getElementById('inputUmk').style.background = '#fff';
+        document.getElementById('inputUraianPekerjaan').style.background = '#fff';
+      }
+
+      toggleTanggalControls();
+      renderRealisasiTable();
+    }
+
+    async function reloadAll(){
+      await loadPackageRows(true);
+      currentPackage = findLoadedPackageById(packageId);
+      await loadRealisasiRows(packageId, true);
+      realisasiRows = getPackageRealisasiRows(packageId);
+      renderPage();
+      applyPageRules();
+    }
+
+    document.getElementById('btnTambahRealisasi').onclick = () => {
+      if(isLockedPage()){
+        alert('Paket Sudah Selesai, realisasi tidak bisa ditambah lagi.');
+        return;
+      }
+      location.href = `formrealisasi.html?id=${encodeURIComponent(packageId)}`;
+    };
+
+    document.getElementById('btnDetailPaket').onclick = () => {
+      location.href = `editpaket.html?id=${encodeURIComponent(packageId)}`;
+    };
+
+    document.getElementById('checkUbahTanggal').addEventListener('change', () => {
+      toggleTanggalControls();
+    });
+
+    document.getElementById('btnKembali').onclick = () => {
+      location.href = 'pencatatannontender.html';
+    };
+
+    document.getElementById('btnPaketBatal').onclick = async () => {
+      try{
+        if(!canDeletePackage({ tanggal_paket_selesai: tanggalPicker.text.value })){
+          alert('Yang bisa dihapus hanya paket berstatus Draft.');
+          return;
+        }
+
+        if(!confirm('Yakin paket ini akan dihapus?')) return;
+
+        showLoading('Mohon tunggu, sedang menghapus paket...');
+        await deletePackageFromSheet(packageId);
+        location.href = 'pencatatannontender.html';
+      } catch(error){
+        alert(error.message || 'Gagal menghapus paket');
+      } finally {
+        hideLoading();
+      }
+    };
+
+    document.getElementById('btnSavePencatatan').onclick = async () => {
+      try{
+        const tanggal = tanggalPicker.text.value.trim();
+        const statusPaket = getStatusFromTanggalSelesai(tanggal);
+        const ubahTanggal = document.getElementById('checkUbahTanggal').checked;
+        const alasan = document.getElementById('inputAlasanPerubahanTanggal').value.trim();
+
+        if(!tanggal){
+          alert('Tanggal Paket Selesai wajib diisi.');
+          return;
+        }
+
+        if(normalizeWhitespace(currentPackage.tanggal_paket_selesai || '') !== '' && ubahTanggal && !alasan){
+          alert('Alasan perubahan tanggal wajib diisi.');
+          return;
+        }
+
+        showLoading('Mohon tunggu, sedang menyimpan paket...');
+
+        const payload = {
+          ...currentPackage,
+          jenis_pengadaan: 'Jasa Lainnya',
+          metode_pemilihan: currentPackage.metode_pemilihan || '',
+          pdn_realisasi: document.getElementById('inputPdn').value.trim() || '0,00',
+          umk_realisasi: document.getElementById('inputUmk').value.trim() || '0,00',
+          tanggal_paket_selesai: tanggal,
+          alasan_perubahan_tanggal: ubahTanggal ? alasan : (currentPackage.alasan_perubahan_tanggal || ''),
+          uraian_pekerjaan: document.getElementById('inputUraianPekerjaan').value,
+          status_paket: statusPaket,
+          status_realisasi: realisasiRows.length ? 'Sudah Ada Realisasi' : 'Belum Ada Realisasi',
+          can_delete: statusPaket === 'Draft' ? 'YA' : 'TIDAK',
+          isian_edit_selesai: 'SUDAH'
+        };
+
+        await savePackageToSheet(payload);
+        await reloadAll();
+        alert('Paket berhasil disimpan');
+      } catch(error){
+        alert(error.message || 'Gagal menyimpan paket');
+      } finally {
+        hideLoading();
+      }
+    };
+
+    (async function init(){
+      try{
+        showLoading('Mohon tunggu, sedang menarik data...');
+        if(!packageId){
+          location.href = 'pencatatannontender.html';
+          return;
+        }
+
+        await loadPackageRows(true);
+        currentPackage = findLoadedPackageById(packageId);
+
+        if(!currentPackage){
+          alert('Data paket tidak ditemukan.');
+          location.href = 'pencatatannontender.html';
+          return;
+        }
+
+        await loadRealisasiRows(packageId, true);
+        realisasiRows = getPackageRealisasiRows(packageId);
+
+        renderPage();
+        applyPageRules();
+      } finally {
+        hideLoading();
+      }
+    })();
+  </script>
+</body>
+</html>
