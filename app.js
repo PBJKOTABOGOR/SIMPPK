@@ -609,6 +609,9 @@ async function callApiPost(payload) {
    PACKAGE API
 ========================= */
 function normalizePackageRow(row) {
+  const tanggalSelesai = row.tanggal_paket_selesai || '';
+  const evaluated = evaluatePackageStatusByTanggal(tanggalSelesai);
+
   return {
     id_simulasi: normalizeWhitespace(row.id_simulasi),
     created_at: row.created_at || '',
@@ -623,16 +626,16 @@ function normalizePackageRow(row) {
     kode_anggaran: normalizeWhitespace(row.kode_anggaran),
     ppk: normalizeWhitespace(row.ppk),
     instansi: normalizeWhitespace(row.instansi),
-    status_paket: normalizeWhitespace(row.status_paket || 'Draft'),
+    status_paket: evaluated.status_paket,
     status_realisasi: normalizeWhitespace(row.status_realisasi || 'Belum Ada Realisasi'),
-    can_delete: normalizeWhitespace(row.can_delete || 'YA'),
+    can_delete: evaluated.can_delete,
     lokasi_provinsi: normalizeWhitespace(row.lokasi_provinsi),
     lokasi_kab_kota: normalizeWhitespace(row.lokasi_kab_kota),
     detail_lokasi: normalizeWhitespace(row.detail_lokasi),
     isian_edit_selesai: normalizeWhitespace(row.isian_edit_selesai),
     pdn_realisasi: row.pdn_realisasi ?? '0,00',
     umk_realisasi: row.umk_realisasi ?? '0,00',
-    tanggal_paket_selesai: row.tanggal_paket_selesai || '',
+    tanggal_paket_selesai: tanggalSelesai,
     alasan_perubahan_tanggal: row.alasan_perubahan_tanggal || '',
     uraian_pekerjaan: row.uraian_pekerjaan || '',
     jenis_pengadaan: normalizeWhitespace(row.jenis_pengadaan || 'Jasa Lainnya')
@@ -654,9 +657,13 @@ function findLoadedPackageById(id) {
 }
 
 async function savePackageToSheet(pkg) {
+  const evaluated = evaluatePackageStatusByTanggal(pkg.tanggal_paket_selesai || '');
+
   const payload = {
     action: 'savePackage',
     ...pkg,
+    status_paket: evaluated.status_paket,
+    can_delete: evaluated.can_delete,
     updated_at: new Date().toISOString()
   };
 
@@ -805,11 +812,18 @@ function getTodayStart() {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+function normalizeDateOnly(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 function hitungStatusPaketDariTanggal(tanggalPaketSelesai) {
-  const date = parseTanggalIndonesia(String(tanggalPaketSelesai || '').replace(/\//g, '-'));
+  const raw = String(tanggalPaketSelesai || '').trim();
+  if (!raw) return 'Draft';
+
+  const date = parseTanggalIndonesia(raw.replace(/\//g, '-'));
   if (!date) return 'Draft';
 
-  const endDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const endDate = normalizeDateOnly(date);
   const today = getTodayStart();
 
   if (endDate < today) return 'Paket Sudah Selesai';
@@ -818,6 +832,7 @@ function hitungStatusPaketDariTanggal(tanggalPaketSelesai) {
 
 function evaluatePackageStatusByTanggal(tanggalPaketSelesai) {
   const status = hitungStatusPaketDariTanggal(tanggalPaketSelesai);
+
   return {
     status_paket: status,
     can_delete: status === 'Draft' ? 'YA' : 'TIDAK'
