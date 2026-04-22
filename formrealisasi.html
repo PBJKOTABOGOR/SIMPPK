@@ -265,7 +265,7 @@ function renderPenyediaTable(){
 
   tbody.innerHTML = savedPenyediaRows.map((row,idx)=>`
     <tr>
-      <td>${idx+1}</td>
+      <td>${idx + 1}</td>
       <td>${escapeHtml(row.nama_penyedia || '')}</td>
       <td>${escapeHtml(row.npwp || '')}</td>
       <td>${escapeHtml(row.email || '')}</td>
@@ -299,6 +299,14 @@ function showAfterSaveSection(){
   document.getElementById('dokumenPanel').style.display = 'block';
 }
 
+function hideAfterSaveSection(){
+  document.getElementById('successBox').style.display = 'none';
+  document.getElementById('penyediaHint').style.display = 'block';
+  document.getElementById('penyediaModeWrap').style.display = 'none';
+  document.getElementById('penyediaPanel').style.display = 'none';
+  document.getElementById('dokumenPanel').style.display = 'none';
+}
+
 function base64FromFile(file){
   return new Promise((resolve,reject)=>{
     const reader = new FileReader();
@@ -317,7 +325,6 @@ function openPenyediaForm(){
     alert('Simpan realisasi terlebih dahulu.');
     return;
   }
-
   location.href = `penyediaanonsikap.html?id=${encodeURIComponent(packageId)}&id_realisasi=${encodeURIComponent(currentRealisasi.id_realisasi)}`;
 }
 
@@ -343,6 +350,16 @@ function fillExistingRealisasi(){
   document.getElementById('inputNomorDokumen').value = currentRealisasi.nomor_dokumen || '';
   document.getElementById('inputNilaiRealisasi').value = formatNumberInput(currentRealisasi.nilai_realisasi || 0);
   document.getElementById('inputKeterangan').value = currentRealisasi.keterangan || '';
+}
+
+function clearFormForNew(){
+  document.getElementById('inputBuktiPembayaran').value = 'Non SPK';
+  buildJenisRealisasiOptions();
+  document.getElementById('inputNamaDokumen').value = '';
+  document.getElementById('inputNomorDokumen').value = '';
+  document.getElementById('inputNilaiRealisasi').value = '';
+  document.getElementById('inputKeterangan').value = '';
+  if(tanggalPicker) tanggalPicker.setValue('');
 }
 
 document.getElementById('inputBuktiPembayaran').addEventListener('change', buildJenisRealisasiOptions);
@@ -450,30 +467,31 @@ document.getElementById('btnSimpan').onclick = async ()=>{
 
     await loadRealisasiRows(packageId);
 
-    if(realisasiId){
-      currentRealisasi = findLoadedRealisasiById(realisasiId);
-    } else {
-      const rows = getPackageRealisasiRows(packageId);
-      if(rows.length) currentRealisasi = rows[rows.length - 1];
-    }
-
     fillInfo();
     buildJenisRealisasiOptions();
     renderTanggalPicker();
     bindNilaiFormat();
 
-    if(currentRealisasi){
+    if(realisasiId){
+      currentRealisasi = findLoadedRealisasiById(realisasiId);
+      if(!currentRealisasi){
+        throw new Error('Data realisasi tidak ditemukan.');
+      }
       fillExistingRealisasi();
       if(tanggalPicker) tanggalPicker.setValue(currentRealisasi.tanggal_realisasi || '');
       showAfterSaveSection();
       await loadPenyediaDokumenIfAny();
+    } else {
+      currentRealisasi = null;
+      clearFormForNew();
+      hideAfterSaveSection();
     }
 
     hideLoading();
   }catch(error){
     hideLoading();
     alert(error.message || 'Gagal menarik data paket');
-    location.href = 'pencatatannontender.html';
+    location.href = `editpaketpencatatan.html?id=${encodeURIComponent(packageId || '')}`;
   }
 })();
 </script>
