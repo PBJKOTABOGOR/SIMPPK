@@ -260,6 +260,42 @@
       }catch(e){}
     }
 
+    function parseDateFlexible(value){
+      const raw = String(value || '').trim();
+      if(!raw) return null;
+
+      if(/^\d{2}-\d{2}-\d{4}$/.test(raw)){
+        const [dd, mm, yyyy] = raw.split('-').map(Number);
+        const d = new Date(yyyy, mm - 1, dd);
+        return isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+
+      if(/^\d{4}-\d{2}-\d{2}/.test(raw)){
+        const d = new Date(raw);
+        if(!isNaN(d.getTime())){
+          return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        }
+      }
+
+      return null;
+    }
+
+    function getTodayDateOnly(){
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    function getEffectivePackageStatus(pkg){
+      const tgl = parseDateFlexible(pkg?.tanggal_paket_selesai || '');
+      if(!tgl) return 'Draft';
+      const today = getTodayDateOnly();
+      return tgl < today ? 'Paket Sudah Selesai' : 'Paket Sedang Berjalan';
+    }
+
+    function isPackageFinished(){
+      return getEffectivePackageStatus(currentPackage) === 'Paket Sudah Selesai';
+    }
+
     function getTotalRealisasiByPackageSafe(idSimulasi){
       if(typeof getTotalRealisasiByPackage === 'function'){
         return Number(getTotalRealisasiByPackage(idSimulasi) || 0);
@@ -317,6 +353,7 @@
     }
 
     function fillInfo(){
+      currentPackage.status_paket = getEffectivePackageStatus(currentPackage);
       document.getElementById('viewKodePaket').textContent = currentPackage.id_simulasi || '';
       document.getElementById('viewNamaPaket').textContent = currentPackage.nama_paket || '';
       document.getElementById('viewNilaiPagu').textContent = formatRupiahFull(currentPackage.pagu || 0);
@@ -361,7 +398,57 @@
       wrap.appendChild(tanggalPicker.wrap);
     }
 
+    function applyReadonlyByPackageStatus(){
+      const selesai = isPackageFinished();
+      const readonly = selesai;
+
+      const bukti = document.getElementById('inputBuktiPembayaran');
+      const jenis = document.getElementById('inputJenisRealisasi');
+      const nama = document.getElementById('inputNamaDokumen');
+      const nomor = document.getElementById('inputNomorDokumen');
+      const nilai = document.getElementById('inputNilaiRealisasi');
+      const ket = document.getElementById('inputKeterangan');
+      const btnSimpan = document.getElementById('btnSimpan');
+      const btnUpload = document.getElementById('btnUploadDokumen');
+      const btnTambahPenyedia = document.getElementById('btnTambahPenyedia');
+
+      bukti.disabled = readonly;
+      jenis.disabled = readonly;
+      nama.disabled = readonly;
+      nomor.disabled = readonly;
+      nilai.disabled = readonly;
+      ket.disabled = readonly;
+
+      if(tanggalPicker){
+        tanggalPicker.text.disabled = readonly;
+        tanggalPicker.button.disabled = readonly;
+        tanggalPicker.hidden.disabled = readonly;
+        tanggalPicker.text.style.background = readonly ? '#f3f4f6' : '#fff';
+      }
+
+      btnSimpan.style.display = readonly ? 'none' : 'inline-flex';
+      btnUpload.style.display = readonly ? 'none' : 'inline-flex';
+      btnTambahPenyedia.style.display = readonly ? 'none' : 'inline-flex';
+
+      if(readonly){
+        nama.style.background = '#f3f4f6';
+        nomor.style.background = '#f3f4f6';
+        nilai.style.background = '#f3f4f6';
+        ket.style.background = '#f3f4f6';
+      } else {
+        nama.style.background = '#fff';
+        nomor.style.background = '#fff';
+        nilai.style.background = '#fff';
+        ket.style.background = '#fff';
+      }
+    }
+
     function validateForm(){
+      if(isPackageFinished()){
+        alert('Paket Sudah Selesai, realisasi tidak bisa diubah.');
+        return false;
+      }
+
       const namaDokumen = document.getElementById('inputNamaDokumen').value.trim();
       const nilaiRealisasi = parseNumber(document.getElementById('inputNilaiRealisasi').value);
       const tanggalRealisasi = tanggalPicker ? tanggalPicker.text.value.trim() : '';
@@ -437,6 +524,7 @@
       document.getElementById('penyediaModeWrap').style.display = 'block';
       document.getElementById('penyediaPanel').style.display = 'block';
       document.getElementById('dokumenPanel').style.display = 'block';
+      applyReadonlyByPackageStatus();
     }
 
     function hideAfterSaveSection(){
@@ -461,6 +549,11 @@
     }
 
     function openPenyediaForm(){
+      if(isPackageFinished()){
+        alert('Paket Sudah Selesai, penyedia tidak bisa ditambah.');
+        return;
+      }
+
       if(!currentRealisasi || !currentRealisasi.id_realisasi){
         alert('Simpan realisasi terlebih dahulu.');
         return;
@@ -522,10 +615,16 @@
     };
 
     document.getElementById('btnUploadDokumen').onclick = function(){
+      if(isPackageFinished()){
+        alert('Paket Sudah Selesai, dokumen tidak bisa ditambah.');
+        return;
+      }
+
       if(!currentRealisasi || !currentRealisasi.id_realisasi){
         alert('Simpan realisasi terlebih dahulu.');
         return;
       }
+
       document.getElementById('inputDokumenFile').click();
     };
 
@@ -534,6 +633,11 @@
       if(!file) return;
 
       try{
+        if(isPackageFinished()){
+          alert('Paket Sudah Selesai, dokumen tidak bisa ditambah.');
+          return;
+        }
+
         safeShowLoading('Mohon Tunggu', 'Sedang upload dokumen...');
         document.getElementById('uploadFileName').textContent = file.name;
 
@@ -585,6 +689,9 @@
 
         await loadPackageRows();
         currentPackage = findLoadedPackageById(packageId);
+        if(currentPackage){
+          currentPackage.status_paket = getEffectivePackageStatus(currentPackage);
+        }
 
         await loadRealisasiRowsSafe(packageId);
 
@@ -616,6 +723,15 @@
           throw new Error('Data paket tidak ditemukan.');
         }
 
+        currentPackage.status_paket = getEffectivePackageStatus(currentPackage);
+
+        if(!realisasiId && isPackageFinished()){
+          safeHideLoading();
+          alert('Paket Sudah Selesai, tidak bisa tambah realisasi baru.');
+          location.href = `editpaketpencatatan.html?id=${encodeURIComponent(packageId)}`;
+          return;
+        }
+
         await loadRealisasiRowsSafe(packageId);
 
         fillInfo();
@@ -642,8 +758,10 @@
           currentRealisasi = null;
           clearFormForNew();
           hideAfterSaveSection();
+          applyReadonlyByPackageStatus();
         }
 
+        applyReadonlyByPackageStatus();
         safeHideLoading();
       }catch(error){
         safeHideLoading();
