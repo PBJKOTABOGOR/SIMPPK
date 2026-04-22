@@ -77,6 +77,10 @@ function safeNumber(value) {
   return isNaN(num) ? 0 : num;
 }
 
+function parseNumber(value) {
+  return safeNumber(value);
+}
+
 function formatRupiahShort(value) {
   const num = safeNumber(value);
   if (num >= 1000000000) return 'Rp ' + (num / 1000000000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' M';
@@ -99,9 +103,21 @@ function formatNumberIndonesia(value) {
   });
 }
 
+function formatNumberInput(value) {
+  return safeNumber(value).toLocaleString('id-ID', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
 function parseTanggalIndonesia(value) {
   const text = normalizeWhitespace(value);
   if (!text) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+    const d = new Date(text + 'T00:00:00');
+    return isNaN(d.getTime()) ? null : d;
+  }
 
   const parts = text.split(/[-/]/);
   if (parts.length !== 3) return null;
@@ -142,6 +158,10 @@ function formatDateForInput(value) {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const yyyy = date.getFullYear();
   return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatDateInput(value) {
+  return formatDateToDisplay(value);
 }
 
 function formatTanggalIndonesia(dateInput) {
@@ -634,6 +654,18 @@ async function loadRealisasiRows(idSimulasi) {
   return window.SPSE_APP_STATE.realisasiRows;
 }
 
+function getPackageRealisasiRows(idSimulasi) {
+  return (window.SPSE_APP_STATE.realisasiRows || []).filter(item =>
+    normalizeWhitespace(item.id_simulasi) === normalizeWhitespace(idSimulasi)
+  );
+}
+
+function getTotalRealisasiByPackage(idSimulasi) {
+  return getPackageRealisasiRows(idSimulasi).reduce((sum, row) => {
+    return sum + safeNumber(row.nilai_realisasi);
+  }, 0);
+}
+
 function findLoadedRealisasiById(idRealisasi) {
   return (window.SPSE_APP_STATE.realisasiRows || []).find(item =>
     normalizeWhitespace(item.id_realisasi) === normalizeWhitespace(idRealisasi)
@@ -651,11 +683,11 @@ async function saveRealisasiToSheet(payload) {
   return normalizeRealisasiRow(saved);
 }
 
-async function deleteRealisasiFromSheet(idRealisasi, idSimulasi) {
+async function deleteRealisasiFromSheet(idSimulasi, idRealisasi) {
   const result = await callApiPost({
     action: 'deleteRealisasi',
-    id_realisasi: idRealisasi,
-    id_simulasi: idSimulasi
+    id_simulasi: idSimulasi,
+    id_realisasi: idRealisasi
   });
 
   await loadRealisasiRows(idSimulasi);
@@ -739,28 +771,22 @@ function getTodayStart() {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
-function evaluatePackageStatusByTanggal(tanggalPaketSelesai) {
+function hitungStatusPaketDariTanggal(tanggalPaketSelesai) {
   const date = parseTanggalIndonesia(String(tanggalPaketSelesai || '').replace(/\//g, '-'));
-  if (!date) {
-    return {
-      status_paket: 'Draft',
-      can_delete: 'YA'
-    };
-  }
+  if (!date) return 'Draft';
 
   const endDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const today = getTodayStart();
 
-  if (endDate < today) {
-    return {
-      status_paket: 'Paket Sudah Selesai',
-      can_delete: 'TIDAK'
-    };
-  }
+  if (endDate < today) return 'Paket Sudah Selesai';
+  return 'Paket Sedang Berjalan';
+}
 
+function evaluatePackageStatusByTanggal(tanggalPaketSelesai) {
+  const status = hitungStatusPaketDariTanggal(tanggalPaketSelesai);
   return {
-    status_paket: 'Paket Sedang Berjalan',
-    can_delete: 'TIDAK'
+    status_paket: status,
+    can_delete: status === 'Draft' ? 'YA' : 'TIDAK'
   };
 }
 
@@ -776,7 +802,13 @@ function canDeletePackageByStatus(status) {
 /* =========================
    DATE PICKER
 ========================= */
-function createDatePickerInput(initialValue = '', disabled = false) {
+function createDatePickerInput(options = {}) {
+  const {
+    value = '',
+    placeholder = 'dd-mm-yyyy',
+    disabled = false
+  } = options;
+
   const wrap = document.createElement('div');
   wrap.style.display = 'flex';
   wrap.style.alignItems = 'center';
@@ -784,10 +816,11 @@ function createDatePickerInput(initialValue = '', disabled = false) {
 
   const text = document.createElement('input');
   text.type = 'text';
-  text.className = 'input-control';
+  text.className = 'text-control';
   text.readOnly = true;
+  text.placeholder = placeholder;
   text.style.maxWidth = '160px';
-  text.value = initialValue ? formatDateToDisplay(initialValue) : '';
+  text.value = value ? formatDateToDisplay(value) : '';
 
   const hidden = document.createElement('input');
   hidden.type = 'date';
@@ -795,7 +828,7 @@ function createDatePickerInput(initialValue = '', disabled = false) {
   hidden.style.opacity = '0';
   hidden.style.pointerEvents = 'none';
   hidden.tabIndex = -1;
-  hidden.value = initialValue ? formatDateForInput(initialValue) : '';
+  hidden.value = value ? formatDateForInput(value) : '';
 
   const button = document.createElement('button');
   button.type = 'button';
@@ -819,7 +852,6 @@ function createDatePickerInput(initialValue = '', disabled = false) {
       text.value = '';
       return;
     }
-
     const parts = hidden.value.split('-');
     if (parts.length === 3) {
       text.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -830,9 +862,9 @@ function createDatePickerInput(initialValue = '', disabled = false) {
   wrap.appendChild(button);
   wrap.appendChild(hidden);
 
-  text.disabled = disabled;
-  hidden.disabled = disabled;
-  button.disabled = disabled;
+  text.disabled = !!disabled;
+  hidden.disabled = !!disabled;
+  button.disabled = !!disabled;
 
   return {
     wrap,
