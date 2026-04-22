@@ -73,7 +73,7 @@
             </tr>
           </table>
 
-          <div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;">
+          <div id="rupActionWrap" style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-gray" id="btnTambahRencana" type="button">◉ Tambah Rencana Pengadaan</button>
             <button class="btn-gray" id="btnUpdateRencana" type="button">Update Rencana Pengadaan</button>
           </div>
@@ -141,7 +141,8 @@
       </tr>
     </table>
 
-    <div class="action-bottom" style="justify-content:flex-start;margin-top:12px;">
+    <div class="action-bottom" style="justify-content:flex-start;margin-top:12px;gap:8px;flex-wrap:wrap;">
+      <button class="btn-green" id="btnSimpanBuatPaket" type="button" style="display:none;">◘ Simpan dan Membuat Paket</button>
       <button class="btn-back" id="btnBackList" type="button">◀ Kembali</button>
     </div>
 
@@ -161,22 +162,42 @@
       if (el) el.textContent = value || '';
     }
 
-    async function initPackage() {
-      if (!packageId) {
-        location.href = 'pencatatannontender.html';
-        return;
-      }
+    function isPaketBaruPertamaKali(pkg) {
+      if (!pkg) return false;
 
-      await loadPackageRows();
-      currentPackage = findLoadedPackageById(packageId);
+      const status = normalizeWhitespace(pkg.status_paket || '').toUpperCase();
+      const isianEdit = normalizeWhitespace(pkg.isian_edit_selesai || '').toUpperCase();
 
-      if (!currentPackage) {
-        alert('Data paket tidak ditemukan.');
-        location.href = 'pencatatannontender.html';
-        return;
-      }
+      // paket baru pertama kali = belum pernah final dibuat dari halaman edit paket
+      // biasanya isian_edit_selesai masih kosong / bukan SUDAH
+      if (isianEdit !== 'SUDAH') return true;
 
-      renderPackage();
+      // fallback kalau masih belum punya status jelas
+      if (!status) return true;
+
+      return false;
+    }
+
+    function renderActionButtons() {
+      const btnSimpanBuatPaket = document.getElementById('btnSimpanBuatPaket');
+      const btnBackList = document.getElementById('btnBackList');
+      const rupActionWrap = document.getElementById('rupActionWrap');
+
+      if (!currentPackage) return;
+
+      const baruPertamaKali = isPaketBaruPertamaKali(currentPackage);
+
+      // kalau baru pertama kali masuk edit paket
+      // tombol: Simpan dan Membuat Paket + Kembali
+      // kalau sudah pernah dibuat
+      // tombol: hanya Kembali
+      btnSimpanBuatPaket.style.display = baruPertamaKali ? 'inline-flex' : 'none';
+
+      // tombol rencana tetap tampil saat paket baru
+      // setelah paket sudah dibuat, disembunyikan biar sesuai logika user
+      rupActionWrap.style.display = baruPertamaKali ? 'flex' : 'none';
+
+      btnBackList.style.display = 'inline-flex';
     }
 
     function renderPackage() {
@@ -197,10 +218,41 @@
       fillText('viewProvinsi', currentPackage.lokasi_provinsi || 'Jawa Barat');
       fillText('viewKabKota', currentPackage.lokasi_kab_kota || 'Bogor (Kota)');
       fillText('viewDetailLokasi', currentPackage.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah');
+
+      renderActionButtons();
+    }
+
+    async function initPackage() {
+      try {
+        if (!packageId) {
+          location.href = 'pencatatannontender.html';
+          return;
+        }
+
+        showLoading('Mohon Tunggu', 'Sedang menarik data paket...');
+
+        await loadPackageRows();
+        currentPackage = findLoadedPackageById(packageId);
+
+        if (!currentPackage) {
+          hideLoading();
+          alert('Data paket tidak ditemukan.');
+          location.href = 'pencatatannontender.html';
+          return;
+        }
+
+        renderPackage();
+        hideLoading();
+      } catch (error) {
+        hideLoading();
+        alert(error.message || 'Gagal menarik data paket');
+        location.href = 'pencatatannontender.html';
+      }
     }
 
     document.getElementById('btnTambahRencana').onclick = () => {
       if (!currentPackage) return;
+
       location.href =
         'rencanapencatatan.html' +
         '?mode=tambah-rencana' +
@@ -212,6 +264,7 @@
 
     document.getElementById('btnUpdateRencana').onclick = () => {
       if (!currentPackage) return;
+
       location.href =
         'rencanapencatatan.html' +
         '?mode=update-rencana' +
@@ -219,6 +272,33 @@
         '&tahun=' + encodeURIComponent(currentPackage.tahun || APP_CONFIG.defaultTahun) +
         '&satker=' + encodeURIComponent(currentPackage.satker || '') +
         '&metode=' + encodeURIComponent(currentPackage.metode_pemilihan || '');
+    };
+
+    document.getElementById('btnSimpanBuatPaket').onclick = async () => {
+      try {
+        if (!currentPackage) return;
+
+        showLoading('Mohon Tunggu', 'Sedang menyimpan dan membuat paket...');
+
+        const payload = {
+          ...currentPackage,
+          status_paket: 'Draft',
+          can_delete: 'YA',
+          isian_edit_selesai: 'SUDAH',
+          updated_at: new Date().toISOString()
+        };
+
+        await savePackageToSheet(payload);
+        await loadPackageRows();
+        currentPackage = findLoadedPackageById(currentPackage.id_simulasi);
+
+        renderPackage();
+        hideLoading();
+        alert('Paket berhasil dibuat');
+      } catch (error) {
+        hideLoading();
+        alert(error.message || 'Gagal menyimpan paket');
+      }
     };
 
     document.getElementById('btnBackList').onclick = () => {
