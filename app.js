@@ -1,619 +1,697 @@
-const APP_CONFIG = {
-  spreadsheetId: '1ssQdLVKLPPj0dI6a_7iUwxm3L2IiPOZodIg1uE20BM0',
-  rupMasterGid: '2083920669',
-  packageSheetGid: '401635447',
-  defaultInstansi: 'Kota Bogor',
-  defaultTahun: '2026',
-  currentUserName: 'PPK',
-  currentUserRole: 'Pejabat Pembuat Komitmen',
-  apiUrl: 'https://script.google.com/macros/s/AKfycbw4-u3KXZIzUUDm7Sqdjdl62OyaJX5_Vtjvyb8qtZjwgvtUEEWeoXa5FffCkD8Lhh72Hw/exec'
-};
+const SPREADSHEET_ID = '1ssQdLVKLPPj0dI6a_7iUwxm3L2IiPOZodIg1uE20BM0';
 
-window.SPSE_APP_STATE = window.SPSE_APP_STATE || {
-  allRup: [],
-  filteredRup: [],
-  selectedRows: new Set(),
-  dataLoaded: false,
-  packageRows: [],
-  realisasiRows: [],
-  penyediaRows: [],
-  dokumenRows: []
-};
+const SHEET_PAKET = 'paket_pencatatan';
+const SHEET_REALISASI = 'realisasi_pencatatan';
+const SHEET_PENYEDIA = 'penyedia_pencatatan';
+const SHEET_DOKUMEN = 'dokumen_realisasi';
 
-const METHOD_MAP = {
-  'Pengecualian': ['Dikecualikan', 'Pengecualian'],
-  'Pengadaan Langsung': ['Pengadaan Langsung'],
-  'Penunjukan Langsung': ['Penunjukan Langsung'],
-  'Kontes': ['Kontes'],
-  'Sayembara': ['Sayembara'],
-  'Darurat': ['Darurat'],
-  'Tender Internasional': ['Tender Internasional'],
-  'Penunjukan Langsung Program Arahan Presiden': ['Penunjukan Langsung Program Arahan Presiden']
-};
+const HEADERS_PAKET = [
+  'id_simulasi',
+  'created_at',
+  'updated_at',
+  'kode_rup',
+  'nama_paket',
+  'satker',
+  'tahun',
+  'metode_pemilihan',
+  'sumber_dana',
+  'pagu',
+  'kode_anggaran',
+  'ppk',
+  'instansi',
+  'status_paket',
+  'status_realisasi',
+  'can_delete',
+  'lokasi_provinsi',
+  'lokasi_kab_kota',
+  'detail_lokasi',
+  'isian_edit_selesai',
+  'pdn_realisasi',
+  'umk_realisasi',
+  'tanggal_paket_selesai',
+  'alasan_perubahan_tanggal',
+  'uraian_pekerjaan',
+  'jenis_pengadaan'
+];
 
-const STORAGE_KEYS = {
-  login: 'spse_logged_in',
-  hideTutorial: 'spse_hide_tutorial',
-  draftPackage: 'spse_draft_package'
-};
+const HEADERS_REALISASI = [
+  'id_realisasi',
+  'id_simulasi',
+  'bukti_pembayaran',
+  'jenis_realisasi',
+  'nama_dokumen',
+  'nomor_dokumen',
+  'nilai_realisasi',
+  'tanggal_realisasi',
+  'keterangan',
+  'created_at',
+  'updated_at'
+];
 
-function makeCaptcha(len = 6){
-  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
-  let result = '';
-  for(let i = 0; i < len; i++) result += chars[Math.floor(Math.random() * chars.length)];
-  return result;
-}
+const HEADERS_PENYEDIA = [
+  'id_penyedia',
+  'id_realisasi',
+  'id_simulasi',
+  'bentuk_usaha',
+  'nama_penyedia',
+  'npwp',
+  'email',
+  'telp',
+  'provinsi',
+  'kabupaten_kota',
+  'alamat',
+  'created_at',
+  'updated_at'
+];
 
-function escapeHtml(value){
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+const HEADERS_DOKUMEN = [
+  'id_dokumen',
+  'id_realisasi',
+  'id_simulasi',
+  'nama_file',
+  'mime_type',
+  'file_base64',
+  'created_at',
+  'updated_at'
+];
 
-function normalizeWhitespace(value){
-  return String(value || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
-}
+function doGet(e) {
+  try {
+    ensureAllSheets_();
 
-function normalizeSatkerKey(value){
-  return normalizeWhitespace(value).toUpperCase();
-}
+    const action = getParam_(e, 'action');
+    if (!action) {
+      return jsonOutput_({ ok: false, message: 'Parameter action wajib diisi.' });
+    }
 
-function normalizeMethodText(value){
-  return normalizeWhitespace(value);
-}
+    switch (action) {
+      case 'listPackages':
+        return jsonOutput_({ ok: true, data: listPackages_() });
 
-function parseNumber(value){
-  if(value === null || value === undefined || value === '') return 0;
-  if(typeof value === 'number') return value;
-  const clean = String(value).replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
-  const num = Number(clean);
-  return Number.isNaN(num) ? 0 : num;
-}
+      case 'listRealisasi':
+        return jsonOutput_({ ok: true, data: listRealisasi_(getParam_(e, 'id_simulasi')) });
 
-function formatNumberInput(value){
-  return Number(value || 0).toLocaleString('id-ID', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
+      case 'listPenyedia':
+        return jsonOutput_({ ok: true, data: listPenyedia_(getParam_(e, 'id_realisasi')) });
 
-function formatRupiahShort(value){
-  const num = Number(value || 0);
-  if(num >= 1000000000) return 'Rp ' + (num / 1000000000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' M';
-  if(num >= 1000000) return 'Rp ' + (num / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' Jt';
-  if(num >= 1000) return 'Rp ' + (num / 1000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' Rb';
-  return 'Rp ' + num.toLocaleString('id-ID');
-}
+      case 'listDokumen':
+        return jsonOutput_({ ok: true, data: listDokumen_(getParam_(e, 'id_realisasi')) });
 
-function formatRupiahFull(value){
-  return 'Rp. ' + Number(value || 0).toLocaleString('id-ID', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-}
-
-function formatTanggalIndonesia(dateInput){
-  const date = dateInput ? new Date(dateInput) : new Date();
-  if(isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function formatDateInput(value){
-  if(!value) return '';
-  if(typeof value === 'string' && /^\d{2}-\d{2}-\d{4}$/.test(value)) return value;
-  const date = new Date(value);
-  if(isNaN(date.getTime())) return '';
-  const dd = String(date.getDate()).padStart(2, '0');
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const yyyy = date.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
-}
-
-function ddmmyyyyToYmd(value){
-  if(!value || !/^\d{2}-\d{2}-\d{4}$/.test(value)) return '';
-  const [dd, mm, yyyy] = value.split('-');
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function ymdToDdMmYyyy(value){
-  if(!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return '';
-  const [yyyy, mm, dd] = value.split('-');
-  return `${dd}-${mm}-${yyyy}`;
-}
-
-function randomKodeAnggaran(){
-  const blocks = [1,2,2,4,1,2,2,4,1,2,2,4].map(len => {
-    let out = '';
-    for(let i = 0; i < len; i++) out += Math.floor(Math.random() * 10);
-    return out;
-  });
-  return blocks.join('.');
-}
-
-function randomPackageId(){
-  return 'SIMPKT' + Date.now().toString().slice(-10);
-}
-
-function getQueryParam(name){
-  return new URLSearchParams(location.search).get(name);
-}
-
-function isMethodMatch(selectedMethod, metodeRup){
-  if(!selectedMethod) return true;
-  const candidates = METHOD_MAP[selectedMethod] || [selectedMethod];
-  const normalized = normalizeMethodText(metodeRup).toLowerCase();
-  return candidates.some(m => normalized.includes(String(m).toLowerCase()));
-}
-
-function fillUserIdentity(){
-  document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = APP_CONFIG.currentUserName);
-  document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = APP_CONFIG.currentUserRole);
-}
-
-function requireLogin(){
-  if(localStorage.getItem(STORAGE_KEYS.login) !== '1') {
-    location.href = 'login.html';
-    return false;
+      default:
+        return jsonOutput_({ ok: false, message: 'Action tidak dikenali: ' + action });
+    }
+  } catch (err) {
+    return jsonOutput_({ ok: false, message: err.message || String(err) });
   }
-  fillUserIdentity();
-  return true;
 }
 
-function bindLogout(buttonId = 'btnLogout'){
-  const btn = document.getElementById(buttonId);
-  if(!btn) return;
-  btn.onclick = () => {
-    localStorage.removeItem(STORAGE_KEYS.login);
-    location.href = 'login.html';
+function doPost(e) {
+  try {
+    ensureAllSheets_();
+
+    const body = parsePostBody_(e);
+    const action = String(body.action || '').trim();
+
+    if (!action) {
+      return jsonOutput_({ ok: false, message: 'Action wajib diisi pada body.' });
+    }
+
+    switch (action) {
+      case 'savePackage':
+        return jsonOutput_({ ok: true, data: savePackage_(body) });
+
+      case 'deletePackage':
+        return jsonOutput_({ ok: true, data: deletePackage_(body.id_simulasi) });
+
+      case 'saveRealisasi':
+        return jsonOutput_({ ok: true, data: saveRealisasi_(body) });
+
+      case 'deleteRealisasi':
+        return jsonOutput_({ ok: true, data: deleteRealisasi_(body.id_simulasi, body.id_realisasi) });
+
+      case 'savePenyedia':
+        return jsonOutput_({ ok: true, data: savePenyedia_(body) });
+
+      case 'saveDokumen':
+        return jsonOutput_({ ok: true, data: saveDokumen_(body) });
+
+      default:
+        return jsonOutput_({ ok: false, message: 'Action tidak dikenali: ' + action });
+    }
+  } catch (err) {
+    return jsonOutput_({ ok: false, message: err.message || String(err) });
+  }
+}
+
+/* =========================
+   PAKET
+========================= */
+
+function listPackages_() {
+  const sheet = getSheet_(SHEET_PAKET, HEADERS_PAKET);
+  const rows = getAllRows_(sheet);
+
+  rows.sort(function(a, b) {
+    return String(b.created_at || '').localeCompare(String(a.created_at || ''));
+  });
+
+  return rows;
+}
+
+function savePackage_(data) {
+  const sheet = getSheet_(SHEET_PAKET, HEADERS_PAKET);
+  const headerMap = getHeaderMap_(sheet);
+
+  let idSimulasi = String(data.id_simulasi || '').trim();
+  const now = nowIso_();
+
+  if (!idSimulasi) {
+    idSimulasi = createId_('SIMPKT');
+  }
+
+  const existingRow = findRowByValue_(sheet, headerMap.id_simulasi, idSimulasi);
+  const existing = existingRow ? getRowObject_(sheet, existingRow) : {};
+
+  const statusPaketRaw = pickText_(data.status_paket, existing.status_paket || 'Draft');
+  const statusPaket = statusPaketRaw || 'Draft';
+
+  const statusRealisasiRaw = pickText_(data.status_realisasi, existing.status_realisasi || 'Belum Ada Realisasi');
+  const statusRealisasi = statusRealisasiRaw || 'Belum Ada Realisasi';
+
+  const canDelete = (statusPaket === 'Draft' && statusRealisasi !== 'Sudah Ada Realisasi') ? 'YA' : 'TIDAK';
+
+  const payload = {
+    id_simulasi: idSimulasi,
+    created_at: existing.created_at || now,
+    updated_at: now,
+    kode_rup: pickText_(data.kode_rup, existing.kode_rup),
+    nama_paket: pickText_(data.nama_paket, existing.nama_paket),
+    satker: pickText_(data.satker, existing.satker),
+    tahun: pickText_(data.tahun, existing.tahun),
+    metode_pemilihan: pickText_(data.metode_pemilihan, existing.metode_pemilihan),
+    sumber_dana: pickText_(data.sumber_dana, existing.sumber_dana || 'APBD') || 'APBD',
+    pagu: pickNumber_(data.pagu, existing.pagu),
+    kode_anggaran: pickText_(data.kode_anggaran, existing.kode_anggaran),
+    ppk: pickText_(data.ppk, existing.ppk),
+    instansi: pickText_(data.instansi, existing.instansi || 'Kota Bogor') || 'Kota Bogor',
+    status_paket: statusPaket,
+    status_realisasi: statusRealisasi,
+    can_delete: canDelete,
+    lokasi_provinsi: pickText_(data.lokasi_provinsi, existing.lokasi_provinsi || 'Jawa Barat') || 'Jawa Barat',
+    lokasi_kab_kota: pickText_(data.lokasi_kab_kota, existing.lokasi_kab_kota || 'Bogor (Kota)') || 'Bogor (Kota)',
+    detail_lokasi: pickText_(data.detail_lokasi, existing.detail_lokasi || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah') || 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah',
+    isian_edit_selesai: pickText_(data.isian_edit_selesai, existing.isian_edit_selesai),
+    pdn_realisasi: pickText_(data.pdn_realisasi, existing.pdn_realisasi || '0,00') || '0,00',
+    umk_realisasi: pickText_(data.umk_realisasi, existing.umk_realisasi || '0,00') || '0,00',
+    tanggal_paket_selesai: pickText_(data.tanggal_paket_selesai, existing.tanggal_paket_selesai),
+    alasan_perubahan_tanggal: pickText_(data.alasan_perubahan_tanggal, existing.alasan_perubahan_tanggal),
+    uraian_pekerjaan: pickText_(data.uraian_pekerjaan, existing.uraian_pekerjaan),
+    jenis_pengadaan: pickText_(data.jenis_pengadaan, existing.jenis_pengadaan || 'Jasa Lainnya') || 'Jasa Lainnya'
+  };
+
+  if (existingRow) {
+    writeRowByHeaderMap_(sheet, headerMap, existingRow, payload);
+  } else {
+    appendRowByHeaderMap_(sheet, headerMap, payload);
+  }
+
+  return payload;
+}
+
+function deletePackage_(idSimulasi) {
+  idSimulasi = String(idSimulasi || '').trim();
+  if (!idSimulasi) throw new Error('id_simulasi wajib diisi.');
+
+  const sheet = getSheet_(SHEET_PAKET, HEADERS_PAKET);
+  const headerMap = getHeaderMap_(sheet);
+  const row = findRowByValue_(sheet, headerMap.id_simulasi, idSimulasi);
+
+  if (!row) throw new Error('Paket tidak ditemukan.');
+
+  const statusPaket = String(sheet.getRange(row, headerMap.status_paket).getValue() || '').trim();
+  const statusRealisasi = String(sheet.getRange(row, headerMap.status_realisasi).getValue() || '').trim();
+
+  if (statusPaket !== 'Draft') {
+    throw new Error('Yang bisa dihapus hanya paket berstatus Draft.');
+  }
+
+  if (statusRealisasi === 'Sudah Ada Realisasi') {
+    throw new Error('Paket sudah ada realisasi, tidak bisa dihapus.');
+  }
+
+  sheet.deleteRow(row);
+  deleteChildRowsBySimulasi_(SHEET_REALISASI, HEADERS_REALISASI, idSimulasi);
+  deleteChildRowsBySimulasi_(SHEET_PENYEDIA, HEADERS_PENYEDIA, idSimulasi);
+  deleteChildRowsBySimulasi_(SHEET_DOKUMEN, HEADERS_DOKUMEN, idSimulasi);
+
+  return { deleted: true, id_simulasi: idSimulasi };
+}
+
+/* =========================
+   REALISASI
+========================= */
+
+function listRealisasi_(idSimulasi) {
+  const sheet = getSheet_(SHEET_REALISASI, HEADERS_REALISASI);
+  const rows = getAllRows_(sheet);
+  const key = String(idSimulasi || '').trim();
+
+  if (!key) return rows;
+  return rows.filter(function(r) {
+    return String(r.id_simulasi || '').trim() === key;
+  });
+}
+
+function saveRealisasi_(data) {
+  const idSimulasi = String(data.id_simulasi || '').trim();
+  if (!idSimulasi) throw new Error('id_simulasi wajib diisi.');
+
+  const paketSheet = getSheet_(SHEET_PAKET, HEADERS_PAKET);
+  const paketHeaderMap = getHeaderMap_(paketSheet);
+  const paketRow = findRowByValue_(paketSheet, paketHeaderMap.id_simulasi, idSimulasi);
+
+  if (!paketRow) throw new Error('Paket tidak ditemukan.');
+
+  const paket = getRowObject_(paketSheet, paketRow);
+  if (String(paket.status_paket || '').trim() === 'Paket Sudah Selesai') {
+    throw new Error('Paket sudah selesai, realisasi tidak bisa diubah lagi.');
+  }
+
+  const pagu = toNumber_(paket.pagu);
+
+  const sheet = getSheet_(SHEET_REALISASI, HEADERS_REALISASI);
+  const headerMap = getHeaderMap_(sheet);
+
+  let idRealisasi = String(data.id_realisasi || '').trim();
+  const existingRow = idRealisasi ? findRowByValue_(sheet, headerMap.id_realisasi, idRealisasi) : 0;
+  const existing = existingRow ? getRowObject_(sheet, existingRow) : {};
+  const now = nowIso_();
+
+  if (!idRealisasi) {
+    idRealisasi = createId_('SIMRLS');
+  }
+
+  const nilaiBaru = toNumber_(data.nilai_realisasi);
+  if (nilaiBaru <= 0) throw new Error('Nilai realisasi tidak valid.');
+
+  const semuaRealisasi = listRealisasi_(idSimulasi);
+  const totalLain = semuaRealisasi.reduce(function(sum, row) {
+    if (String(row.id_realisasi || '') === idRealisasi) return sum;
+    return sum + toNumber_(row.nilai_realisasi);
+  }, 0);
+
+  if ((totalLain + nilaiBaru) > pagu) {
+    throw new Error('Total Nilai Realisasi melebihi Pagu');
+  }
+
+  const payload = {
+    id_realisasi: idRealisasi,
+    id_simulasi: idSimulasi,
+    bukti_pembayaran: pickText_(data.bukti_pembayaran, existing.bukti_pembayaran),
+    jenis_realisasi: pickText_(data.jenis_realisasi, existing.jenis_realisasi),
+    nama_dokumen: pickText_(data.nama_dokumen, existing.nama_dokumen),
+    nomor_dokumen: pickText_(data.nomor_dokumen, existing.nomor_dokumen),
+    nilai_realisasi: nilaiBaru,
+    tanggal_realisasi: pickText_(data.tanggal_realisasi, existing.tanggal_realisasi),
+    keterangan: pickText_(data.keterangan, existing.keterangan),
+    created_at: existing.created_at || now,
+    updated_at: now
+  };
+
+  if (!payload.jenis_realisasi) throw new Error('Jenis realisasi wajib diisi.');
+  if (!payload.nama_dokumen) throw new Error('Nama dokumen wajib diisi.');
+  if (!payload.tanggal_realisasi) throw new Error('Tanggal realisasi wajib diisi.');
+
+  if (existingRow) {
+    writeRowByHeaderMap_(sheet, headerMap, existingRow, payload);
+  } else {
+    appendRowByHeaderMap_(sheet, headerMap, payload);
+  }
+
+  paketSheet.getRange(paketRow, paketHeaderMap.status_realisasi).setValue('Sudah Ada Realisasi');
+  paketSheet.getRange(paketRow, paketHeaderMap.can_delete).setValue('TIDAK');
+  paketSheet.getRange(paketRow, paketHeaderMap.updated_at).setValue(now);
+
+  return payload;
+}
+
+function deleteRealisasi_(idSimulasi, idRealisasi) {
+  idSimulasi = String(idSimulasi || '').trim();
+  idRealisasi = String(idRealisasi || '').trim();
+
+  if (!idSimulasi) throw new Error('id_simulasi wajib diisi.');
+  if (!idRealisasi) throw new Error('id_realisasi wajib diisi.');
+
+  const paketSheet = getSheet_(SHEET_PAKET, HEADERS_PAKET);
+  const paketHeaderMap = getHeaderMap_(paketSheet);
+  const paketRow = findRowByValue_(paketSheet, paketHeaderMap.id_simulasi, idSimulasi);
+
+  if (!paketRow) throw new Error('Paket tidak ditemukan.');
+
+  const paket = getRowObject_(paketSheet, paketRow);
+  if (String(paket.status_paket || '').trim() === 'Paket Sudah Selesai') {
+    throw new Error('Paket sudah selesai, realisasi tidak bisa dihapus.');
+  }
+
+  const realSheet = getSheet_(SHEET_REALISASI, HEADERS_REALISASI);
+  const realHeaderMap = getHeaderMap_(realSheet);
+  const realRow = findRowByValue_(realSheet, realHeaderMap.id_realisasi, idRealisasi);
+
+  if (!realRow) throw new Error('Realisasi tidak ditemukan.');
+
+  realSheet.deleteRow(realRow);
+
+  deleteChildRowsByRealisasi_(SHEET_PENYEDIA, HEADERS_PENYEDIA, idRealisasi);
+  deleteChildRowsByRealisasi_(SHEET_DOKUMEN, HEADERS_DOKUMEN, idRealisasi);
+
+  const sisa = listRealisasi_(idSimulasi);
+  const now = nowIso_();
+
+  if (sisa.length) {
+    paketSheet.getRange(paketRow, paketHeaderMap.status_realisasi).setValue('Sudah Ada Realisasi');
+    paketSheet.getRange(paketRow, paketHeaderMap.can_delete).setValue('TIDAK');
+  } else {
+    paketSheet.getRange(paketRow, paketHeaderMap.status_realisasi).setValue('Belum Ada Realisasi');
+    const statusPaket = String(paket.status_paket || '').trim();
+    paketSheet.getRange(paketRow, paketHeaderMap.can_delete).setValue(statusPaket === 'Draft' ? 'YA' : 'TIDAK');
+  }
+
+  paketSheet.getRange(paketRow, paketHeaderMap.updated_at).setValue(now);
+
+  return { deleted: true, id_realisasi: idRealisasi, id_simulasi: idSimulasi };
+}
+
+/* =========================
+   PENYEDIA
+========================= */
+
+function listPenyedia_(idRealisasi) {
+  const sheet = getSheet_(SHEET_PENYEDIA, HEADERS_PENYEDIA);
+  const rows = getAllRows_(sheet);
+  const key = String(idRealisasi || '').trim();
+
+  if (!key) return rows;
+  return rows.filter(function(r) {
+    return String(r.id_realisasi || '').trim() === key;
+  });
+}
+
+function savePenyedia_(data) {
+  const idRealisasi = String(data.id_realisasi || '').trim();
+  const idSimulasi = String(data.id_simulasi || '').trim();
+
+  if (!idRealisasi) throw new Error('id_realisasi wajib diisi.');
+  if (!idSimulasi) throw new Error('id_simulasi wajib diisi.');
+  if (!String(data.bentuk_usaha || '').trim()) throw new Error('Bentuk Usaha wajib diisi.');
+  if (!String(data.nama_penyedia || '').trim()) throw new Error('Nama Penyedia wajib diisi.');
+  if (!String(data.provinsi || '').trim()) throw new Error('Provinsi wajib diisi.');
+  if (!String(data.kabupaten_kota || '').trim()) throw new Error('Kabupaten/Kota wajib diisi.');
+
+  const sheet = getSheet_(SHEET_PENYEDIA, HEADERS_PENYEDIA);
+  const headerMap = getHeaderMap_(sheet);
+  const now = nowIso_();
+
+  const payload = {
+    id_penyedia: createId_('SIMPRV'),
+    id_realisasi: idRealisasi,
+    id_simulasi: idSimulasi,
+    bentuk_usaha: toText_(data.bentuk_usaha),
+    nama_penyedia: toText_(data.nama_penyedia),
+    npwp: toText_(data.npwp),
+    email: toText_(data.email),
+    telp: toText_(data.telp),
+    provinsi: toText_(data.provinsi),
+    kabupaten_kota: toText_(data.kabupaten_kota),
+    alamat: toText_(data.alamat),
+    created_at: now,
+    updated_at: now
+  };
+
+  appendRowByHeaderMap_(sheet, headerMap, payload);
+  return payload;
+}
+
+/* =========================
+   DOKUMEN
+========================= */
+
+function listDokumen_(idRealisasi) {
+  const sheet = getSheet_(SHEET_DOKUMEN, HEADERS_DOKUMEN);
+  const rows = getAllRows_(sheet);
+  const key = String(idRealisasi || '').trim();
+
+  if (!key) return rows;
+
+  return rows
+    .filter(function(r) {
+      return String(r.id_realisasi || '').trim() === key;
+    })
+    .map(function(row) {
+      return {
+        id_dokumen: row.id_dokumen,
+        id_realisasi: row.id_realisasi,
+        id_simulasi: row.id_simulasi,
+        nama_file: row.nama_file,
+        mime_type: row.mime_type,
+        created_at: row.created_at,
+        updated_at: row.updated_at
+      };
+    });
+}
+
+function saveDokumen_(data) {
+  const idRealisasi = String(data.id_realisasi || '').trim();
+  const idSimulasi = String(data.id_simulasi || '').trim();
+  const namaFile = String(data.nama_file || '').trim();
+  const mimeType = String(data.mime_type || '').trim();
+  const fileBase64 = String(data.file_base64 || '').trim();
+
+  if (!idRealisasi) throw new Error('id_realisasi wajib diisi.');
+  if (!idSimulasi) throw new Error('id_simulasi wajib diisi.');
+  if (!namaFile) throw new Error('nama_file wajib diisi.');
+  if (!mimeType) throw new Error('mime_type wajib diisi.');
+  if (!fileBase64) throw new Error('file_base64 wajib diisi.');
+
+  const sheet = getSheet_(SHEET_DOKUMEN, HEADERS_DOKUMEN);
+  const headerMap = getHeaderMap_(sheet);
+  const now = nowIso_();
+
+  const payload = {
+    id_dokumen: createId_('SIMDOC'),
+    id_realisasi: idRealisasi,
+    id_simulasi: idSimulasi,
+    nama_file: namaFile,
+    mime_type: mimeType,
+    file_base64: fileBase64,
+    created_at: now,
+    updated_at: now
+  };
+
+  appendRowByHeaderMap_(sheet, headerMap, payload);
+
+  return {
+    id_dokumen: payload.id_dokumen,
+    id_realisasi: payload.id_realisasi,
+    id_simulasi: payload.id_simulasi,
+    nama_file: payload.nama_file,
+    mime_type: payload.mime_type,
+    created_at: payload.created_at,
+    updated_at: payload.updated_at
   };
 }
 
-function isTutorialDisabled(){
-  return localStorage.getItem(STORAGE_KEYS.hideTutorial) === '1';
+/* =========================
+   HELPERS
+========================= */
+
+function ensureAllSheets_() {
+  getSheet_(SHEET_PAKET, HEADERS_PAKET);
+  getSheet_(SHEET_REALISASI, HEADERS_REALISASI);
+  getSheet_(SHEET_PENYEDIA, HEADERS_PENYEDIA);
+  getSheet_(SHEET_DOKUMEN, HEADERS_DOKUMEN);
 }
 
-function disableTutorials(){
-  localStorage.setItem(STORAGE_KEYS.hideTutorial, '1');
+function getSpreadsheet_() {
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
 }
 
-function setupTutorial(options){
-  if(isTutorialDisabled()) return;
-  const overlay = document.getElementById(options.overlayId || 'tourOverlay');
-  const highlight = document.getElementById(options.highlightId || 'tourHighlight');
-  const arrow = document.getElementById(options.arrowId || 'tourArrow');
-  const card = document.getElementById(options.cardId || 'tourCard');
-  const title = document.getElementById(options.titleId || 'tourTitle');
-  const text = document.getElementById(options.textId || 'tourText');
-  const nextBtn = document.getElementById(options.nextBtnId || 'tourNextBtn');
-  const skipBtn = document.getElementById(options.skipBtnId || 'tourSkipBtn');
-  const hideBtn = document.getElementById(options.hideBtnId || 'tourNeverBtn');
-  const steps = Array.isArray(options.steps) ? options.steps : [];
-  if(!overlay || !highlight || !arrow || !card || !title || !text || !nextBtn || !skipBtn || !steps.length) return;
+function getSheet_(name, headers) {
+  const ss = getSpreadsheet_();
+  let sheet = ss.getSheetByName(name);
 
-  let idx = 0;
+  if (!sheet) sheet = ss.insertSheet(name);
 
-  function closeTour(){ overlay.style.display = 'none'; }
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
 
-  async function showStep(){
-    const step = steps[idx];
-    if(!step) return closeTour();
-    if(typeof step.onEnter === 'function') await step.onEnter();
-    const target = document.querySelector(step.target);
-    if(!target) return closeTour();
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => {
-      const rect = target.getBoundingClientRect();
-      highlight.style.left = (rect.left - 8) + 'px';
-      highlight.style.top = (rect.top - 8) + 'px';
-      highlight.style.width = (rect.width + 16) + 'px';
-      highlight.style.height = (rect.height + 16) + 'px';
-      title.textContent = step.title || 'Petunjuk';
-      text.innerHTML = step.text || '';
-      let left = Math.max(12, Math.min(window.innerWidth - 352, rect.left));
-      let top = step.place === 'top' ? rect.top - 190 : rect.bottom + 26;
-      if(top < 12) top = rect.bottom + 26;
-      if(top + 170 > window.innerHeight) top = rect.top - 190;
-      card.style.left = left + 'px';
-      card.style.top = top + 'px';
-      arrow.style.left = (rect.left + Math.min(rect.width / 2, 90)) + 'px';
-      arrow.style.top = (step.place === 'top' ? rect.top - 26 : rect.bottom + 6) + 'px';
-      arrow.style.transform = step.place === 'top' ? 'rotate(180deg)' : 'rotate(0deg)';
-      nextBtn.textContent = idx === steps.length - 1 ? 'Selesai' : 'Lanjut';
-    }, 280);
+  if (lastRow === 0 || lastCol === 0) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    return sheet;
   }
 
-  nextBtn.onclick = () => { idx += 1; if(idx >= steps.length) return closeTour(); showStep(); };
-  skipBtn.onclick = closeTour;
-  if(hideBtn) hideBtn.onclick = () => { disableTutorials(); closeTour(); };
-  window.addEventListener('resize', () => overlay.style.display === 'block' && showStep());
-  overlay.style.display = 'block';
-  showStep();
-}
+  const currentHeaders = sheet.getRange(1, 1, 1, Math.max(lastCol, headers.length)).getValues()[0];
+  const currentNormalized = currentHeaders.map(normalizeHeader_);
+  const expectedNormalized = headers.map(normalizeHeader_);
 
-function ensureLoadingOverlay(){
-  if(document.getElementById('globalLoadingOverlay')) return;
-
-  const style = document.createElement('style');
-  style.textContent = `
-    .global-loading-overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.25);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:99999;
+  let mismatch = false;
+  for (var i = 0; i < expectedNormalized.length; i++) {
+    if (currentNormalized[i] !== expectedNormalized[i]) {
+      mismatch = true;
+      break;
     }
-    .global-loading-box{
-      min-width:320px;
-      max-width:420px;
-      background:#111827;
-      color:#fff;
-      padding:18px 22px;
-      border-radius:14px;
-      box-shadow:0 18px 40px rgba(0,0,0,.25);
-      font-size:16px;
-      font-weight:600;
-      text-align:center;
-    }
-    .global-loading-sub{
-      margin-top:8px;
-      font-size:13px;
-      font-weight:400;
-      color:#d1d5db;
-    }
-  `;
-  document.head.appendChild(style);
+  }
 
-  const overlay = document.createElement('div');
-  overlay.id = 'globalLoadingOverlay';
-  overlay.className = 'global-loading-overlay';
-  overlay.innerHTML = `
-    <div class="global-loading-box">
-      <div id="globalLoadingText">Mohon Tunggu</div>
-      <div class="global-loading-sub" id="globalLoadingSub">Sedang menarik data...</div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
+  if (mismatch) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+
+  return sheet;
 }
 
-function showLoading(title = 'Mohon Tunggu', sub = 'Sedang menarik data...'){
-  ensureLoadingOverlay();
-  document.getElementById('globalLoadingText').textContent = title;
-  document.getElementById('globalLoadingSub').textContent = sub;
-  document.getElementById('globalLoadingOverlay').style.display = 'flex';
+function getHeaderMap_(sheet) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const map = {};
+  headers.forEach(function(header, index) {
+    map[normalizeHeader_(header)] = index + 1;
+  });
+  return map;
 }
 
-function hideLoading(){
-  const el = document.getElementById('globalLoadingOverlay');
-  if(el) el.style.display = 'none';
-}
+function getAllRows_(sheet) {
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  if (lastRow <= 1) return [];
 
-async function fetchSheetRows(gid){
-  const url = `https://docs.google.com/spreadsheets/d/${APP_CONFIG.spreadsheetId}/gviz/tq?gid=${gid}&tqx=out:json`;
-  const res = await fetch(url, { cache: 'no-store' });
-  const text = await res.text();
-  const jsonText = text.substring(47).slice(0, -2);
-  const json = JSON.parse(jsonText);
-  const cols = json.table.cols.map(c => normalizeWhitespace(c.label || ''));
-  return json.table.rows.map(row => {
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const data = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+  return data.map(function(row) {
     const obj = {};
-    cols.forEach((col, idx) => {
-      obj[col] = row.c[idx] ? row.c[idx].v : '';
+    headers.forEach(function(header, index) {
+      obj[normalizeHeader_(header)] = row[index];
     });
     return obj;
   });
 }
 
-async function ensureDataLoaded(){
-  if(window.SPSE_APP_STATE.dataLoaded) return;
-  const rows = await fetchSheetRows(APP_CONFIG.rupMasterGid);
-  window.SPSE_APP_STATE.allRup = rows.map(item => ({
-    id_rup: normalizeWhitespace(item.id_rup),
-    nama_paket: normalizeWhitespace(item.nama_paket),
-    metode_rup: normalizeMethodText(item.metode_rup),
-    pagu: Number(item.pagu || 0),
-    satker: normalizeWhitespace(item.satker),
-    satker_key: normalizeSatkerKey(item.satker),
-    tahun: normalizeWhitespace(item.tahun),
-    sumber_dana: normalizeWhitespace(item.sumber_dana || 'APBD') || 'APBD'
-  }));
-  window.SPSE_APP_STATE.dataLoaded = true;
+function getRowObject_(sheet, rowNumber) {
+  const lastCol = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const row = sheet.getRange(rowNumber, 1, 1, lastCol).getValues()[0];
+  const obj = {};
+
+  headers.forEach(function(header, index) {
+    obj[normalizeHeader_(header)] = row[index];
+  });
+
+  return obj;
 }
 
-function getUniqueSatkersByYear(tahun){
-  const map = new Map();
-  window.SPSE_APP_STATE.allRup
-    .filter(item => String(item.tahun) === String(tahun) && item.satker)
-    .forEach(item => {
-      if(!map.has(item.satker_key)) map.set(item.satker_key, item.satker);
-    });
-  return [...map.values()].sort((a, b) => a.localeCompare(b, 'id'));
+function appendRowByHeaderMap_(sheet, headerMap, obj) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const row = headers.map(function(header) {
+    const key = normalizeHeader_(header);
+    return Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : '';
+  });
+  sheet.appendRow(row);
 }
 
-function filterRupRows({ tahun, satker, metode }){
-  const satkerKey = normalizeSatkerKey(satker);
-  return window.SPSE_APP_STATE.allRup.filter(item => (
-    String(item.tahun) === String(tahun) &&
-    item.satker_key === satkerKey &&
-    isMethodMatch(metode, item.metode_rup)
-  ));
+function writeRowByHeaderMap_(sheet, headerMap, rowNumber, obj) {
+  Object.keys(obj).forEach(function(key) {
+    if (headerMap[key]) {
+      sheet.getRange(rowNumber, headerMap[key]).setValue(obj[key]);
+    }
+  });
 }
 
-function setDraftPackage(pkg){
-  sessionStorage.setItem(STORAGE_KEYS.draftPackage, JSON.stringify(pkg));
+function findRowByValue_(sheet, colIndex, value) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return 0;
+
+  const values = sheet.getRange(2, colIndex, lastRow - 1, 1).getValues().flat();
+  const idx = values.findIndex(function(v) {
+    return String(v).trim() === String(value).trim();
+  });
+
+  return idx === -1 ? 0 : idx + 2;
 }
 
-function getDraftPackage(){
-  try {
-    const raw = sessionStorage.getItem(STORAGE_KEYS.draftPackage);
-    return raw ? JSON.parse(raw) : null;
-  } catch(error){
-    return null;
+function deleteChildRowsBySimulasi_(sheetName, headers, idSimulasi) {
+  const sheet = getSheet_(sheetName, headers);
+  const headerMap = getHeaderMap_(sheet);
+  const rows = getAllRows_(sheet);
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (String(rows[i].id_simulasi || '').trim() === idSimulasi) {
+      sheet.deleteRow(i + 2);
+    }
   }
 }
 
-function clearDraftPackage(){
-  sessionStorage.removeItem(STORAGE_KEYS.draftPackage);
+function deleteChildRowsByRealisasi_(sheetName, headers, idRealisasi) {
+  const sheet = getSheet_(sheetName, headers);
+  const rows = getAllRows_(sheet);
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (String(rows[i].id_realisasi || '').trim() === idRealisasi) {
+      sheet.deleteRow(i + 2);
+    }
+  }
 }
 
-function buildDraftPackageFromRup(rupItem){
-  const now = new Date();
-  return {
-    id_simulasi: randomPackageId(),
-    created_at: now.toISOString(),
-    updated_at: now.toISOString(),
-    kode_rup: normalizeWhitespace(rupItem.id_rup),
-    nama_paket: normalizeWhitespace(rupItem.nama_paket),
-    satker: normalizeWhitespace(rupItem.satker),
-    tahun: normalizeWhitespace(rupItem.tahun),
-    metode_pemilihan: normalizeMethodText(rupItem.metode_rup),
-    sumber_dana: normalizeWhitespace(rupItem.sumber_dana || 'APBD') || 'APBD',
-    pagu: Number(rupItem.pagu || 0),
-    kode_anggaran: randomKodeAnggaran(),
-    ppk: APP_CONFIG.currentUserName,
-    instansi: APP_CONFIG.defaultInstansi,
-    status_paket: 'Draft',
-    status_realisasi: 'Belum Ada Realisasi',
-    can_delete: 'YA',
-    lokasi_provinsi: 'Jawa Barat',
-    lokasi_kab_kota: 'Bogor (Kota)',
-    detail_lokasi: 'Jl. Ir. H. Djuanda No. 10, Kel. Pabaton, Kec. Bogor Tengah',
-    isian_edit_selesai: 'BELUM',
-    pdn_realisasi: '0,00',
-    umk_realisasi: '0,00',
-    tanggal_paket_selesai: '',
-    alasan_perubahan_tanggal: '',
-    uraian_pekerjaan: '',
-    jenis_pengadaan: 'Jasa Lainnya'
-  };
+function createId_(prefix) {
+  return prefix + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyMMddHHmmssSSS');
 }
 
-function sanitizePackageRow(row){
-  return {
-    id_simulasi: normalizeWhitespace(row.id_simulasi),
-    created_at: row.created_at || '',
-    updated_at: row.updated_at || '',
-    kode_rup: normalizeWhitespace(row.kode_rup),
-    nama_paket: normalizeWhitespace(row.nama_paket),
-    satker: normalizeWhitespace(row.satker),
-    tahun: normalizeWhitespace(row.tahun),
-    metode_pemilihan: normalizeMethodText(row.metode_pemilihan),
-    sumber_dana: normalizeWhitespace(row.sumber_dana || 'APBD') || 'APBD',
-    pagu: parseNumber(row.pagu),
-    kode_anggaran: normalizeWhitespace(row.kode_anggaran),
-    ppk: normalizeWhitespace(row.ppk),
-    instansi: normalizeWhitespace(row.instansi || APP_CONFIG.defaultInstansi),
-    status_paket: normalizeWhitespace(row.status_paket || 'Draft'),
-    status_realisasi: normalizeWhitespace(row.status_realisasi || 'Belum Ada Realisasi'),
-    can_delete: normalizeWhitespace(row.can_delete || 'YA'),
-    lokasi_provinsi: normalizeWhitespace(row.lokasi_provinsi || 'Jawa Barat'),
-    lokasi_kab_kota: normalizeWhitespace(row.lokasi_kab_kota || 'Bogor (Kota)'),
-    detail_lokasi: normalizeWhitespace(row.detail_lokasi || ''),
-    isian_edit_selesai: normalizeWhitespace(row.isian_edit_selesai || ''),
-    pdn_realisasi: String(row.pdn_realisasi || '0,00'),
-    umk_realisasi: String(row.umk_realisasi || '0,00'),
-    tanggal_paket_selesai: row.tanggal_paket_selesai || '',
-    alasan_perubahan_tanggal: row.alasan_perubahan_tanggal || '',
-    uraian_pekerjaan: row.uraian_pekerjaan || '',
-    jenis_pengadaan: row.jenis_pengadaan || 'Jasa Lainnya'
-  };
+function nowIso_() {
+  return new Date().toISOString();
 }
 
-function sanitizeRealisasiRow(row){
-  return {
-    id_realisasi: normalizeWhitespace(row.id_realisasi),
-    id_simulasi: normalizeWhitespace(row.id_simulasi),
-    bukti_pembayaran: normalizeWhitespace(row.bukti_pembayaran),
-    jenis_realisasi: normalizeWhitespace(row.jenis_realisasi),
-    nama_dokumen: normalizeWhitespace(row.nama_dokumen),
-    nomor_dokumen: normalizeWhitespace(row.nomor_dokumen),
-    nilai_realisasi: parseNumber(row.nilai_realisasi),
-    tanggal_realisasi: row.tanggal_realisasi || '',
-    keterangan: row.keterangan || '',
-    created_at: row.created_at || '',
-    updated_at: row.updated_at || ''
-  };
+function parsePostBody_(e) {
+  const raw = (e && e.postData && e.postData.contents) ? e.postData.contents : '{}';
+  return JSON.parse(raw);
 }
 
-function sanitizePenyediaRow(row){
-  return {
-    id_penyedia: normalizeWhitespace(row.id_penyedia),
-    id_realisasi: normalizeWhitespace(row.id_realisasi),
-    id_simulasi: normalizeWhitespace(row.id_simulasi),
-    bentuk_usaha: normalizeWhitespace(row.bentuk_usaha),
-    nama_penyedia: normalizeWhitespace(row.nama_penyedia),
-    npwp: normalizeWhitespace(row.npwp),
-    email: normalizeWhitespace(row.email),
-    telp: normalizeWhitespace(row.telp),
-    provinsi: normalizeWhitespace(row.provinsi),
-    kabupaten_kota: normalizeWhitespace(row.kabupaten_kota),
-    alamat: normalizeWhitespace(row.alamat),
-    created_at: row.created_at || '',
-    updated_at: row.updated_at || ''
-  };
+function getParam_(e, key) {
+  return e && e.parameter ? e.parameter[key] : '';
 }
 
-function sanitizeDokumenRow(row){
-  return {
-    id_dokumen: normalizeWhitespace(row.id_dokumen),
-    id_realisasi: normalizeWhitespace(row.id_realisasi),
-    id_simulasi: normalizeWhitespace(row.id_simulasi),
-    nama_file: normalizeWhitespace(row.nama_file),
-    mime_type: normalizeWhitespace(row.mime_type),
-    file_base64: row.file_base64 || '',
-    created_at: row.created_at || '',
-    updated_at: row.updated_at || ''
-  };
+function normalizeHeader_(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_');
 }
 
-async function apiGet(action, params = {}){
-  const url = new URL(APP_CONFIG.apiUrl);
-  url.searchParams.set('action', action);
-  Object.entries(params).forEach(([k, v]) => {
-    if(v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
-  });
-
-  const res = await fetch(url.toString(), { cache: 'no-store' });
-  const json = await res.json();
-  if(!json.ok) throw new Error(json.message || 'Request gagal');
-  return json.data || [];
+function toText_(value) {
+  return value === undefined || value === null ? '' : String(value);
 }
 
-async function apiPost(payload){
-  const res = await fetch(APP_CONFIG.apiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
-  const json = await res.json();
-  if(!json.ok) throw new Error(json.message || 'Request gagal');
-  return json.data;
+function toNumber_(value) {
+  if (value === undefined || value === null || value === '') return 0;
+  if (typeof value === 'number') return value;
+
+  const clean = String(value)
+    .replace(/\./g, '')
+    .replace(',', '.')
+    .replace(/[^\d.-]/g, '');
+
+  const num = Number(clean);
+  return isNaN(num) ? 0 : num;
 }
 
-async function loadPackageRows(){
-  const rows = await apiGet('listPackages');
-  window.SPSE_APP_STATE.packageRows = (rows || []).map(sanitizePackageRow).filter(r => r.id_simulasi);
-  return window.SPSE_APP_STATE.packageRows;
+function pickText_(incoming, fallback) {
+  if (incoming === undefined || incoming === null) return toText_(fallback);
+  return toText_(incoming);
 }
 
-async function loadRealisasiRows(idSimulasi){
-  const rows = await apiGet('listRealisasi', { id_simulasi: idSimulasi || '' });
-  window.SPSE_APP_STATE.realisasiRows = (rows || []).map(sanitizeRealisasiRow);
-  return window.SPSE_APP_STATE.realisasiRows;
+function pickNumber_(incoming, fallback) {
+  if (incoming === undefined || incoming === null || incoming === '') return toNumber_(fallback);
+  return toNumber_(incoming);
 }
 
-async function loadPenyediaRows(idRealisasi){
-  const rows = await apiGet('listPenyedia', { id_realisasi: idRealisasi || '' });
-  window.SPSE_APP_STATE.penyediaRows = (rows || []).map(sanitizePenyediaRow);
-  return window.SPSE_APP_STATE.penyediaRows;
-}
-
-async function loadDokumenRows(idRealisasi){
-  const rows = await apiGet('listDokumen', { id_realisasi: idRealisasi || '' });
-  window.SPSE_APP_STATE.dokumenRows = (rows || []).map(sanitizeDokumenRow);
-  return window.SPSE_APP_STATE.dokumenRows;
-}
-
-function findLoadedPackageById(id){
-  return (window.SPSE_APP_STATE.packageRows || []).find(item => normalizeWhitespace(item.id_simulasi) === normalizeWhitespace(id)) || null;
-}
-
-function findLoadedRealisasiById(id){
-  return (window.SPSE_APP_STATE.realisasiRows || []).find(item => normalizeWhitespace(item.id_realisasi) === normalizeWhitespace(id)) || null;
-}
-
-function getPackageRealisasiRows(idSimulasi){
-  return (window.SPSE_APP_STATE.realisasiRows || []).filter(item => normalizeWhitespace(item.id_simulasi) === normalizeWhitespace(idSimulasi));
-}
-
-function getRealisasiPenyediaRows(idRealisasi){
-  return (window.SPSE_APP_STATE.penyediaRows || []).filter(item => normalizeWhitespace(item.id_realisasi) === normalizeWhitespace(idRealisasi));
-}
-
-function getRealisasiDokumenRows(idRealisasi){
-  return (window.SPSE_APP_STATE.dokumenRows || []).filter(item => normalizeWhitespace(item.id_realisasi) === normalizeWhitespace(idRealisasi));
-}
-
-async function savePackageToSheet(pkg){
-  const payload = {
-    action: 'savePackage',
-    ...sanitizePackageRow(pkg),
-    updated_at: new Date().toISOString()
-  };
-  return sanitizePackageRow(await apiPost(payload));
-}
-
-async function deletePackageFromSheet(idSimulasi){
-  return await apiPost({
-    action: 'deletePackage',
-    id_simulasi: idSimulasi
-  });
-}
-
-async function saveRealisasiToSheet(payload){
-  return sanitizeRealisasiRow(await apiPost({
-    action: 'saveRealisasi',
-    ...payload
-  }));
-}
-
-async function savePenyediaToSheet(payload){
-  return sanitizePenyediaRow(await apiPost({
-    action: 'savePenyedia',
-    ...payload
-  }));
-}
-
-async function saveDokumenToSheet(payload){
-  return sanitizeDokumenRow(await apiPost({
-    action: 'saveDokumen',
-    ...payload
-  }));
-}
-
-function createDatePickerInput(options = {}){
-  const wrap = document.createElement('div');
-  wrap.className = 'inline-field';
-
-  const text = document.createElement('input');
-  text.type = 'text';
-  text.className = options.textClassName || 'text-control';
-  text.placeholder = options.placeholder || 'dd-mm-yyyy';
-  text.value = options.value ? formatDateInput(options.value) : '';
-  text.readOnly = true;
-  text.style.maxWidth = options.maxWidth || '200px';
-
-  const hidden = document.createElement('input');
-  hidden.type = 'date';
-  hidden.value = ddmmyyyyToYmd(text.value) || '';
-  hidden.style.position = 'absolute';
-  hidden.style.opacity = '0';
-  hidden.style.pointerEvents = 'none';
-  hidden.style.width = '1px';
-  hidden.style.height = '1px';
-
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = options.buttonClassName || 'refresh-btn';
-  button.textContent = '📅';
-
-  button.onclick = () => {
-    if(hidden.showPicker) hidden.showPicker();
-    else hidden.click();
-  };
-
-  hidden.addEventListener('change', () => {
-    text.value = ymdToDdMmYyyy(hidden.value);
-    if(typeof options.onChange === 'function') options.onChange(text.value, hidden.value);
-  });
-
-  wrap.appendChild(text);
-  wrap.appendChild(button);
-  wrap.appendChild(hidden);
-
-  return { wrap, text, hidden, button };
+function jsonOutput_(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }
